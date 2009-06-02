@@ -1,0 +1,14 @@
+<resources>
+
+    <string-array name="genomeList">
+        <item>Genome1</item>
+        <item>Genome2</item>
+        <item>Genome3</item>
+        <item>Genome4</item>
+        <item>Genome5</item>
+        <item>Genome6</item>
+        <item>Genome7</item>
+        <item>Genome8</item>
+    </string-array>
+    
+</resources>

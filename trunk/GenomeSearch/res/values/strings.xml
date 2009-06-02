@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, HelloViews!</string>
+    <string name="app_name">Hello, RelativeView!</string>
+    <string name="prompt">Choose a genome to search</string>
+    <string name="genomeList">Choose a genome</string>
+    <string name="search">Search</string>
+    <string name="result">Results:</string>
+</resources>
