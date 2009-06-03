@@ -69,15 +69,29 @@ public class GenomeSearch extends Activity {
         //TODO: use this hash to query the seed for the user's search
         
         //TODO: Make this exception meaningful.
-        try{JSONObject myObj = new JSONObject("Hello");} catch (Exception E){}
+        
+        /* Previous JSON code */
+//        try{JSONObject myObj = new JSONObject("Hello");} catch (Exception E){}
+        
+        /* Create an array filled with genome names */
+        /* First attempt to add first genome name into the list */
+        String[] mStrings = myString.split("[\"]");
+        String[] genomeList = new String[1];
+        genomeList[0] = mStrings[6];
         
      // Set up spinner with array of genomes
      // TODO: fill the arrays.xml file with the actual genome list.
         Spinner s = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(
-                this, R.array.genomeList, android.R.layout.simple_spinner_item);
+        
+        /* Previous adapter code */
+//      ArrayAdapter adapter = ArrayAdapter.createFromResource(
+//      this, R.array.genomeList, android.R.layout.simple_spinner_item);
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+        		this, android.R.layout.simple_spinner_item, genomeList );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s.setAdapter(adapter);
+
         
      // Create an anonymous implementation of OnClickListener
         OnClickListener okButtonListener = new OnClickListener() {
@@ -105,5 +119,5 @@ public class GenomeSearch extends Activity {
                 return false;
             }
         });  
-    }   
+    }    
 }
