@@ -27,6 +27,7 @@ import android.widget.TextView;
 public class GenomeSearch extends Activity {
     protected Hashtable genome = new Hashtable();
 	protected Spinner s;
+	TextView result;
 	
 	public String getJSONData(){
 		/* Will be filled and displayed later. */
@@ -72,25 +73,21 @@ public class GenomeSearch extends Activity {
 	        		String myKey = (String) iter.next();
 	        		String myVal = (String) myObj.get(myKey);
 	        		genome.put(myKey, myVal);
-	                myAA.add(myVal);
-	        	}
+	                myAA.add(myVal);            
+	        	}           
+                //end test
 	        	setUpSpinner(myAA);
 	            //TODO: Make this exception meaningful.
-	        } catch (Exception E){}	
+	        } catch (Exception E){
+	        	result.setText("Error parsing JSON data...");
+	        }	
 	}
 	
 	public void setUpSpinner(ArrayAdapter aa){
-        Spinner s = (Spinner) findViewById(R.id.spinner);
+        s = (Spinner) findViewById(R.id.spinner);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s.setAdapter(aa);
         // TODO: make sure that the spinner implementation above actually fills it with the genome list.
-
-        
-        //Old example of spinner:
-        //Spinner s = (Spinner) findViewById(R.id.spinner);
-        //ArrayAdapter adapter = ArrayAdapter.createFromResource(this, R.array.genomeList, android.R.layout.simple_spinner_item);
-        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //s.setAdapter(adapter);
 	}
 	
 	 /** Called when the activity is first created. */
@@ -100,7 +97,8 @@ public class GenomeSearch extends Activity {
     	//Define user interface from xml
 	    	super.onCreate(savedInstanceState);
 	        setContentView(R.layout.main);
-	        final TextView result = (TextView)  this.findViewById(R.id.result);       
+	        //final TextView result = (TextView)  this.findViewById(R.id.result);
+	        result = (TextView)  this.findViewById(R.id.result);
 	        final EditText edittext = (EditText) findViewById(R.id.entry);
 		    final Button button = (Button)findViewById(R.id.ok);
 	    //Connect Listeners to UI
@@ -126,63 +124,7 @@ public class GenomeSearch extends Activity {
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
         parseJSON(getJSONData());
         //Old example of how to use text box
-        /* Show the String on the GUI. */
         //tv.setText(myString);
         //this.setContentView(tv);
-        //TODO: parse myString and create a hash from it
-        //TODO: use this hash to query the seed for the user's search
-        
-        //TODO: Make this exception meaningful.
-        
-        /* Previous JSON code */
-//        try{JSONObject myObj = new JSONObject("Hello");} catch (Exception E){}
-        
-        /* Create an array filled with genome names */
-        /* First attempt to add first genome name into the list */
-        //String[] mStrings = myString.split("[\"]");
-        //String[] genomeList = new String[1];
-        //genomeList[0] = mStrings[6];
-        
-     // Set up spinner with array of genomes
-     // TODO: fill the arrays.xml file with the actual genome list.
-        Spinner s = (Spinner) findViewById(R.id.spinner);
-        
-        /* Previous adapter code */
-//      ArrayAdapter adapter = ArrayAdapter.createFromResource(
-//      this, R.array.genomeList, android.R.layout.simple_spinner_item);
-        
-        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-        //		this, android.R.layout.simple_spinner_item, genomeList );
-        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //s.setAdapter(adapter);
-
-        
-     // Create an anonymous implementation of OnClickListener
-        OnClickListener okButtonListener = new OnClickListener() {
-            public void onClick(View v) {
-            	//TODO: Actually perform the search when the button is clicked.
-            }
-        };       
-     // Capture our button from layout
-      //  Button button = (Button)findViewById(R.id.ok);        
-     // Register the onClick listener with the implementation above
-        button.setOnClickListener(okButtonListener);
-     // Set up result box to display editText input
-     // TODO: Make this actually perform a search.
-       // final TextView result = (TextView)  this.findViewById(R.id.result);       
-       // final EditText edittext = (EditText) findViewById(R.id.entry);
-        edittext.setOnKeyListener(new OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                  // Perform action on key press
-                	// TODO: Change this to take the edittext, perform search, and put result in
-                	// the result box
-                	result.setText(edittext.getText().toString());
-                  return true;
-                }
-                return false;
-            }
-        });  
-//>>>>>>> .r5
     }    
 }
