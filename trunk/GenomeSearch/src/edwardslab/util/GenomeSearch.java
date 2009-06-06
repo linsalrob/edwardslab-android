@@ -13,20 +13,25 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class GenomeSearch extends Activity {
     protected Hashtable genome = new Hashtable();
 	protected Spinner s;
+	protected AutoCompleteTextView autoComplete;
 	TextView result;
 	
 	public String getJSONData(){
@@ -66,7 +71,8 @@ public class GenomeSearch extends Activity {
 	        	JSONObject HoH = new JSONObject(myString);
 	        	JSONObject myObj = HoH.optJSONObject("result");
 	        	Iterator iter= myObj.keys();
-	            ArrayAdapter myAA = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
+	        	ArrayAdapter myAA = new ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line);
+	            //ArrayAdapter myAA = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
 	        	while(iter.hasNext()){
 	                //Parse myString and fill our hash from it, then connect it to our spinner
 	        		//May need to explicitly call toString here, but I can't check at the moment... 
@@ -76,18 +82,24 @@ public class GenomeSearch extends Activity {
 	                myAA.add(myVal);            
 	        	}           
                 //end test
-	        	setUpSpinner(myAA);
+	        	//setUpSpinner(myAA);
+	        	setUpAuto(myAA);
 	            //TODO: Make this exception meaningful.
 	        } catch (Exception E){
 	        	result.setText("Error parsing JSON data...");
 	        }	
 	}
 	
-	public void setUpSpinner(ArrayAdapter aa){
+	/*public void setUpSpinner(ArrayAdapter aa){
         s = (Spinner) findViewById(R.id.spinner);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s.setAdapter(aa);
         // TODO: make sure that the spinner implementation above actually fills it with the genome list.
+	}*/
+	
+	public void setUpAuto(ArrayAdapter aa){
+		autoComplete = (AutoCompleteTextView) findViewById(R.id.autoComplete);
+		autoComplete.setAdapter(aa);
 	}
 	
 	 /** Called when the activity is first created. */
@@ -119,7 +131,32 @@ public class GenomeSearch extends Activity {
 	                }
 	                return false;
 	            }
-	        });  
+	        });
+	        
+	       /* 
+	        * TODO: We need to figure out what kind of Listener is needed and
+	        * how we need to pull information out of our autocomplete box.
+	        * 
+	        * autoComplete.setOnItemClickListener(new OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> arg0, View arg1,
+						int arg2, long arg3) {
+
+					
+				}
+	        	
+	        });
+	        autoComplete.setOnKeyListener(new OnKeyListener() {
+	            public boolean onKey(View v, int keyCode, KeyEvent event) {
+	                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+	                  // Perform action on key press
+	                	genome.get(edittext.getText().toString());
+	                	result.setText(edittext.getText().toString());
+	                  return true;
+	                }
+	                return false;
+	            }
+	        });  */
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
         parseJSON(getJSONData());

@@ -9,8 +9,19 @@
         android:layout_height="wrap_content"
         android:text="@string/prompt"/>
 
+<!-- Commented out the Spinner because I think it was a poor choice of
+	UI element on my part. If we can combine this with text recognition later,
+	it would be a more viable choice.
 	<Spinner 
         android:id="@+id/spinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/label"
+        android:prompt="@string/genomeList"
+    />
+-->
+    
+    <AutoCompleteTextView android:id="@+id/autoComplete"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/label"
@@ -22,7 +33,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/editbox_background"
-        android:layout_below="@id/spinner"/>
+        android:layout_below="@id/autoComplete"
+        />
+        <!-- used to be: android:layout_below="@id/spinner"-->
 
     <Button
         android:id="@+id/ok"
