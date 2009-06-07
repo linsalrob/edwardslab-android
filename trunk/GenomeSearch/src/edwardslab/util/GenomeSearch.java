@@ -1,11 +1,14 @@
 package edwardslab.util;
 //References: www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
-//Used for the entire code, minus target site modification.
+//Used for the web access portion of code.
+//Dr. Rob Edwards' SEEDgenomes.js
+//Used for structure of the seed search code elements.
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -13,34 +16,30 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnKeyListener;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class GenomeSearch extends Activity {
     protected Hashtable genome = new Hashtable();
 	protected Spinner s;
 	protected AutoCompleteTextView autoComplete;
+	private String baseUrl = "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi";
+	private String queryUrl = "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi/genomes/complete/undef/Bacteria";
 	TextView result;
 	
-	public String getJSONData(){
+	public String getWebInfo(String s){
 		/* Will be filled and displayed later. */
         String myString = null;
         try {
              /* Define the URL we want to load data from. */
-             URL myURL = new URL(
-          		       "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi/genomes/complete/undef/Bacteria");
+             URL myURL = new URL(s);
              /* Open a connection to that URL. */
              URLConnection ucon = myURL.openConnection();
 
@@ -67,22 +66,20 @@ public class GenomeSearch extends Activity {
 	}
 	
 	public void parseJSON(String myString){
+		//This is a special parse method, specific to how I want the auto-complete box to have its data built.
+		//Note that I reverse the key-value pairs in this method, versus the straightforward method in JSONToHash!
 		 try{// Take the stringified JSON Hash of Hashes and put it into our Hash
 	        	JSONObject HoH = new JSONObject(myString);
 	        	JSONObject myObj = HoH.optJSONObject("result");
 	        	Iterator iter= myObj.keys();
 	        	ArrayAdapter myAA = new ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line);
-	            //ArrayAdapter myAA = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
 	        	while(iter.hasNext()){
 	                //Parse myString and fill our hash from it, then connect it to our spinner
-	        		//May need to explicitly call toString here, but I can't check at the moment... 
-	        		String myKey = (String) iter.next();
-	        		String myVal = (String) myObj.get(myKey);
+	        		String myVal = (String) iter.next();
+	        		String myKey = (String) myObj.get(myVal);
 	        		genome.put(myKey, myVal);
-	                myAA.add(myVal);            
+	                myAA.add(myKey);            
 	        	}           
-                //end test
-	        	//setUpSpinner(myAA);
 	        	setUpAuto(myAA);
 	            //TODO: Make this exception meaningful.
 	        } catch (Exception E){
@@ -90,12 +87,47 @@ public class GenomeSearch extends Activity {
 	        }	
 	}
 	
-	/*public void setUpSpinner(ArrayAdapter aa){
-        s = (Spinner) findViewById(R.id.spinner);
-		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        s.setAdapter(aa);
-        // TODO: make sure that the spinner implementation above actually fills it with the genome list.
-	}*/
+	public Hashtable JSONToHash(String myString){
+		Hashtable myHash = new Hashtable();
+		try{// Take the stringified JSON Hash of Hashes and put it into our Hash
+        	JSONObject HoH = new JSONObject(myString);
+        	JSONObject myObj = HoH.optJSONObject("result");
+        	Iterator iter= myObj.keys();
+        	while(iter.hasNext()){
+                //Parse myString and fill our hash from it, then connect it to our spinner
+        		String myKey = (String) iter.next();
+        		String myVal = (String) myObj.get(myKey);  
+        		myHash.put(myKey, myVal);
+        	}           
+            //TODO: Make this exception meaningful.
+        } catch (Exception E){
+        	result.setText("Error parsing JSON data...");
+        }	
+        return myHash;
+	}
+	
+	public String genSearchResults(Hashtable h){
+		//This else if structure is to figure out exactly what the JSONObject returns in the null case.
+		//It can later be simplified.
+		String resString = "";
+		if(h.isEmpty()){
+			resString = "Empty hash";
+		}
+		else if(h.contains(null)){
+			resString = "true null";
+		}
+		else if(h.contains("null")){
+			resString = "string null";
+		}
+		else{
+			Enumeration myEnum = h.keys();
+			while(myEnum.hasMoreElements()){
+				String tmpKey = myEnum.nextElement().toString();
+				resString = resString + tmpKey + ": " + h.get(tmpKey);
+			}
+		}
+		return resString;
+	}
 	
 	public void setUpAuto(ArrayAdapter aa){
 		autoComplete = (AutoCompleteTextView) findViewById(R.id.autoComplete);
@@ -116,52 +148,20 @@ public class GenomeSearch extends Activity {
 	    //Connect Listeners to UI
 	        button.setOnClickListener(new OnClickListener(){
 	        	public void onClick(View v) {
-	            	//TODO: Actually perform the search when the button is clicked.
-	            }
-	        });
-	        edittext.setOnKeyListener(new OnKeyListener() {
-	            public boolean onKey(View v, int keyCode, KeyEvent event) {
-	                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-	                  // Perform action on key press
-	                	//TODO: I think this is wrong. User writes a PROTEIN name in the edittext, not a genome.
-	                	//The genome choice should come from the spinbox selection.
-	                	genome.get(edittext.getText().toString());
-	                	result.setText(edittext.getText().toString());
-	                  return true;
-	                }
-	                return false;
+	        		result.setText("Querying the SEED...");
+	        		String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
+	        			"/" + edittext.getText().toString();
+	        		//Can use this string to verify the steps up to this point!
+	        		//String searchResult = getWebInfo(searchUrl);
+	        		
+	        		//This line is more like what i'm actually getting at, but doesn't work yet.
+	        		//result.setText(genSearchResults(JSONToHash(getWebInfo(searchUrl))));
+	        		
 	            }
 	        });
 	        
-	       /* 
-	        * TODO: We need to figure out what kind of Listener is needed and
-	        * how we need to pull information out of our autocomplete box.
-	        * 
-	        * autoComplete.setOnItemClickListener(new OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> arg0, View arg1,
-						int arg2, long arg3) {
-
-					
-				}
-	        	
-	        });
-	        autoComplete.setOnKeyListener(new OnKeyListener() {
-	            public boolean onKey(View v, int keyCode, KeyEvent event) {
-	                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-	                  // Perform action on key press
-	                	genome.get(edittext.getText().toString());
-	                	result.setText(edittext.getText().toString());
-	                  return true;
-	                }
-	                return false;
-	            }
-	        });  */
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
-        parseJSON(getJSONData());
-        //Old example of how to use text box
-        //tv.setText(myString);
-        //this.setContentView(tv);
+        parseJSON(getWebInfo(queryUrl));
     }    
 }
