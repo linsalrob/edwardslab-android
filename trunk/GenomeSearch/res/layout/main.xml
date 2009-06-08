@@ -3,23 +3,12 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-    <TextView
-        android:id="@+id/label"
+   	<TextView
+       	android:id="@+id/label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/prompt"/>
-
-<!-- Commented out the Spinner because I think it was a poor choice of
-	UI element on my part. If we can combine this with text recognition later,
-	it would be a more viable choice.
-	<Spinner 
-        android:id="@+id/spinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/label"
-        android:prompt="@string/genomeList"
-    />
--->
+        android:text="@string/prompt"
+        android:singleLine="false"/>
     
     <AutoCompleteTextView android:id="@+id/autoComplete"
         android:layout_width="fill_parent"
@@ -44,13 +33,18 @@
         android:layout_below="@id/entry"
         android:layout_alignParentRight="true"
         android:text="@string/search" />
-        
-	<TextView
-        android:id="@+id/result"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/ok"
-        android:text="@string/result"/>
+ 
+ 	<ScrollView
+ 		android:id="@+id/scroll"
+		android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_below="@id/ok">
+		<TextView
+	        android:id="@+id/result"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/result"/>
+	 </ScrollView>
 
 </RelativeLayout>
 

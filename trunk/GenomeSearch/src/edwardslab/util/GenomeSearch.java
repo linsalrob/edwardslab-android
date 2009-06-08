@@ -17,6 +17,8 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -81,13 +83,14 @@ public class GenomeSearch extends Activity {
 	                myAA.add(myKey);            
 	        	}           
 	        	setUpAuto(myAA);
-	            //TODO: Make this exception meaningful.
+	            //TODO: Make this exception more meaningful? Or is it good enough?
 	        } catch (Exception E){
 	        	result.setText("Error parsing JSON data...");
 	        }	
 	}
 	
 	public Hashtable JSONToHash(String myString){
+		//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
 		Hashtable myHash = new Hashtable();
 		try{// Take the stringified JSON Hash of Hashes and put it into our Hash
         	JSONObject HoH = new JSONObject(myString);
@@ -99,7 +102,7 @@ public class GenomeSearch extends Activity {
         		String myVal = (String) myObj.get(myKey);  
         		myHash.put(myKey, myVal);
         	}           
-            //TODO: Make this exception meaningful.
+            //TODO: Make this exception more meaningful? Or is it good enough?
         } catch (Exception E){
         	result.setText("Error parsing JSON data...");
         }	
@@ -107,23 +110,16 @@ public class GenomeSearch extends Activity {
 	}
 	
 	public String genSearchResults(Hashtable h){
-		//This else if structure is to figure out exactly what the JSONObject returns in the null case.
-		//It can later be simplified.
 		String resString = "";
 		if(h.isEmpty()){
 			resString = "Empty hash";
-		}
-		else if(h.contains(null)){
-			resString = "true null";
-		}
-		else if(h.contains("null")){
-			resString = "string null";
 		}
 		else{
 			Enumeration myEnum = h.keys();
 			while(myEnum.hasMoreElements()){
 				String tmpKey = myEnum.nextElement().toString();
-				resString = resString + tmpKey + ": " + h.get(tmpKey);
+				resString = resString + "<a href=\"http://seed-viewer.theseed.org/linkin.cgi?id=" + tmpKey + "\">" + tmpKey + "</a>"
+					+ ": " + h.get(tmpKey) + "<br><br>";
 			}
 		}
 		return resString;
@@ -148,16 +144,19 @@ public class GenomeSearch extends Activity {
 	    //Connect Listeners to UI
 	        button.setOnClickListener(new OnClickListener(){
 	        	public void onClick(View v) {
-	        		result.setText("Querying the SEED...");
-	        		String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
-	        			"/" + edittext.getText().toString();
-	        		//Can use this string to verify the steps up to this point!
-	        		//String searchResult = getWebInfo(searchUrl);
+	        		//TODO: I want this next line to display while the user waits and it doesn't. This is something that can be added as a
+	        		// one-off piece of coding!
+	        		//result.setText("Querying the SEED...");
 	        		
-	        		//This line is more like what i'm actually getting at, but doesn't work yet.
-	        		//result.setText(genSearchResults(JSONToHash(getWebInfo(searchUrl))));
-	        		
-	            }
+	        		//This if check ensures we don't crash if the user hasn't entered any text.
+	        		if(autoComplete.length() > 0 && edittext.length() > 0){
+	        			String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
+		        			"/" + edittext.getText().toString();
+	        			//Create our results, turning links data into working links
+		        		result.setText(Html.fromHtml(genSearchResults(JSONToHash(getWebInfo(searchUrl)))));
+	        			result.setMovementMethod(LinkMovementMethod.getInstance());
+	        		}
+	        	}
 	        });
 	        
 	//Populate User Interface Elements
