@@ -16,7 +16,10 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -28,13 +31,16 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class GenomeSearch extends Activity {
+public class GenomeSearch extends Activity implements Runnable {
     protected Hashtable genome = new Hashtable();
 	protected Spinner s;
 	protected AutoCompleteTextView autoComplete;
-	private String baseUrl = "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi";
-	private String queryUrl = "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi/genomes/complete/undef/Bacteria";
+	final private String baseUrl = "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi";
+	final private String queryUrl = "http://bioseed.mcs.anl.gov/~redwards/FIG/rest_seed.cgi/genomes/complete/undef/Bacteria";
 	TextView result;
+	EditText edittext;
+	private ProgressDialog pd;
+	private String myResultString;
 	
 	public String getWebInfo(String s){
 		/* Will be filled and displayed later. */
@@ -139,7 +145,7 @@ public class GenomeSearch extends Activity {
 	        setContentView(R.layout.main);
 	        //final TextView result = (TextView)  this.findViewById(R.id.result);
 	        result = (TextView)  this.findViewById(R.id.result);
-	        final EditText edittext = (EditText) findViewById(R.id.entry);
+	        edittext = (EditText) findViewById(R.id.entry);
 		    final Button button = (Button)findViewById(R.id.ok);
 	    //Connect Listeners to UI
 	        button.setOnClickListener(new OnClickListener(){
@@ -150,11 +156,14 @@ public class GenomeSearch extends Activity {
 	        		
 	        		//This if check ensures we don't crash if the user hasn't entered any text.
 	        		if(autoComplete.length() > 0 && edittext.length() > 0){
-	        			String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
-		        			"/" + edittext.getText().toString();
 	        			//Create our results, turning links data into working links
-		        		result.setText(Html.fromHtml(genSearchResults(JSONToHash(getWebInfo(searchUrl)))));
-	        			result.setMovementMethod(LinkMovementMethod.getInstance());
+	        			//String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
+		        		//	"/" + edittext.getText().toString();
+		        		//result.setText(Html.fromHtml(genSearchResults(JSONToHash(getWebInfo(searchUrl)))));
+	        			//result.setMovementMethod(LinkMovementMethod.getInstance());	
+	        			pd = ProgressDialog.show(GenomeSearch.this, "Performing Search...", "Please wait (this may take a few moments)", true, false);
+	        			Thread thread = new Thread(GenomeSearch.this);
+	        			thread.start();
 	        		}
 	        	}
 	        });
@@ -162,5 +171,23 @@ public class GenomeSearch extends Activity {
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
         parseJSON(getWebInfo(queryUrl));
-    }    
+    }
+
+	@Override
+	public void run() {
+		//Create our results, turning links data into working links
+		String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
+		"/" + edittext.getText().toString();
+		myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
+		handler.sendEmptyMessage(0);
+	}   
+	
+	private Handler handler = new Handler() {
+	        @Override
+	        public void handleMessage(Message msg) {
+	            pd.dismiss();
+	    		result.setText(Html.fromHtml(myResultString));
+	    		result.setMovementMethod(LinkMovementMethod.getInstance());
+	        }
+	    };
 }
