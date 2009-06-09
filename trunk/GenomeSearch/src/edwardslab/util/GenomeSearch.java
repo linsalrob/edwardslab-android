@@ -1,8 +1,4 @@
 package edwardslab.util;
-//References: www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
-//Used for the web access portion of code.
-//Dr. Rob Edwards' SEEDgenomes.js
-//Used for structure of the seed search code elements.
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -13,6 +9,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.http.util.ByteArrayBuffer;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -31,6 +28,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+
+
 public class GenomeSearch extends Activity implements Runnable {
     protected Hashtable genome = new Hashtable();
 	protected Spinner s;
@@ -41,6 +40,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	EditText edittext;
 	private ProgressDialog pd;
 	private String myResultString;
+	//InputMethodManager inputManager = (InputMethodManager) 
 	
 	public String getWebInfo(String s){
 		/* Will be filled and displayed later. */
@@ -90,8 +90,9 @@ public class GenomeSearch extends Activity implements Runnable {
 	        	}           
 	        	setUpAuto(myAA);
 	            //TODO: Make this exception more meaningful? Or is it good enough?
-	        } catch (Exception E){
-	        	result.setText("Error parsing JSON data in parseJSON");
+	        } catch (JSONException e){
+	        	e.printStackTrace();
+	        	result.setText("Error parsing JSON data in parseJSON: ");
 	        }	
 	}
 	
@@ -149,25 +150,15 @@ public class GenomeSearch extends Activity implements Runnable {
 		    final Button button = (Button)findViewById(R.id.ok);
 	    //Connect Listeners to UI
 	        button.setOnClickListener(new OnClickListener(){
-	        	public void onClick(View v) {
-	        		//TODO: I want this next line to display while the user waits and it doesn't. This is something that can be added as a
-	        		// one-off piece of coding!
-	        		//result.setText("Querying the SEED...");
-	        		
+	        	public void onClick(View v) {     		
 	        		//This if check ensures we don't crash if the user hasn't entered any text.
 	        		if(autoComplete.length() > 0 && edittext.length() > 0){
-	        			//Create our results, turning links data into working links
-	        			//String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
-		        		//	"/" + edittext.getText().toString();
-		        		//result.setText(Html.fromHtml(genSearchResults(JSONToHash(getWebInfo(searchUrl)))));
-	        			//result.setMovementMethod(LinkMovementMethod.getInstance());	
 	        			pd = ProgressDialog.show(GenomeSearch.this, "Performing Search...", "Please wait (this may take a few moments)", true, false);
 	        			Thread thread = new Thread(GenomeSearch.this);
 	        			thread.start();
 	        		}
 	        	}
 	        });
-	        
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
         parseJSON(getWebInfo(queryUrl));

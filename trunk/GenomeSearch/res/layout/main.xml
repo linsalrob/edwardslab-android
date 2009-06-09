@@ -3,27 +3,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-   	<TextView
-       	android:id="@+id/label"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/prompt"
-        android:singleLine="false"/>
+   	
     
     <AutoCompleteTextView android:id="@+id/autoComplete"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/label"
         android:prompt="@string/genomeList"
-    />
+    android:hint="Enter genome to search"/>
 
 	<EditText
         android:id="@+id/entry"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/editbox_background"
-        android:layout_below="@id/autoComplete"
-        />
+        android:layout_below="@id/autoComplete" android:hint="Enter a protein"/>
         <!-- used to be: android:layout_below="@id/spinner"-->
 
     <Button
