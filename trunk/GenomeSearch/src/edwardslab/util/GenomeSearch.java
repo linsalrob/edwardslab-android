@@ -91,7 +91,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	        	setUpAuto(myAA);
 	            //TODO: Make this exception more meaningful? Or is it good enough?
 	        } catch (Exception E){
-	        	result.setText("Error parsing JSON data...");
+	        	result.setText("Error parsing JSON data in parseJSON");
 	        }	
 	}
 	
@@ -110,7 +110,7 @@ public class GenomeSearch extends Activity implements Runnable {
         	}           
             //TODO: Make this exception more meaningful? Or is it good enough?
         } catch (Exception E){
-        	result.setText("Error parsing JSON data...");
+        	result.setText("Error parsing JSON data in JSONToHash");
         }	
         return myHash;
 	}
