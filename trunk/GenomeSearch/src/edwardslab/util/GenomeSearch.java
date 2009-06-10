@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,6 +22,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -40,7 +42,6 @@ public class GenomeSearch extends Activity implements Runnable {
 	EditText edittext;
 	private ProgressDialog pd;
 	private String myResultString;
-	//InputMethodManager inputManager = (InputMethodManager) 
 	
 	public String getWebInfo(String s){
 		/* Will be filled and displayed later. */
@@ -91,8 +92,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	        	setUpAuto(myAA);
 	            //TODO: Make this exception more meaningful? Or is it good enough?
 	        } catch (JSONException e){
-	        	e.printStackTrace();
-	        	result.setText("Error parsing JSON data in parseJSON: ");
+	        	result.setText("Error parsing JSON data in parseJSON. Retrying?");
 	        }	
 	}
 	
@@ -147,12 +147,14 @@ public class GenomeSearch extends Activity implements Runnable {
 	        //final TextView result = (TextView)  this.findViewById(R.id.result);
 	        result = (TextView)  this.findViewById(R.id.result);
 	        edittext = (EditText) findViewById(R.id.entry);
+	    	final InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE); 
 		    final Button button = (Button)findViewById(R.id.ok);
 	    //Connect Listeners to UI
 	        button.setOnClickListener(new OnClickListener(){
 	        	public void onClick(View v) {     		
 	        		//This if check ensures we don't crash if the user hasn't entered any text.
 	        		if(autoComplete.length() > 0 && edittext.length() > 0){
+	        			inputManager.hideSoftInputFromWindow(edittext.getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS); 
 	        			pd = ProgressDialog.show(GenomeSearch.this, "Performing Search...", "Please wait (this may take a few moments)", true, false);
 	        			Thread thread = new Thread(GenomeSearch.this);
 	        			thread.start();
