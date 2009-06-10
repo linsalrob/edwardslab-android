@@ -1,5 +1,10 @@
 package edwardslab.util;
 
+//References: www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
+//Used for the web access portion of code.
+//Dr. Rob Edwards' SEEDgenomes.js
+//Used for structure of the seed search code elements.
+
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.URL;
