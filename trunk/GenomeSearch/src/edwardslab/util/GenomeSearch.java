@@ -166,6 +166,17 @@ public class GenomeSearch extends Activity implements Runnable {
 	        		}
 	        	}
 	        });
+	        
+	        //Clear Button
+	        final Button clrButton = (Button) findViewById(R.id.clear);
+	        
+	        clrButton.setOnClickListener(new OnClickListener() {
+	        	public void onClick(View v) {
+	        		autoComplete.setText("");
+	        		edittext.setText("");
+	        		result.setText("");
+	        	}
+	        });
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
         parseJSON(getWebInfo(queryUrl));
