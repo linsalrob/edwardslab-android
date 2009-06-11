@@ -4,7 +4,8 @@ package edwardslab.util;
 //Used for the web access portion of code.
 //Dr. Rob Edwards' SEEDgenomes.js
 //Used for structure of the seed search code elements.
-//Random Comment
+//http://www.helloandroid.com/node/243
+//Used as an example for thread and progress dialog code.
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -165,6 +166,12 @@ public class GenomeSearch extends Activity implements Runnable {
 	        			Thread thread = new Thread(GenomeSearch.this);
 	        			thread.start();
 	        		}
+	        	}
+	        });
+	        
+	        result.setOnClickListener(new OnClickListener() {
+	        	public void onClick(View v) {
+        			inputManager.hideSoftInputFromWindow(edittext.getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
 	        	}
 	        });
 	        
