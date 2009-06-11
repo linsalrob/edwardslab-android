@@ -200,7 +200,7 @@ public class GenomeSearch extends Activity implements Runnable {
 			myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
 		}
 		else{
-			myResultString = "Invalid search term!";
+			myResultString = "Invalid search term, please try again.";
 		}
 		handler.sendEmptyMessage(0);
 	}   
