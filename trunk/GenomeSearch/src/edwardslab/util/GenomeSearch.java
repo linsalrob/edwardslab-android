@@ -6,7 +6,6 @@ package edwardslab.util;
 //Used for structure of the seed search code elements.
 //http://www.helloandroid.com/node/243
 //Used as an example for thread and progress dialog code.
-//Last test today I think
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
