@@ -1,5 +1,7 @@
 package edwardslab.util;
-
+//Written by Josh Hoffman and Daniel Cuevas
+//Dr. Rob Edwards' Lab, San Diego State University
+//
 //References: www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
 //Used for the web access portion of code.
 //Dr. Rob Edwards' SEEDgenomes.js
