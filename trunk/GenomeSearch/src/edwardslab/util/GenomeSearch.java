@@ -102,7 +102,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	        	setUpAuto(myAA);
 	            //TODO: Make this exception more meaningful? Or is it good enough?
 	        } catch (JSONException e){
-	        	result.setText("Error parsing JSON data in parseJSON. Retrying?");
+	        	result.setText("Error parsing JSON data in parseJSON. We should retry here, but currently don't!");
 	        }	
 	}
 	
