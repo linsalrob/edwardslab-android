@@ -194,9 +194,15 @@ public class GenomeSearch extends Activity implements Runnable {
 	@Override
 	public void run() {
 		//Create our results, turning links data into working links
-		String searchUrl = baseUrl + "/search_genome/" + genome.get(autoComplete.getText().toString()).toString() + 
-		"/" + edittext.getText().toString();
-		myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
+		String tmpString = autoComplete.getText().toString();
+		if(genome.containsKey(tmpString)){
+			String searchUrl = baseUrl + "/search_genome/" + genome.get(tmpString).toString() + 
+			"/" + edittext.getText().toString();
+			myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
+		}
+		else{
+			myResultString = "Invalid search term!";
+		}
 		handler.sendEmptyMessage(0);
 	}   
 	
