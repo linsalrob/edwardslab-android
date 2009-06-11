@@ -7,6 +7,7 @@ package edwardslab.util;
 //http://www.helloandroid.com/node/243
 //Used as an example for thread and progress dialog code.
 //Example change to make Daniel hate svn again
+//Second example change
 
 
 import java.io.BufferedInputStream;
