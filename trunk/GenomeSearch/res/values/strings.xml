@@ -5,6 +5,6 @@
     <string name="prompt">Choose a genome to search</string>
     <string name="genomeList">Choose a genome</string>
     <string name="search">Search</string>
-    <string name="result">Results:</string>
+    <string name="result"></string>
     <string name="clear">Clear</string>
 </resources>
