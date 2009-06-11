@@ -4,6 +4,7 @@ package edwardslab.util;
 //Used for the web access portion of code.
 //Dr. Rob Edwards' SEEDgenomes.js
 //Used for structure of the seed search code elements.
+//Random Comment
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
