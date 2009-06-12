@@ -133,7 +133,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	public String genSearchResults(Hashtable h){
 		String resString = "";
 		if(h.isEmpty()){
-			resString = "Invalid search result, please try again.";
+			resString = "Invalid search term, please try again.";
 		}
 		else{
 			Enumeration myEnum = h.keys();
@@ -207,7 +207,7 @@ public class GenomeSearch extends Activity implements Runnable {
 			myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
 		}
 		else
-			myResultString = "Invalid search term, please try again.";
+			myResultString = "Invalid genome, please try again.";
 		handler.sendEmptyMessage(0);
 	}   
 	
