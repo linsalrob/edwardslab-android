@@ -111,13 +111,18 @@ public class GenomeSearch extends Activity implements Runnable {
 		try{// Take the stringified JSON Hash of Hashes and put it into our Hash
         	JSONObject HoH = new JSONObject(myString);
         	JSONObject myObj = HoH.optJSONObject("result");
-        	Iterator iter= myObj.keys();
-        	while(iter.hasNext()){
-                //Parse myString and fill our hash from it, then connect it to our spinner
-        		String myKey = (String) iter.next();
-        		String myVal = (String) myObj.get(myKey);  
-        		myHash.put(myKey, myVal);
-        	}           
+        	
+        	//myObj is null when an unknown search item was entered in second text box
+        	//If true, return empty hash table
+        	if(myObj != null) {
+        		Iterator iter= myObj.keys();
+        		while(iter.hasNext()){
+        			//Parse myString and fill our hash from it, then connect it to our spinner
+        			String myKey = (String) iter.next();
+        			String myVal = (String) myObj.get(myKey);  
+        			myHash.put(myKey, myVal);
+        		}
+        	}
             //TODO: Make this exception more meaningful? Or is it good enough?
         } catch (Exception E){
         	result.setText("Error parsing JSON data in JSONToHash");
@@ -128,7 +133,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	public String genSearchResults(Hashtable h){
 		String resString = "";
 		if(h.isEmpty()){
-			resString = "Empty hash";
+			resString = "Invalid search result, please try again.";
 		}
 		else{
 			Enumeration myEnum = h.keys();
@@ -201,9 +206,8 @@ public class GenomeSearch extends Activity implements Runnable {
 			"/" + edittext.getText().toString();
 			myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
 		}
-		else{
+		else
 			myResultString = "Invalid search term, please try again.";
-		}
 		handler.sendEmptyMessage(0);
 	}   
 	
