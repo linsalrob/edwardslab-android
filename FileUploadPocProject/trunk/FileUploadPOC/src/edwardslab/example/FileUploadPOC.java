@@ -1,4 +1,10 @@
 package edwardslab.example;
+//Proof of Concept by Josh Hoffman
+//Written for Dr. Rob Edwards' Bioinformatics Lab
+//San Diego State University
+//June 18, 2009
+//References: www.anddev.org
+//Used for file upload code, and file creation code
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -10,6 +16,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class FileUploadPOC extends Activity {
     /** Called when the activity is first created. */
@@ -20,15 +28,26 @@ public class FileUploadPOC extends Activity {
         final EditText file = (EditText) findViewById(R.id.fileName);
         final EditText content = (EditText) findViewById(R.id.fileContent);
         final Button button = (Button)findViewById(R.id.confirmButton);
-    
+		final TextView tv = new TextView(this);
+        final Toast toast = new Toast(this);
+        
         button.setOnClickListener(new OnClickListener(){
         	public void onClick(View v) {
-        			writeToFile(file.getText().toString(),content.getText().toString());
+        		//Attempt to write the specified file
+        		if(writeToFile(file.getText().toString(),content.getText().toString())){
+        			tv.setText("File output succeeded!");
+        		}
+        		else{
+        			tv.setText("File output failed!");
+        		}
+        	    toast.setView(tv);
+        	    toast.setDuration(Toast.LENGTH_LONG);
+        	    toast.show();
         	}
         });
     }
     
-    public void writeToFile(String fileName, String userInput){
+    public boolean writeToFile(String fileName, String userInput){
     	try { // catches IOException below
 	        //final String TESTSTRING = new String("Hello Android");
 	        
@@ -49,10 +68,11 @@ public class FileUploadPOC extends Activity {
 	         * really written out and close */
 	        osw.flush();
 	        osw.close();
+	        return true;
     	}catch (IOException ioe) {
     		ioe.printStackTrace();
+    		return false;
     	}
-    	
     }
     
     
