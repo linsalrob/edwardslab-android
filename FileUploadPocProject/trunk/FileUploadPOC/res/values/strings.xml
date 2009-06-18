@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, FileUploadPOC!</string>
+    <string name="app_name">FileUploadPOC</string>
+    <string name="fileHint">Enter a filename to upload</string>
+    <string name="contentHint">Enter content for the file</string>
+    <string name="confirm">Confirm</string>
+</resources>
