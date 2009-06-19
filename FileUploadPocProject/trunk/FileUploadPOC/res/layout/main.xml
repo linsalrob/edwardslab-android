@@ -4,24 +4,33 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-<EditText  
-	android:id="@+id/fileName"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:hint="@string/fileHint"
-    />
-<EditText
-    android:id="@+id/fileContent"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content"
-    android:layout_below="@id/fileName" 
-    android:hint="@string/contentHint"
-    />
-<Button 
-	android:id="@+id/confirmButton"
-	android:layout_width="wrap_content" 
-    android:layout_height="wrap_content"
-    android:layout_below="@id/fileContent" 
-    android:text="@string/confirm"
-/>
+	<EditText  
+		android:id="@+id/fileName"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content" 
+	    android:hint="@string/fileHint"
+	    />
+	<EditText
+	    android:id="@+id/fileContent"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content"
+	    android:layout_below="@id/fileName" 
+	    android:hint="@string/contentHint"
+	    />
+	<Button 
+		android:id="@+id/confirmButton"
+		android:layout_width="wrap_content" 
+	    android:layout_height="wrap_content"
+	    android:layout_below="@id/fileContent" 
+	    android:text="@string/confirm"
+	/>
+	<Button
+		android:id="@+id/uploadButton"
+		android:layout_width="wrap_content" 
+	    android:layout_height="wrap_content"
+	    android:layout_below="@id/fileContent" 
+	    android:layout_toRightOf="@id/confirmButton" 
+	    android:text="@string/upload"
+	/>
+	    
 </RelativeLayout>

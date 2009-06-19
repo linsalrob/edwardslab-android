@@ -4,5 +4,6 @@
     <string name="app_name">FileUploadPOC</string>
     <string name="fileHint">Enter a filename to upload</string>
     <string name="contentHint">Enter content for the file</string>
-    <string name="confirm">Confirm</string>
+    <string name="confirm">Create File</string>
+    <string name="upload">Upload File</string>
 </resources>
