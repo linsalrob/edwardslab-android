@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -155,19 +156,19 @@ public class FileUploadPOC extends Activity implements Runnable {
 
   	  String responseFromServer = "";
 
-  	  String urlString = "http://octopussy.sdsu.edu/uploader.php";
+  	  String urlString = "http://edwards.sdsu.edu/~redwards/cgi-bin/josh_upload.cgi";
+  	  //String urlString = "http://octopussy.sdsu.edu/uploader.php";
   	  //String urlString = "http://localhost/uploader.php";
   	  
   	  try
   	  {
   	   //------------------ CLIENT REQUEST
-  	 String doesthisExist = "hi";
+
   	  Log.e("MediaPlayer","Inside second Method");
 
   	  FileInputStream fileInputStream = new FileInputStream(new File(existingFileName) );
 
-  	   // open a URL connection to the Servlet
-  	  //TODO: This variable isn't getting created, which is why we crash further down!
+
   	  URL url = new URL(urlString);
   	   String test = "test";
 
@@ -189,14 +190,17 @@ public class FileUploadPOC extends Activity implements Runnable {
 
   	   conn.setRequestProperty("Connection", "Keep-Alive");
   	 
-  	   conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+  	   conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
 
   	   dos = new DataOutputStream( conn.getOutputStream() );
 
   	   dos.writeBytes(twoHyphens + boundary + lineEnd);
-  	   dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + existingFileName +"\"" + lineEnd);
+  	   dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"" + existingFileName +"\"" + lineEnd);
+  	   //dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"" + createdFile +"\"" + lineEnd);
+  	   dos.writeBytes("Content-Type: text/plain" + lineEnd);
   	   dos.writeBytes(lineEnd);
-
+  	   
+  	   //dos.writeBytes("BEGIN-");
   	   Log.e("MediaPlayer","Headers are written");
 
   	   // create a buffer of maximum size
@@ -208,7 +212,7 @@ public class FileUploadPOC extends Activity implements Runnable {
   	   // read file and write it into form...
 
   	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
+  	   
   	   while (bytesRead > 0)
   	   {
   	    dos.write(buffer, 0, bufferSize);
@@ -216,15 +220,19 @@ public class FileUploadPOC extends Activity implements Runnable {
   	    bufferSize = Math.min(bytesAvailable, maxBufferSize);
   	    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
   	   }
-
+  	   //dos.writeBytes("-END");
   	   // send multipart form data necesssary after file data...
 
-  	   dos.writeBytes(lineEnd);
-  	   dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
+  	   dos.writeBytes(lineEnd + lineEnd);
+  	   dos.writeBytes(twoHyphens + boundary + lineEnd);
+  	   dos.writeBytes("Content-Disposition: form-data; name=\"Upload\"");
+  	   dos.writeBytes(lineEnd + lineEnd);
+  	   dos.writeBytes("Upload" + lineEnd);
+	   dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
   	   // close streams
   	   Log.e("MediaPlayer","File is written");
   	   fileInputStream.close();
+  	   Log.e("Not MediaPlayer","FIS is closed!");
   	   dos.flush();
   	   dos.close();
 
@@ -245,12 +253,12 @@ public class FileUploadPOC extends Activity implements Runnable {
 
 
   	  try {
-  		  //TODO: This is where we're crashing!!!
   	        inStream = new DataInputStream ( conn.getInputStream() );
   	        String str;
   	       
   	        while (( str = inStream.readLine()) != null)
   	        {
+  	        	//TODO: We can verify success/failure here, just need to know what to expect from server!
   	             Log.e("MediaPlayer","Server Response"+str);
   	        }
   	        inStream.close();
