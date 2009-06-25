@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+	<EditText android:id="@+id/Filename" 
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/fileHint">
+	</EditText>
+	<Button android:id="@+id/Browse" 
+		android:layout_toRightOf="@+id/Filename" 
+		android:layout_width="wrap_content" 
+		android:text="@string/browse" 
+		android:layout_height="wrap_content">
+	</Button>
+	<Spinner android:id="@+id/StringencySpinner" 
+		android:layout_below="@+id/Filename" 
+		android:layout_alignLeft="@+id/Filename"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:prompt="@string/stringency"
+		android:entries="@array/stringency">
+	</Spinner>
+	<Spinner android:id="@+id/LevelSpinner" 
+		android:layout_below="@+id/StringencySpinner" 
+		android:layout_alignLeft="@+id/Filename"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:entries="@array/levels"
+		android:prompt="@string/level"	>	
+	</Spinner>
+	<Button android:id="@+id/Upload" 
+		android:layout_below="@+id/LevelSpinner" 
+		android:layout_width="wrap_content" 
+		android:text="@string/upload" 
+		android:layout_height="wrap_content">
+	</Button>
+	<Button android:id="@+id/Reset"
+		android:layout_below="@+id/LevelSpinner"  
+		android:layout_toRightOf="@+id/Upload" 
+		android:layout_width="wrap_content" 
+		android:text="@string/reset" 
+		android:layout_height="wrap_content">
+	</Button>	
+	<ListView android:layout_below="@+id/Reset" 
+		android:layout_width="wrap_content" 
+		android:id="@+id/ResultListView" 
+		android:layout_height="wrap_content">
+	</ListView>
+</RelativeLayout>

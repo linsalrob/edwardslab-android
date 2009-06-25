@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mobile Metagenomics</string>
+    <string name="fileHint">Enter a filename</string>
+    <string name="browse">Browse (not working)</string>
+    <string name="stringency">Stringency:</string>
+    <string name="level">Level:</string>
+    <string name="upload">Upload</string>
+    <string name="reset">Reset</string>
+</resources>
