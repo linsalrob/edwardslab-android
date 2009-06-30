@@ -22,26 +22,36 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-public class MobileMetagenomics extends Activity {
+public class MobileMetagenomics extends Activity implements Runnable{
+	static final int GONE = 0x00000008;
+	static final int  VISIBLE = 0x00000000;
 	EditText fileName;
 	Spinner stringencySpinner;
 	Spinner levelSpinner;
 	Object[] keyArr;
 	Object[] valArr;
 	ListView resultListView;
+    private ProgressDialog pd;
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
@@ -49,19 +59,32 @@ public class MobileMetagenomics extends Activity {
         fileName = (EditText) findViewById(R.id.Filename);
         stringencySpinner = (Spinner) findViewById(R.id.StringencySpinner);
         levelSpinner = (Spinner) findViewById(R.id.LevelSpinner);
+    	final InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        resultListView = (ListView)findViewById(R.id.ResultListView);
         final Button uploadButton = (Button)findViewById(R.id.Upload);
         final Button resetButton = (Button)findViewById(R.id.Reset);
-        resultListView = (ListView)findViewById(R.id.ResultListView);
+        final Button browseButton = (Button)findViewById(R.id.Browse);
       //Connect Listeners to UI
         uploadButton.setOnClickListener(new OnClickListener(){
-        	public void onClick(View v) {     		
-        		doFileUpload(fileName.getText().toString(),
-        				levelSpinner.getSelectedItemPosition(),
-        				stringencySpinner.getSelectedItemPosition());
+        	public void onClick(View v) { 
+        		fileName.setVisibility(GONE);
+        		stringencySpinner.setVisibility(GONE);
+        		levelSpinner.setVisibility(GONE);
+        		uploadButton.setVisibility(GONE);
+        		browseButton.setVisibility(GONE);
+    			inputManager.hideSoftInputFromWindow(fileName.getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+    			pd = ProgressDialog.show(MobileMetagenomics.this, "Performing Sequencing...", "Please wait (this may take a few moments)", true, false);
+    			Thread thread = new Thread(MobileMetagenomics.this);
+    			thread.start();
         	}
         });       
         resetButton.setOnClickListener(new OnClickListener(){
-        	public void onClick(View v) {     		
+        	public void onClick(View v) {  
+        		fileName.setVisibility(VISIBLE);
+        		stringencySpinner.setVisibility(VISIBLE);
+        		levelSpinner.setVisibility(VISIBLE);
+        		uploadButton.setVisibility(VISIBLE);
+        		browseButton.setVisibility(VISIBLE);
         		fileName.setText("");
         		stringencySpinner.setSelection(0);
         		levelSpinner.setSelection(0);
@@ -116,12 +139,12 @@ public class MobileMetagenomics extends Activity {
         }
         keyArr = myList.toArray();
         Arrays.sort(keyArr);
-        Collections.sort(myList);
+        //Collections.sort(myList);
         /*valArr = myList.toArray();
         for(int i=0; i<keyArr.length; i++){
         	valArr[i]=(String)myHash.get(keyArr[i]);
         }*/
-        resultListView.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, keyArr));
+       // resultListView.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, keyArr));
     }
     
     public String makeWebRequest(String s){
@@ -265,4 +288,21 @@ public class MobileMetagenomics extends Activity {
     	       Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
     	  }
     	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		doFileUpload(fileName.getText().toString(),
+				levelSpinner.getSelectedItemPosition(),
+				stringencySpinner.getSelectedItemPosition());
+		handler.sendEmptyMessage(0);
+	}
+	
+	private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            resultListView.setAdapter(new ArrayAdapter(MobileMetagenomics.this, android.R.layout.simple_list_item_1, keyArr));
+        	pd.dismiss();
+        }
+    };
 }
