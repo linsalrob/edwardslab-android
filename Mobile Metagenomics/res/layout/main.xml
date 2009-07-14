@@ -43,10 +43,5 @@
 		android:layout_width="wrap_content" 
 		android:text="@string/reset" 
 		android:layout_height="wrap_content">
-	</Button>	
-	<ListView android:id="@+id/ResultListView"
-		android:layout_below="@+id/Reset" 
-		android:layout_width="wrap_content"  
-		android:layout_height="wrap_content">
-	</ListView>
+	</Button>
 </RelativeLayout>

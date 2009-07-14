@@ -29,17 +29,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 
-public class ResultView extends Activity implements Runnable{
+public class ResultView extends Activity{
 
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
-	static final int GONE = 0x00000008;
-	static final int  VISIBLE = 0x00000000;
-	private static final int INSERT_ID = Menu.FIRST;
 	String fileName;
 	int stringency;
 	int level;
@@ -47,27 +42,77 @@ public class ResultView extends Activity implements Runnable{
 	Object[] valArr;
 	ListView resultListView;
     private ProgressDialog pd;
-	
+    Thread setupInitialResult;
+	Thread downloadRemainingResults;
+    
+	Handler initialThreadHandler = new Handler()
+    {
+            @Override public void handleMessage(Message msg)
+            {
+            	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+            	pd.dismiss();
+                setupInitialResult.stop();
+                downloadRemainingResults.start();
+            }
+    };
+
+    Handler remainingThreadHandler = new Handler()
+    {
+            @Override public void handleMessage(Message msg)
+            {
+            	downloadRemainingResults.stop();
+            }
+    };
+    
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
-		super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);		
+		resultListView = (ListView)findViewById(R.id.ResultListView);
+	    setupInitialResult = new Thread(new Runnable()
+	    {
+	        // Setup the run() method that is called when the background thread
+	        // is started.
+	        public void run()
+	        {
+	        	setupAsync(doFileUpload(fileName.toString(),
+	        			level,
+	        			stringency));
+	                // Send the handler message to the UI thread.
+	                initialThreadHandler.sendEmptyMessage(0);
+
+	        }
+	    });
+	    
+	    downloadRemainingResults = new Thread(new Runnable()
+	    {
+	        // Setup the run() method that is called when the background thread
+	        // is started.
+	        public void run()
+	        {
+	        	/*
+	        	for(int i=2; i<Integer.parseInt((String) tmpHash.get("max")); i++){
+	            	loadList(JSONToHash((makeWebRequest((String) tmpHash.get("url") + i))), myList);
+	        	}*/
+	                // Send the handler message to the UI thread.
+	                remainingThreadHandler.sendEmptyMessage(0);
+
+	        }
+	    });
+	    
 		Bundle extras = getIntent().getExtras();
 		fileName = extras.getString(MobileMetagenomics.FILE_NAME);
 		level = extras.getInt(MobileMetagenomics.LEVEL);
 		stringency = extras.getInt(MobileMetagenomics.STRINGENCY);
 		pd = ProgressDialog.show(ResultView.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
-		Thread thread = new Thread(ResultView.this);
-		thread.start();
+		setupInitialResult.start();
 	}
 
     private void setupAsync(String resString){
     	Hashtable tmpHash = JSONToHash(resString);
     	ArrayList<String> myList = new ArrayList<String>();
     	loadList(JSONToHash((makeWebRequest((String) tmpHash.get("url") + 1))), myList);
-    	for(int i=2; i<Integer.parseInt((String) tmpHash.get("max")); i++){
-        	loadList(JSONToHash((makeWebRequest((String) tmpHash.get("url") + i))), myList);
-    	}
     }
     
     public Hashtable<String,String> JSONToHash(String myString){
@@ -242,23 +287,6 @@ public class ResultView extends Activity implements Runnable{
     	  }
 	      return responseFromServer;
     	}
-
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-        setupAsync(doFileUpload(fileName.toString(),
-        			level,
-        			stringency));
-		handler.sendEmptyMessage(0);
-	}
-	
-	private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
-        	pd.dismiss();
-        }
-    };
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
