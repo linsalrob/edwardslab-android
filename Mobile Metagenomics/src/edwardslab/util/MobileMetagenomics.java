@@ -39,7 +39,6 @@ public class MobileMetagenomics extends Activity{
         stringencySpinner = (Spinner) findViewById(R.id.StringencySpinner);
         levelSpinner = (Spinner) findViewById(R.id.LevelSpinner);
     	final InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
-        resultListView = (ListView)findViewById(R.id.ResultListView);
         final Button uploadButton = (Button)findViewById(R.id.Upload);
         final Button resetButton = (Button)findViewById(R.id.Reset);
         final Button browseButton = (Button)findViewById(R.id.Browse);
@@ -57,7 +56,7 @@ public class MobileMetagenomics extends Activity{
         		Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
         		i.putExtra(FILE_NAME, fileName.getText().toString());
         		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition());
-        		i.putExtra(STRINGENCY, stringencySpinner.getSelectedItemPosition());
+        		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
         		startActivity(i);
         		/*
     			pd = ProgressDialog.show(MobileMetagenomics.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);

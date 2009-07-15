@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class ResultView extends Activity{
 
@@ -41,17 +42,21 @@ public class ResultView extends Activity{
 	Object[] keyArr;
 	Object[] valArr;
 	ListView resultListView;
+	ArrayList<String> myList;
+	int max;
+	String url;
     private ProgressDialog pd;
     Thread setupInitialResult;
 	Thread downloadRemainingResults;
-    
+    TextView mDisplay;
+	
 	Handler initialThreadHandler = new Handler()
     {
             @Override public void handleMessage(Message msg)
             {
             	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
             	pd.dismiss();
-                setupInitialResult.stop();
+            	mDisplay.setText("Currently viewing pages 1 through 1");
                 downloadRemainingResults.start();
             }
     };
@@ -60,7 +65,9 @@ public class ResultView extends Activity{
     {
             @Override public void handleMessage(Message msg)
             {
-            	downloadRemainingResults.stop();
+            	mDisplay.setText("Currently viewing pages 1 through" + msg.obj.toString());
+            	if(msg.obj.toString() == "done"){
+            	}
             }
     };
     
@@ -69,7 +76,9 @@ public class ResultView extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);		
-		resultListView = (ListView)findViewById(R.id.ResultListView);
+		setContentView(R.layout.resultview);
+		resultListView = (ListView)findViewById(R.id.ResultsListView);
+		mDisplay = (TextView)findViewById(R.id.display);
 	    setupInitialResult = new Thread(new Runnable()
 	    {
 	        // Setup the run() method that is called when the background thread
@@ -91,13 +100,16 @@ public class ResultView extends Activity{
 	        // is started.
 	        public void run()
 	        {
-	        	/*
-	        	for(int i=2; i<Integer.parseInt((String) tmpHash.get("max")); i++){
-	            	loadList(JSONToHash((makeWebRequest((String) tmpHash.get("url") + i))), myList);
-	        	}*/
+	        	for(int i=2; i<max; i++){
+		        	Message msg = remainingThreadHandler.obtainMessage();
+		        	msg.obj = i;
+	            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+	            	remainingThreadHandler.sendMessage(msg);
+	        	}
 	                // Send the handler message to the UI thread.
-	                remainingThreadHandler.sendEmptyMessage(0);
-
+	        	Message msg = remainingThreadHandler.obtainMessage();
+	        	msg.obj = "done";
+	                remainingThreadHandler.sendMessage(msg);
 	        }
 	    });
 	    
@@ -111,8 +123,10 @@ public class ResultView extends Activity{
 
     private void setupAsync(String resString){
     	Hashtable tmpHash = JSONToHash(resString);
+    	url = (String) tmpHash.get("url");
+    	max = Integer.parseInt((String) tmpHash.get("max"));
     	ArrayList<String> myList = new ArrayList<String>();
-    	loadList(JSONToHash((makeWebRequest((String) tmpHash.get("url") + 1))), myList);
+    	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
     }
     
     public Hashtable<String,String> JSONToHash(String myString){
@@ -153,6 +167,25 @@ public class ResultView extends Activity{
         	valArr[i]=(String)myHash.get(keyArr[i]);
         }*/
        // resultListView.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, keyArr));
+    }
+    
+    public void addToList(Hashtable<String,String> myHash, ArrayList<String> myList){
+    	Object thisElem;
+    	// TODO: It would appear that myHash.size() is returning the amount of space allotted in the hash, NOT an item count.
+    	// get around this in a good way if possible. Otherwise dump it into a list :(
+    	Object[] tmp = new Object[keyArr.length + myHash.size()];
+    	int i=0;
+    	// TODO: write a small test program and make sure this isn't dropping an element out by overwriting the last one from keyArr.
+    	for(int j=0; j<keyArr.length; j++){
+    		tmp[j]=keyArr[j];
+    		i=j;
+    	}
+    	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
+    		thisElem = e.nextElement();
+            tmp[i] = ((String) thisElem) + " value: " + ((String) myHash.get(thisElem));
+        }
+        keyArr = tmp;
+        Arrays.sort(keyArr);
     }
     
     public String makeWebRequest(String s){

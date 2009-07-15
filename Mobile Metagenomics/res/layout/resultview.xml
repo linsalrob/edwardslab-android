@@ -3,14 +3,11 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content">
-  	<ListView android:id="@+id/ResultListView"
+  	<ListView android:id="@+id/ResultsListView"
 		android:layout_width="wrap_content"  
 		android:layout_height="wrap_content">
 	</ListView>
-	<TextView android:id="@+id/placeholder"
-		android:layout_below="@+id/ResultListView" 
-		android:layout_width="fill_parent"  
-		android:layout_height="wrap_content"
-		android:text="Results View Mode">
-	</TextView>
+	<TextView android:id="@+id/display"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"/>
 </RelativeLayout>
