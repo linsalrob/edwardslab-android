@@ -22,9 +22,8 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +48,8 @@ public class ResultView extends Activity{
     Thread setupInitialResult;
 	Thread downloadRemainingResults;
     TextView mDisplay;
-	
+    
+    /*
 	Handler initialThreadHandler = new Handler()
     {
             @Override public void handleMessage(Message msg)
@@ -66,11 +66,8 @@ public class ResultView extends Activity{
             @Override public void handleMessage(Message msg)
             {
             	mDisplay.setText("Currently viewing pages 1 through" + msg.obj.toString());
-            	if(msg.obj.toString() == "done"){
-            	}
             }
-    };
-    
+    };*/
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +76,8 @@ public class ResultView extends Activity{
 		setContentView(R.layout.resultview);
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		mDisplay = (TextView)findViewById(R.id.display);
+		
+		/*
 	    setupInitialResult = new Thread(new Runnable()
 	    {
 	        // Setup the run() method that is called when the background thread
@@ -111,14 +110,16 @@ public class ResultView extends Activity{
 	        	msg.obj = "done";
 	                remainingThreadHandler.sendMessage(msg);
 	        }
-	    });
+	    });*/
 	    
 		Bundle extras = getIntent().getExtras();
 		fileName = extras.getString(MobileMetagenomics.FILE_NAME);
 		level = extras.getInt(MobileMetagenomics.LEVEL);
 		stringency = extras.getInt(MobileMetagenomics.STRINGENCY);
-		pd = ProgressDialog.show(ResultView.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
-		setupInitialResult.start();
+		//pd = ProgressDialog.show(ResultView.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
+		//setupInitialResult.start();
+		new DownloadResults().execute("String");
+		
 	}
 
     private void setupAsync(String resString){
@@ -128,6 +129,7 @@ public class ResultView extends Activity{
     	ArrayList<String> myList = new ArrayList<String>();
     	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
     }
+
     
     public Hashtable<String,String> JSONToHash(String myString){
 		//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
@@ -174,15 +176,15 @@ public class ResultView extends Activity{
     	// TODO: It would appear that myHash.size() is returning the amount of space allotted in the hash, NOT an item count.
     	// get around this in a good way if possible. Otherwise dump it into a list :(
     	Object[] tmp = new Object[keyArr.length + myHash.size()];
-    	int i=0;
+    	int i=keyArr.length;
     	// TODO: write a small test program and make sure this isn't dropping an element out by overwriting the last one from keyArr.
     	for(int j=0; j<keyArr.length; j++){
     		tmp[j]=keyArr[j];
-    		i=j;
     	}
+    	int q = 4;
     	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
     		thisElem = e.nextElement();
-            tmp[i] = ((String) thisElem) + " value: " + ((String) myHash.get(thisElem));
+            tmp[i++] = ((String) thisElem) + " value: " + ((String) myHash.get(thisElem));
         }
         keyArr = tmp;
         Arrays.sort(keyArr);
@@ -337,5 +339,47 @@ public class ResultView extends Activity{
         }
         return super.onMenuItemSelected(featureId, item);
 	}
+	
+    private class DownloadResults extends AsyncTask<String, Integer, Integer> {
+    	@Override
+    	protected void onPreExecute(){
+    		// TODO: SETUP PB
+    		pd = ProgressDialog.show(ResultView.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
+    	}
+    	
+		@Override
+		protected Integer doInBackground(String... params) {
+			// TODO: do meaningful work and update
+			Integer status = 0;
+			setupAsync(doFileUpload(fileName.toString(),
+        			level,
+        			stringency));
+			status++;
+			publishProgress(status);			
+			//Do remaining blocks.
+			for(int i=2; i<max; i++){
+            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+            	status++;
+            	publishProgress(status);
+        	}
+			return null;
+		}
+    	
+		@Override
+        protected void onProgressUpdate(Integer... values) {
+			// TODO: update PB
+			if(values[0] == 1){
+				pd.dismiss();
+			}
+			mDisplay.setText("Currently viewing pages 1 through " + values[0]);
+        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+        }
+
+		@Override
+        protected void onPostExecute(Integer value) {
+            // TODO: Conclude progress dialogues etc...
+        }
+
+    }
 	
 }
