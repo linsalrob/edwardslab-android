@@ -8,4 +8,6 @@
     <string name="upload">Upload</string>
     <string name="reset">Reset</string>
     <string name="share">Share</string>
+    <string name="save">Save Results</string>
+    <string name="load">Load Results</string>
 </resources>

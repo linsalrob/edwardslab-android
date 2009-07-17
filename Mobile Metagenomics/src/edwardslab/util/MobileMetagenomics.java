@@ -15,12 +15,10 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 public class MobileMetagenomics extends Activity{
-	static final int GONE = 0x00000008;
-	static final int  VISIBLE = 0x00000000;
+	private static final int LOAD_ID = Menu.FIRST;
 	static final String FILE_NAME = "filename";
 	static final String LEVEL = "level";
 	static final String STRINGENCY = "stringency";
-	private static final int INSERT_ID = Menu.FIRST;
 	EditText fileName;
 	Spinner stringencySpinner;
 	Spinner levelSpinner;
@@ -45,36 +43,26 @@ public class MobileMetagenomics extends Activity{
       //Connect Listeners to UI
         uploadButton.setOnClickListener(new OnClickListener(){
         	public void onClick(View v) { 
-        		/*
-        		fileName.setVisibility(GONE);
-        		stringencySpinner.setVisibility(GONE);
-        		levelSpinner.setVisibility(GONE);
-        		uploadButton.setVisibility(GONE);
-        		browseButton.setVisibility(GONE);
-    			inputManager.hideSoftInputFromWindow(fileName.getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
-    			*/
         		Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
         		i.putExtra(FILE_NAME, fileName.getText().toString());
         		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition());
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
         		startActivity(i);
-        		/*
-    			pd = ProgressDialog.show(MobileMetagenomics.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
-    			Thread thread = new Thread(MobileMetagenomics.this);
-    			thread.start();*/
         	}
         });       
         resetButton.setOnClickListener(new OnClickListener(){
         	public void onClick(View v) {  
-        		fileName.setVisibility(VISIBLE);
-        		stringencySpinner.setVisibility(VISIBLE);
-        		levelSpinner.setVisibility(VISIBLE);
-        		uploadButton.setVisibility(VISIBLE);
-        		browseButton.setVisibility(VISIBLE);
         		fileName.setText("");
         		stringencySpinner.setSelection(0);
         		levelSpinner.setSelection(0);
         	}
         });
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        menu.add(0, LOAD_ID, 0, R.string.load);
+        return true;
     }
 }

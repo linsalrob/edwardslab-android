@@ -35,6 +35,7 @@ public class ResultView extends Activity{
 
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
+	private static final int LOAD_ID = Menu.FIRST + 2;
 	String fileName;
 	int stringency;
 	int level;
@@ -76,48 +77,11 @@ public class ResultView extends Activity{
 		setContentView(R.layout.resultview);
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		mDisplay = (TextView)findViewById(R.id.display);
-		
-		/*
-	    setupInitialResult = new Thread(new Runnable()
-	    {
-	        // Setup the run() method that is called when the background thread
-	        // is started.
-	        public void run()
-	        {
-	        	setupAsync(doFileUpload(fileName.toString(),
-	        			level,
-	        			stringency));
-	                // Send the handler message to the UI thread.
-	                initialThreadHandler.sendEmptyMessage(0);
-
-	        }
-	    });
-	    
-	    downloadRemainingResults = new Thread(new Runnable()
-	    {
-	        // Setup the run() method that is called when the background thread
-	        // is started.
-	        public void run()
-	        {
-	        	for(int i=2; i<max; i++){
-		        	Message msg = remainingThreadHandler.obtainMessage();
-		        	msg.obj = i;
-	            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
-	            	remainingThreadHandler.sendMessage(msg);
-	        	}
-	                // Send the handler message to the UI thread.
-	        	Message msg = remainingThreadHandler.obtainMessage();
-	        	msg.obj = "done";
-	                remainingThreadHandler.sendMessage(msg);
-	        }
-	    });*/
 	    
 		Bundle extras = getIntent().getExtras();
 		fileName = extras.getString(MobileMetagenomics.FILE_NAME);
 		level = extras.getInt(MobileMetagenomics.LEVEL);
 		stringency = extras.getInt(MobileMetagenomics.STRINGENCY);
-		//pd = ProgressDialog.show(ResultView.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
-		//setupInitialResult.start();
 		new DownloadResults().execute("String");
 		
 	}
@@ -163,21 +127,12 @@ public class ResultView extends Activity{
         }
         keyArr = myList.toArray();
         Arrays.sort(keyArr);
-        //Collections.sort(myList);
-        /*valArr = myList.toArray();
-        for(int i=0; i<keyArr.length; i++){
-        	valArr[i]=(String)myHash.get(keyArr[i]);
-        }*/
-       // resultListView.setAdapter(new ArrayAdapter(this, android.R.layout.simple_list_item_1, keyArr));
     }
     
     public void addToList(Hashtable<String,String> myHash, ArrayList<String> myList){
     	Object thisElem;
-    	// TODO: It would appear that myHash.size() is returning the amount of space allotted in the hash, NOT an item count.
-    	// get around this in a good way if possible. Otherwise dump it into a list :(
     	Object[] tmp = new Object[keyArr.length + myHash.size()];
     	int i=keyArr.length;
-    	// TODO: write a small test program and make sure this isn't dropping an element out by overwriting the last one from keyArr.
     	for(int j=0; j<keyArr.length; j++){
     		tmp[j]=keyArr[j];
     	}
@@ -327,6 +282,8 @@ public class ResultView extends Activity{
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         menu.add(0, SHARE_ID, 0, R.string.share);
+        menu.add(0, SAVE_ID, 0, R.string.save);
+        menu.add(0, LOAD_ID, 0, R.string.load);
         return true;
     }
 	
@@ -357,7 +314,7 @@ public class ResultView extends Activity{
 			status++;
 			publishProgress(status);			
 			//Do remaining blocks.
-			for(int i=2; i<max; i++){
+			for(int i=2; i<=max; i++){
             	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
             	status++;
             	publishProgress(status);
