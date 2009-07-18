@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
@@ -15,7 +16,9 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 public class MobileMetagenomics extends Activity{
+	static final int ACTIVITY_CHOOSE_FILE = 0;
 	private static final int LOAD_ID = Menu.FIRST;
+	static final String LOAD_FILE_NAME = "load file name";
 	static final String FILE_NAME = "filename";
 	static final String LEVEL = "level";
 	static final String STRINGENCY = "stringency";
@@ -65,4 +68,33 @@ public class MobileMetagenomics extends Activity{
         menu.add(0, LOAD_ID, 0, R.string.load);
         return true;
     }
+    
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch(item.getItemId()) {
+        case LOAD_ID:
+        	Intent i = new Intent(MobileMetagenomics.this, LoadFileChooser.class);
+        	startActivityForResult(i, ACTIVITY_CHOOSE_FILE);
+        	return true;
+        }
+        return super.onMenuItemSelected(featureId, item);
+	}
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        Bundle extras = intent.getExtras();
+        switch(requestCode) {
+        case ACTIVITY_CHOOSE_FILE:
+    		loadResults(extras.getString(LOAD_FILE_NAME));
+        	break;
+        }
+    }
+    
+	public void loadResults(String resFile){
+		            Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+	        		i.putExtra(LOAD_FILE_NAME, resFile);
+	        		startActivity(i);
+	}
+
 }

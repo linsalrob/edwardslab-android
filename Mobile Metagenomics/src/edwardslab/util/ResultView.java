@@ -1,12 +1,17 @@
 package edwardslab.util;
 
+//References: http://www.glenmccl.com/tip_030.htm for serializable code.
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,6 +27,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,7 +46,6 @@ public class ResultView extends Activity{
 	int stringency;
 	int level;
 	Object[] keyArr;
-	Object[] valArr;
 	ListView resultListView;
 	ArrayList<String> myList;
 	int max;
@@ -50,39 +55,23 @@ public class ResultView extends Activity{
 	Thread downloadRemainingResults;
     TextView mDisplay;
     
-    /*
-	Handler initialThreadHandler = new Handler()
-    {
-            @Override public void handleMessage(Message msg)
-            {
-            	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
-            	pd.dismiss();
-            	mDisplay.setText("Currently viewing pages 1 through 1");
-                downloadRemainingResults.start();
-            }
-    };
-
-    Handler remainingThreadHandler = new Handler()
-    {
-            @Override public void handleMessage(Message msg)
-            {
-            	mDisplay.setText("Currently viewing pages 1 through" + msg.obj.toString());
-            }
-    };*/
-    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);		
 		setContentView(R.layout.resultview);
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		mDisplay = (TextView)findViewById(R.id.display);
 	    
 		Bundle extras = getIntent().getExtras();
+		if(extras.containsKey(MobileMetagenomics.LOAD_FILE_NAME)){
+			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+		}
+		else{
 		fileName = extras.getString(MobileMetagenomics.FILE_NAME);
 		level = extras.getInt(MobileMetagenomics.LEVEL);
 		stringency = extras.getInt(MobileMetagenomics.STRINGENCY);
 		new DownloadResults().execute("String");
+		}
 		
 	}
 
@@ -293,8 +282,119 @@ public class ResultView extends Activity{
         case SHARE_ID:
             //doShare();
             return true;
+        case SAVE_ID:
+    		new SaveResults().execute("String");
+        	return true;
+        case LOAD_ID:
+        	Intent i = new Intent(ResultView.this, LoadFileChooser.class);
+        	startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILE);
+        	return true;
         }
         return super.onMenuItemSelected(featureId, item);
+	}
+	
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		// TODO: make sure this is correct! Test loading a different file after performing annotation.
+        super.onActivityResult(requestCode, resultCode, intent);
+        Bundle extras = intent.getExtras();
+        switch(requestCode) {
+        case MobileMetagenomics.ACTIVITY_CHOOSE_FILE:
+    		new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+        	break;
+        }
+    }
+	
+	
+	private class SaveResults extends AsyncTask<String, Integer, Integer> {
+		@Override
+    	protected void onPreExecute(){
+    		pd = ProgressDialog.show(ResultView.this, "Saving Results...", "Please wait (this may take a few moments)", true, false);
+    	}   	
+		@Override
+		protected Integer doInBackground(String... params) {
+			try {
+		    	  FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + fileName + ".mmr"));
+	             ObjectOutputStream oos =
+	                 new ObjectOutputStream(fos);
+	             oos.writeObject(keyArr);
+	             oos.flush();
+	             fos.close();
+	    	     return 1;
+	     }
+	     catch (Throwable e) {
+	             System.err.println("exception thrown");
+	             return -1;
+	     }
+		}   	
+		@Override
+        protected void onProgressUpdate(Integer... values) {
+			if(values[0] == 1){
+				pd.dismiss();
+			}
+			if(values[0] == -1){
+				pd.dismiss();
+				// TODO: popup toast that says save failed.
+			}
+        }
+		@Override
+        protected void onPostExecute(Integer value) {
+			if(value == 1){
+				pd.dismiss();
+			}
+			if(value == -1){
+				pd.dismiss();
+				// TODO: popup toast that says save failed.
+			}
+        }
+	}	
+	
+	private class LoadResults extends AsyncTask<String, Integer, Integer> {
+		@Override
+    	protected void onPreExecute(){
+    		pd = ProgressDialog.show(ResultView.this, "Loading Results...", "Please wait (this may take a few moments)", true, false);
+    	}	
+		@Override
+		protected Integer doInBackground(String... params) {
+			try {
+		    	  FileInputStream fis = new FileInputStream(new File("/sdcard/" + params[0]));
+		            ObjectInputStream ois =
+		                new ObjectInputStream(fis);
+		            keyArr = (Object[])ois.readObject();
+		            fis.close();
+		            return 1;
+		    }
+		    catch (Throwable e) {
+		            System.err.println("exception thrown");
+		            return -1;
+		             // TODO: Pop up a toast or something
+		    }
+		}    	
+		@Override
+        protected void onProgressUpdate(Integer... values) {
+			if(values[0] == 1){
+				pd.dismiss();
+			}
+			if(values[0] == -1){
+				pd.dismiss();
+				// TODO: popup toast that says save failed.
+			}
+        }
+		@Override
+        protected void onPostExecute(Integer value) {
+			if(value == 1){
+	        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+				pd.dismiss();
+			}
+			if(value == -1){
+				pd.dismiss();
+				// TODO: popup toast that says save failed.
+			}
+        }
+	}
+	
+	public void shareResults(){
+		
 	}
 	
     private class DownloadResults extends AsyncTask<String, Integer, Integer> {
@@ -319,7 +419,7 @@ public class ResultView extends Activity{
             	status++;
             	publishProgress(status);
         	}
-			return null;
+			return 1;
 		}
     	
 		@Override
