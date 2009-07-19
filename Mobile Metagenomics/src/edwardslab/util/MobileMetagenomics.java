@@ -65,7 +65,7 @@ public class MobileMetagenomics extends Activity{
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        menu.add(0, LOAD_ID, 0, R.string.load);
+        menu.add(0, LOAD_ID, 0, R.string.load).setIcon(android.R.drawable.ic_menu_set_as);
         return true;
     }
     

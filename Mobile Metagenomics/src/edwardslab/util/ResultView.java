@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -270,9 +271,9 @@ public class ResultView extends Activity{
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        menu.add(0, SHARE_ID, 0, R.string.share);
-        menu.add(0, SAVE_ID, 0, R.string.save);
-        menu.add(0, LOAD_ID, 0, R.string.load);
+        menu.add(0, SHARE_ID, 0, R.string.share).setIcon(android.R.drawable.ic_menu_share);
+        menu.add(0, SAVE_ID, 0, R.string.save).setIcon(android.R.drawable.ic_menu_save);
+        menu.add(0, LOAD_ID, 0, R.string.load).setIcon(android.R.drawable.ic_menu_set_as);
         return true;
     }
 	
@@ -280,7 +281,7 @@ public class ResultView extends Activity{
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch(item.getItemId()) {
         case SHARE_ID:
-            //doShare();
+            new shareResults().execute("String");
             return true;
         case SAVE_ID:
     		new SaveResults().execute("String");
@@ -393,9 +394,51 @@ public class ResultView extends Activity{
         }
 	}
 	
-	public void shareResults(){
-		
-	}
+	private class shareResults extends AsyncTask<String, Integer, Integer> {
+		@Override
+    	protected void onPreExecute(){
+    		pd = ProgressDialog.show(ResultView.this, "Saving Results...", "Please wait, your file will be sent shortly", true, false);
+    	}
+    	
+		@Override
+		protected Integer doInBackground(String... params) {
+			File saveFile = new File("/sdcard/" + fileName + ".mmr");
+			try {
+		    	  FileOutputStream fos = new FileOutputStream(saveFile);
+	             ObjectOutputStream oos =
+	                 new ObjectOutputStream(fos);
+	             oos.writeObject(keyArr);
+	             oos.flush();
+	             fos.close();
+	             publishProgress(1);
+	     }
+	     catch (Throwable e) {
+	             System.err.println("exception thrown");
+	             return -1;
+	     }
+			final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+			emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached are the results of the Mobile Metagenomics app on " + fileName);
+			emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Annotation Results: " + fileName);
+			emailIntent.setType("message/rfc822");
+			//emailIntent.setData(Uri.fromFile(saveFile));
+			emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(saveFile));
+			startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+			return 1;
+		}
+    	
+		@Override
+        protected void onProgressUpdate(Integer... values) {
+			// TODO: update PB
+			if(values[0] == 1){
+				pd.dismiss();
+			}
+        }
+
+		@Override
+        protected void onPostExecute(Integer value) {
+            // TODO: Conclude progress dialogues etc...
+        }
+	}	
 	
     private class DownloadResults extends AsyncTask<String, Integer, Integer> {
     	@Override
@@ -438,5 +481,5 @@ public class ResultView extends Activity{
         }
 
     }
+	}
 	
-}
