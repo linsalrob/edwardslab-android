@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  
+  	<EditText android:id="@+id/LoadFilename" 
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/fileHint">
+	</EditText>
+	<Button android:id="@+id/Browse" 
+		android:layout_toRightOf="@+id/LoadFilename" 
+		android:layout_width="wrap_content" 
+		android:text="@string/browse" 
+		android:layout_height="wrap_content">
+	</Button>
+  
+</RelativeLayout>
