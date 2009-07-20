@@ -1,7 +1,6 @@
 package edwardslab.util;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,7 +27,7 @@ public class MobileMetagenomics extends Activity{
 	Object[] keyArr;
 	Object[] valArr;
 	ListView resultListView;
-    private ProgressDialog pd;
+    //private ProgressDialog pd;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState){

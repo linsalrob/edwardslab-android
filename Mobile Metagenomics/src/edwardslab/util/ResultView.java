@@ -26,6 +26,7 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -43,6 +44,10 @@ public class ResultView extends Activity{
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
 	private static final int LOAD_ID = Menu.FIRST + 2;
+	static final int  ID_DIALOG_ANNOTATE = 0;
+	static final int  ID_DIALOG_LOAD=1;
+	static final int  ID_DIALOG_SAVE=2;
+	static final int  ID_DIALOG_SHARE=3;
 	String fileName;
 	int stringency;
 	int level;
@@ -306,12 +311,48 @@ public class ResultView extends Activity{
         }
     }
 	
+    @Override
+    protected Dialog onCreateDialog(int id) {
+	    if(id == ID_DIALOG_ANNOTATE){
+		    ProgressDialog loadingDialog = new ProgressDialog(this);
+		    loadingDialog.setTitle("Performing Annotation...");
+		    loadingDialog.setMessage("Please wait (this may take a few moments)");
+		    loadingDialog.setIndeterminate(true);
+		    loadingDialog.setCancelable(true);
+		    return loadingDialog;
+	    }
+	    else if(id == ID_DIALOG_LOAD){
+		    ProgressDialog loadingDialog = new ProgressDialog(this);
+		    loadingDialog.setTitle("Loading Results...");
+		    loadingDialog.setMessage("Please wait (this may take a few moments)");
+		    loadingDialog.setIndeterminate(true);
+		    loadingDialog.setCancelable(true);
+		    return loadingDialog;
+	    }
+	    else if(id == ID_DIALOG_SAVE){
+		    ProgressDialog loadingDialog = new ProgressDialog(this);
+		    loadingDialog.setTitle("Saving Results...");
+		    loadingDialog.setMessage("Please wait (this may take a few moments)");
+		    loadingDialog.setIndeterminate(true);
+		    loadingDialog.setCancelable(true);
+		    return loadingDialog;
+	    }
+	    else if(id == ID_DIALOG_SHARE){
+		    ProgressDialog loadingDialog = new ProgressDialog(this);
+		    loadingDialog.setTitle("Saving Results...");
+		    loadingDialog.setMessage("Please wait, your file will be sent shortly");
+		    loadingDialog.setIndeterminate(true);
+		    loadingDialog.setCancelable(true);
+		    return loadingDialog;
+	    }
+	    return super.onCreateDialog(id);
+    }
 	
 	private class SaveResults extends AsyncTask<String, Integer, Integer> {
 		@Override
     	protected void onPreExecute(){
-    		pd = ProgressDialog.show(ResultView.this, "Saving Results...", "Please wait (this may take a few moments)", true, false);
-    	}   	
+			showDialog(ID_DIALOG_SAVE);
+			}   	
 		@Override
 		protected Integer doInBackground(String... params) {
 			try {
@@ -331,20 +372,20 @@ public class ResultView extends Activity{
 		@Override
         protected void onProgressUpdate(Integer... values) {
 			if(values[0] == 1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_SAVE);
 			}
 			if(values[0] == -1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_SAVE);
 				// TODO: popup toast that says save failed.
 			}
         }
 		@Override
         protected void onPostExecute(Integer value) {
 			if(value == 1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_SAVE);
 			}
 			if(value == -1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_SAVE);
 				// TODO: popup toast that says save failed.
 			}
         }
@@ -353,7 +394,7 @@ public class ResultView extends Activity{
 	private class LoadResults extends AsyncTask<String, Integer, Integer> {
 		@Override
     	protected void onPreExecute(){
-    		pd = ProgressDialog.show(ResultView.this, "Loading Results...", "Please wait (this may take a few moments)", true, false);
+			showDialog(ID_DIALOG_LOAD);
     	}	
 		@Override
 		protected Integer doInBackground(String... params) {
@@ -374,10 +415,10 @@ public class ResultView extends Activity{
 		@Override
         protected void onProgressUpdate(Integer... values) {
 			if(values[0] == 1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_LOAD);
 			}
 			if(values[0] == -1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_LOAD);
 				// TODO: popup toast that says save failed.
 			}
         }
@@ -385,10 +426,10 @@ public class ResultView extends Activity{
         protected void onPostExecute(Integer value) {
 			if(value == 1){
 	        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
-				pd.dismiss();
+	        	dismissDialog(ID_DIALOG_LOAD);
 			}
 			if(value == -1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_LOAD);
 				// TODO: popup toast that says save failed.
 			}
         }
@@ -397,7 +438,7 @@ public class ResultView extends Activity{
 	private class shareResults extends AsyncTask<String, Integer, Integer> {
 		@Override
     	protected void onPreExecute(){
-    		pd = ProgressDialog.show(ResultView.this, "Saving Results...", "Please wait, your file will be sent shortly", true, false);
+			showDialog(ID_DIALOG_SHARE);
     	}
     	
 		@Override
@@ -430,7 +471,7 @@ public class ResultView extends Activity{
         protected void onProgressUpdate(Integer... values) {
 			// TODO: update PB
 			if(values[0] == 1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_SHARE);
 			}
         }
 
@@ -444,7 +485,7 @@ public class ResultView extends Activity{
     	@Override
     	protected void onPreExecute(){
     		// TODO: SETUP PB
-    		pd = ProgressDialog.show(ResultView.this, "Performing Annotation...", "Please wait (this may take a few moments)", true, false);
+			showDialog(ID_DIALOG_ANNOTATE);
     	}
     	
 		@Override
@@ -469,7 +510,7 @@ public class ResultView extends Activity{
         protected void onProgressUpdate(Integer... values) {
 			// TODO: update PB
 			if(values[0] == 1){
-				pd.dismiss();
+				dismissDialog(ID_DIALOG_ANNOTATE);
 			}
 			mDisplay.setText("Currently viewing pages 1 through " + values[0]);
         	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
