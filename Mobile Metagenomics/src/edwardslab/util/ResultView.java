@@ -35,8 +35,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class ResultView extends Activity{
@@ -60,11 +62,17 @@ public class ResultView extends Activity{
     Thread setupInitialResult;
 	Thread downloadRemainingResults;
     TextView mDisplay;
+    ProgressBar mBar = null;
+	int PROGRESS_MODIFIER;
     
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);	
+        requestWindowFeature(Window.FEATURE_PROGRESS);
 		setContentView(R.layout.resultview);
+        setProgressBarVisibility(false);
+        mBar = (ProgressBar) findViewById(R.id.placeholder);
+        setSecondaryProgress(0);
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		mDisplay = (TextView)findViewById(R.id.display);
 	    
@@ -85,6 +93,8 @@ public class ResultView extends Activity{
     	Hashtable tmpHash = JSONToHash(resString);
     	url = (String) tmpHash.get("url");
     	max = Integer.parseInt((String) tmpHash.get("max"));
+		PROGRESS_MODIFIER = 10000 / max;
+        mBar.setMax(max);
     	ArrayList<String> myList = new ArrayList<String>();
     	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
     }
@@ -469,7 +479,6 @@ public class ResultView extends Activity{
     	
 		@Override
         protected void onProgressUpdate(Integer... values) {
-			// TODO: update PB
 			if(values[0] == 1){
 				dismissDialog(ID_DIALOG_SHARE);
 			}
@@ -484,7 +493,7 @@ public class ResultView extends Activity{
     private class DownloadResults extends AsyncTask<String, Integer, Integer> {
     	@Override
     	protected void onPreExecute(){
-    		// TODO: SETUP PB
+            mBar.setVisibility(ProgressBar.GONE);
 			showDialog(ID_DIALOG_ANNOTATE);
     	}
     	
@@ -508,17 +517,19 @@ public class ResultView extends Activity{
     	
 		@Override
         protected void onProgressUpdate(Integer... values) {
-			// TODO: update PB
 			if(values[0] == 1){
 				dismissDialog(ID_DIALOG_ANNOTATE);
 			}
-			mDisplay.setText("Currently viewing pages 1 through " + values[0]);
+			mBar.setProgress(values[0]);
+            setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+            setTitle("Downloading segments: " + values[0] + "/" + max);
         	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
         }
 
 		@Override
         protected void onPostExecute(Integer value) {
             // TODO: Conclude progress dialogues etc...
+            setTitle("Annotation Results");
         }
 
     }
