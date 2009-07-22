@@ -75,7 +75,8 @@ public class ResultView extends Activity{
         setSecondaryProgress(0);
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		mDisplay = (TextView)findViewById(R.id.display);
-	    
+        mBar.setVisibility(ProgressBar.GONE);
+		
 		Bundle extras = getIntent().getExtras();
 		if(extras.containsKey(MobileMetagenomics.LOAD_FILE_NAME)){
 			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
@@ -493,7 +494,6 @@ public class ResultView extends Activity{
     private class DownloadResults extends AsyncTask<String, Integer, Integer> {
     	@Override
     	protected void onPreExecute(){
-            mBar.setVisibility(ProgressBar.GONE);
 			showDialog(ID_DIALOG_ANNOTATE);
     	}
     	
@@ -529,7 +529,7 @@ public class ResultView extends Activity{
 		@Override
         protected void onPostExecute(Integer value) {
             // TODO: Conclude progress dialogues etc...
-            setTitle("Annotation Results");
+            setProgress(10000);
         }
 
     }
