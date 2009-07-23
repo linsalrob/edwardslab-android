@@ -3,6 +3,7 @@ package edwardslab.util;
 //References: http://www.glenmccl.com/tip_030.htm for serializable code.
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -26,8 +27,10 @@ import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -51,6 +54,7 @@ public class ResultView extends Activity{
 	static final int  ID_DIALOG_SAVE=2;
 	static final int  ID_DIALOG_SHARE=3;
 	String fileName;
+	String shareMode;
 	int stringency;
 	int level;
 	Object[] keyArr;
@@ -297,6 +301,20 @@ public class ResultView extends Activity{
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch(item.getItemId()) {
         case SHARE_ID:
+			AlertDialog.Builder builder = new AlertDialog.Builder(ResultView.this);
+			builder.setMessage("Share as plain text or Android-viewable format?")
+			       .setCancelable(false)
+			       .setPositiveButton(".txt", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			                shareMode = "txt";
+			           }
+			       })
+			       .setNegativeButton(".mmr", new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			                shareMode = "mmr";
+			           }
+			       });
+			AlertDialog alert = builder.create();
             new shareResults().execute("String");
             return true;
         case SAVE_ID:
@@ -447,6 +465,7 @@ public class ResultView extends Activity{
 	}
 	
 	private class shareResults extends AsyncTask<String, Integer, Integer> {
+		
 		@Override
     	protected void onPreExecute(){
 			showDialog(ID_DIALOG_SHARE);
@@ -454,7 +473,9 @@ public class ResultView extends Activity{
     	
 		@Override
 		protected Integer doInBackground(String... params) {
-			File saveFile = new File("/sdcard/" + fileName + ".mmr");
+			File saveFile;
+			if(shareMode == "mmr"){
+			saveFile = new File("/sdcard/" + fileName + ".mmr");
 			try {
 		    	  FileOutputStream fos = new FileOutputStream(saveFile);
 	             ObjectOutputStream oos =
@@ -467,12 +488,15 @@ public class ResultView extends Activity{
 	     catch (Throwable e) {
 	             System.err.println("exception thrown");
 	             return -1;
-	     }
+	     }}
+			else{
+				writeFileOut();
+				saveFile = new File("/sdcard/" + fileName + ".txt");
+			}
 			final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
 			emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached are the results of the Mobile Metagenomics app on " + fileName);
 			emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Annotation Results: " + fileName);
 			emailIntent.setType("message/rfc822");
-			//emailIntent.setData(Uri.fromFile(saveFile));
 			emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(saveFile));
 			startActivity(Intent.createChooser(emailIntent, "Send mail..."));
 			return 1;
@@ -533,5 +557,22 @@ public class ResultView extends Activity{
         }
 
     }
-	}
+    
+    public void writeFileOut(){
+    	try{
+    	DataOutputStream dos = new DataOutputStream(
+    					new BufferedOutputStream(
+    					new FileOutputStream(
+    					new File("/sdcard/" + fileName + ".txt"))));
+        for(int i=0; i<keyArr.length; i++){
+        	dos.writeChars((String) keyArr[i] + "\n");
+        }
+        dos.flush();
+        dos.close();
+    	}
+    	catch (Throwable e) {
+            System.err.println("exception thrown");
+    	}
+    } 
+}
 	
