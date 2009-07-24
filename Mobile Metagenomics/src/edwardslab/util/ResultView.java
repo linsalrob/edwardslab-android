@@ -3,7 +3,6 @@ package edwardslab.util;
 //References: http://www.glenmccl.com/tip_030.htm for serializable code.
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -13,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -307,15 +307,17 @@ public class ResultView extends Activity{
 			       .setPositiveButton(".txt", new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			                shareMode = "txt";
+			                new shareResults().execute("String");
 			           }
 			       })
 			       .setNegativeButton(".mmr", new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			                shareMode = "mmr";
+			                new shareResults().execute("String");
 			           }
 			       });
 			AlertDialog alert = builder.create();
-            new shareResults().execute("String");
+			alert.show();
             return true;
         case SAVE_ID:
     		new SaveResults().execute("String");
@@ -560,15 +562,16 @@ public class ResultView extends Activity{
     
     public void writeFileOut(){
     	try{
-    	DataOutputStream dos = new DataOutputStream(
-    					new BufferedOutputStream(
-    					new FileOutputStream(
-    					new File("/sdcard/" + fileName + ".txt"))));
+    	//DataOutputStream dos = new DataOutputStream(
+    					//new BufferedOutputStream(
+    		 OutputStreamWriter osw = new OutputStreamWriter(	new FileOutputStream(
+    					new File("/sdcard/" + fileName + ".txt")));
         for(int i=0; i<keyArr.length; i++){
-        	dos.writeChars((String) keyArr[i] + "\n");
+        	osw.write((String) keyArr[i] + "\n\r");
+        	//osw.write();
         }
-        dos.flush();
-        dos.close();
+        osw.flush();
+        osw.close();
     	}
     	catch (Throwable e) {
             System.err.println("exception thrown");
