@@ -1,8 +1,12 @@
 package edwardslab.util;
 
+import org.openintents.intents.FileManagerIntents;
+
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,8 +17,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 public class MobileMetagenomics extends Activity{
+	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	static final int ACTIVITY_CHOOSE_FILE = 0;
 	private static final int LOAD_ID = Menu.FIRST;
 	static final String LOAD_FILE_NAME = "load file name";
@@ -59,6 +65,11 @@ public class MobileMetagenomics extends Activity{
         		levelSpinner.setSelection(0);
         	}
         });
+        browseButton.setOnClickListener(new OnClickListener(){
+        	public void onClick(View v) { 
+        		openFile();
+        	}
+        });       
     }
     
     @Override
@@ -87,6 +98,21 @@ public class MobileMetagenomics extends Activity{
         case ACTIVITY_CHOOSE_FILE:
     		loadResults(extras.getString(LOAD_FILE_NAME));
         	break;
+        case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:
+			if (resultCode == RESULT_OK && intent != null) {
+				// obtain the filename
+				String filename = intent.getDataString();
+				if (filename != null) {
+					// Get rid of URI prefix:
+					if (filename.startsWith("file://")) {
+						filename = filename.substring(7);
+					}
+					
+					fileName.setText(filename);
+				}				
+				
+			}
+			break;
         }
     }
     
@@ -96,4 +122,24 @@ public class MobileMetagenomics extends Activity{
 	        		startActivity(i);
 	}
 
+	
+    public void openFile() {
+		
+		Intent intent = new Intent(FileManagerIntents.ACTION_PICK_FILE);
+		
+		// Construct URI from file name.
+		intent.setData(Uri.parse("file://" + fileName));
+		
+		// Set fancy title and button (optional)
+//		intent.putExtra(FileManagerIntents.EXTRA_TITLE, getString(R.string.open_title));
+//		intent.putExtra(FileManagerIntents.EXTRA_BUTTON_TEXT, getString(R.string.open_button));
+		
+		try {
+			startActivityForResult(intent, REQUEST_CODE_PICK_FILE_OR_DIRECTORY);
+		} catch (ActivityNotFoundException e) {
+			// No compatible file manager was found.
+			Toast.makeText(this, R.string.no_filemanager_installed, 
+					Toast.LENGTH_SHORT).show();
+		}
+}
 }

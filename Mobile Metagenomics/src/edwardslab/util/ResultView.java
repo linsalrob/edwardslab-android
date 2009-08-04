@@ -49,6 +49,7 @@ public class ResultView extends Activity{
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
 	private static final int LOAD_ID = Menu.FIRST + 2;
+	private static boolean statusOk = true;
 	static final int  ID_DIALOG_ANNOTATE = 0;
 	static final int  ID_DIALOG_LOAD=1;
 	static final int  ID_DIALOG_SAVE=2;
@@ -95,67 +96,81 @@ public class ResultView extends Activity{
 	}
 
     private void setupAsync(String resString){
-    	Hashtable tmpHash = JSONToHash(resString);
-    	url = (String) tmpHash.get("url");
-    	max = Integer.parseInt((String) tmpHash.get("max"));
-		PROGRESS_MODIFIER = 10000 / max;
-        mBar.setMax(max);
-    	ArrayList<String> myList = new ArrayList<String>();
-    	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
+    	if(statusOk){
+	    	Hashtable tmpHash = JSONToHash(resString);
+	    	url = (String) tmpHash.get("url");
+	    	max = Integer.parseInt((String) tmpHash.get("max"));
+			PROGRESS_MODIFIER = 10000 / max;
+	        mBar.setMax(max);
+	    	ArrayList<String> myList = new ArrayList<String>();
+	    	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
+    	}
     }
 
     
     public Hashtable<String,String> JSONToHash(String myString){
-		//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
-		Hashtable<String,String> myHash = new Hashtable<String,String>();
-		try{// Take the stringified JSON Hash of Hashes and put it into our Hash
-        	JSONObject myObj = new JSONObject(myString);       	
-        	//myObj is null when an unknown search item was entered in second text box
-        	//If true, return empty hash table
-        	if(myObj != null) {
-        		Iterator<String> iter= myObj.keys();
-        		String myKey;
-        		String myVal;
-        		while(iter.hasNext()){
-        			//Parse myString and fill our hash from it, then connect it to our spinner
-        			myKey = (String) iter.next();
-        			myVal = myObj.get(myKey).toString();  
-        			myHash.put(myKey, myVal);
-        		}
-        	}
-        } catch (Exception E){
-        	Log.e("MobileMetagenomics", "JSON to Hash failed: " + E);
-        }
-        return myHash;
+    	if(statusOk){
+			//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
+			Hashtable<String,String> myHash = new Hashtable<String,String>();
+			try{// Take the stringified JSON Hash of Hashes and put it into our Hash
+	        	JSONObject myObj = new JSONObject(myString);       	
+	        	//myObj is null when an unknown search item was entered in second text box
+	        	//If true, return empty hash table
+	        	if(myObj != null) {
+	        		Iterator<String> iter= myObj.keys();
+	        		String myKey;
+	        		String myVal;
+	        		while(iter.hasNext()){
+	        			//Parse myString and fill our hash from it, then connect it to our spinner
+	        			myKey = (String) iter.next();
+	        			myVal = myObj.get(myKey).toString();  
+	        			myHash.put(myKey, myVal);
+	        		}
+	        	}
+	        } catch (Exception E){
+	        	Log.e("MobileMetagenomics", "JSON to Hash failed: " + E);
+	        	statusOk = false;
+	        }
+	        return myHash;
+    	}
+    	else{
+    		// Pop up a toast or something.
+    		return null;
+    	}
 	}
     
     public void loadList(Hashtable<String,String> myHash, ArrayList<String> myList){
-    	Object thisElem;
-    	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
-    		thisElem = e.nextElement();
-            myList.add(((String) thisElem) + " value: " + ((String) myHash.get(thisElem)));
-        }
-        keyArr = myList.toArray();
-        Arrays.sort(keyArr);
+    	if(statusOk){
+	    	Object thisElem;
+	    	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
+	    		thisElem = e.nextElement();
+	            myList.add(((String) thisElem) + " value: " + ((String) myHash.get(thisElem)));
+	        }
+	        keyArr = myList.toArray();
+	        Arrays.sort(keyArr);
+    	}
     }
     
     public void addToList(Hashtable<String,String> myHash, ArrayList<String> myList){
-    	Object thisElem;
-    	Object[] tmp = new Object[keyArr.length + myHash.size()];
-    	int i=keyArr.length;
-    	for(int j=0; j<keyArr.length; j++){
-    		tmp[j]=keyArr[j];
+    	if(statusOk){
+	    	Object thisElem;
+	    	Object[] tmp = new Object[keyArr.length + myHash.size()];
+	    	int i=keyArr.length;
+	    	for(int j=0; j<keyArr.length; j++){
+	    		tmp[j]=keyArr[j];
+	    	}
+	    	int q = 4;
+	    	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
+	    		thisElem = e.nextElement();
+	            tmp[i++] = ((String) thisElem) + " value: " + ((String) myHash.get(thisElem));
+	        }
+	        keyArr = tmp;
+	        Arrays.sort(keyArr);
     	}
-    	int q = 4;
-    	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
-    		thisElem = e.nextElement();
-            tmp[i++] = ((String) thisElem) + " value: " + ((String) myHash.get(thisElem));
-        }
-        keyArr = tmp;
-        Arrays.sort(keyArr);
     }
     
     public String makeWebRequest(String s){
+    	if(statusOk){
 		/* Will be filled and displayed later. */
         String myString = null;
         try {
@@ -181,13 +196,20 @@ public class ResultView extends Activity{
              myString = new String(baf.toByteArray());
         } catch (Exception e) {
              /* On any Error we want to display it. */
+        	statusOk = false;
              myString = e.getMessage();
         }
         return myString;
+    	}
+    	else{
+    		//pop up a toast or something
+    		return null;
+    	}
 	}
 
     private String doFileUpload(String ourFile, int level, int stringency){
-	  	  final String existingFileName = "/sdcard/" + ourFile;   	  
+    	if(statusOk){
+	  	  final String existingFileName = ourFile;   	  
     	  final String lineEnd = "\r\n";
     	  final String twoHyphens = "--";
     	  final String boundary =  "*****";
@@ -263,10 +285,12 @@ public class ResultView extends Activity{
     	  }
     	  catch (MalformedURLException ex)
     	  {
+    		  statusOk = false;
   		    Log.e("UploadFile", "error: " + ex.getMessage(), ex);
     	  }
     	  catch (IOException ioe)
     	  {
+    		  statusOk = false;
   		    Log.e("UploadFile", "error: " + ioe.getMessage(), ioe);
     	  }
 
@@ -283,9 +307,15 @@ public class ResultView extends Activity{
     	        inStream.close();
     	  }
     	  catch (IOException ioex){
+    		  statusOk = false;
     	       Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
     	  }
 	      return responseFromServer;
+    	}
+    	else{
+    		//pop up a toast or something
+    		return null;
+    	}
     	}
 	
 	@Override
@@ -397,6 +427,7 @@ public class ResultView extends Activity{
 	     }
 	     catch (Throwable e) {
 	             System.err.println("exception thrown");
+	             statusOk = false;
 	             return -1;
 	     }
 		}   	
@@ -430,7 +461,7 @@ public class ResultView extends Activity{
 		@Override
 		protected Integer doInBackground(String... params) {
 			try {
-		    	  FileInputStream fis = new FileInputStream(new File("/sdcard/" + params[0]));
+		    	  FileInputStream fis = new FileInputStream(new File(params[0]));
 		            ObjectInputStream ois =
 		                new ObjectInputStream(fis);
 		            keyArr = (Object[])ois.readObject();
@@ -439,6 +470,7 @@ public class ResultView extends Activity{
 		    }
 		    catch (Throwable e) {
 		            System.err.println("exception thrown");
+		            statusOk = false;
 		            return -1;
 		             // TODO: Pop up a toast or something
 		    }
@@ -489,6 +521,7 @@ public class ResultView extends Activity{
 	     }
 	     catch (Throwable e) {
 	             System.err.println("exception thrown");
+	             statusOk = false;
 	             return -1;
 	     }}
 			else{
@@ -575,6 +608,7 @@ public class ResultView extends Activity{
     	}
     	catch (Throwable e) {
             System.err.println("exception thrown");
+            statusOk = false;
     	}
     } 
 }
