@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,6 +39,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 
@@ -51,6 +53,10 @@ public class GenomeSearch extends Activity implements Runnable {
 	EditText edittext;
 	private ProgressDialog pd;
 	private String myResultString;
+	private boolean statusOk = true;
+    String getWebInfoErr = "Failed to connect to the SEED...";
+    String parseJsonErr = "We're sorry, there was an error parsing your results...";
+    String genSearchResultsErr = "Search did not generate any results...";
 	
 	public String getWebInfo(String s){
 		/* Will be filled and displayed later. */
@@ -79,13 +85,16 @@ public class GenomeSearch extends Activity implements Runnable {
         } catch (Exception e) {
              /* On any Error we want to display it. */
              myString = e.getMessage();
+             statusOk = false;
+             displayErrorToast(getWebInfoErr);
         }
         return myString;
 	}
 	
-	public void parseJSON(String myString){
+	public ArrayAdapter parseJson(String myString){
 		//This is a special parse method, specific to how I want the auto-complete box to have its data built.
 		//Note that I reverse the key-value pairs in this method, versus the straightforward method in JSONToHash!
+		if(statusOk){
 		 try{// Take the stringified JSON Hash of Hashes and put it into our Hash
 	        	JSONObject HoH = new JSONObject(myString);
 	        	JSONObject myObj = HoH.optJSONObject("result");
@@ -98,15 +107,21 @@ public class GenomeSearch extends Activity implements Runnable {
 	        		genome.put(myKey, myVal);
 	                myAA.add(myKey);            
 	        	}           
-	        	setUpAuto(myAA);
+	        	return(myAA);
 	            //TODO: Make this exception more meaningful? Or is it good enough?
 	        } catch (JSONException e){
-	        	result.setText("Error parsing JSON data in parseJSON. We should retry here, but currently don't!");
-	        }	
+	        	//Error parsing JSON data in parseJSON. We should retry here, but currently don't!
+	             displayErrorToast(parseJsonErr);
+	        	statusOk = false;
+	        	return null;
+	        }
+		}
+		return null;
 	}
 	
-	public Hashtable JSONToHash(String myString){
+	public Hashtable jsonToHash(String myString){
 		//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
+		if(statusOk){
 		Hashtable myHash = new Hashtable();
 		try{// Take the stringified JSON Hash of Hashes and put it into our Hash
         	JSONObject HoH = new JSONObject(myString);
@@ -125,15 +140,20 @@ public class GenomeSearch extends Activity implements Runnable {
         	}
             //TODO: Make this exception more meaningful? Or is it good enough?
         } catch (Exception E){
-        	result.setText("Error parsing JSON data in JSONToHash");
+        	//result.setText("Error parsing JSON data in JSONToHash");
+        	statusOk = false;
+            displayErrorToast(parseJsonErr);
         }	
-        return myHash;
+        return myHash;}
+		else return null;
 	}
 	
 	public String genSearchResults(Hashtable h){
+		if(statusOk){
 		String resString = "";
 		if(h.isEmpty()){
-			resString = "Invalid search result, please try again.";
+			displayErrorToast(genSearchResultsErr);
+			resString = "No search results, please try again.";
 		}
 		else{
 			Enumeration myEnum = h.keys();
@@ -144,11 +164,15 @@ public class GenomeSearch extends Activity implements Runnable {
 			}
 		}
 		return resString;
+		}
+		else return null;
 	}
 	
 	public void setUpAuto(ArrayAdapter aa){
+		if(statusOk){
 		autoComplete = (AutoCompleteTextView) findViewById(R.id.autoComplete);
 		autoComplete.setAdapter(aa);
+		}
 	}
 	
 	 /** Called when the activity is first created. */
@@ -194,7 +218,7 @@ public class GenomeSearch extends Activity implements Runnable {
 	        });
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
-        parseJSON(getWebInfo(queryUrl));
+        setUpAuto(parseJson(getWebInfo(queryUrl)));
     }
 
 	@Override
@@ -204,12 +228,19 @@ public class GenomeSearch extends Activity implements Runnable {
 		if(genome.containsKey(tmpString)){
 			String searchUrl = baseUrl + "/search_genome/" + genome.get(tmpString).toString() + 
 			"/" + edittext.getText().toString();
-			myResultString = genSearchResults(JSONToHash(getWebInfo(searchUrl)));
+			myResultString = genSearchResults(jsonToHash(getWebInfo(searchUrl)));
 		}
 		else
 			myResultString = "Invalid search term, please try again.";
 		handler.sendEmptyMessage(0);
 	}   
+	
+	private void displayErrorToast(String s){
+        Toast toast = new Toast(this);
+        toast.setText(s);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.show();
+	}
 	
 	private Handler handler = new Handler() {
 	        @Override
