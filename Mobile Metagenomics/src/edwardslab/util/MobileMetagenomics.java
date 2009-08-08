@@ -1,5 +1,7 @@
 package edwardslab.util;
 
+import java.io.File;
+
 import org.openintents.intents.FileManagerIntents;
 
 import android.app.Activity;
@@ -18,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
+import org.openintents.filemanager.util.FileUtils;
 
 public class MobileMetagenomics extends Activity{
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
@@ -38,6 +41,7 @@ public class MobileMetagenomics extends Activity{
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        
         setContentView(R.layout.main);
         
         //Initialize UI from xml
@@ -69,7 +73,17 @@ public class MobileMetagenomics extends Activity{
         	public void onClick(View v) { 
         		openFile();
         	}
-        });       
+        }); 
+
+       // if((getIntent().getType() != null) && (getIntent().getData() != null)){
+        if(getIntent().getData() != null){
+
+        	Uri tmpName = getIntent().getData();
+        	fileName.setText(FileUtils.getFile(tmpName).getName());
+        }
+        else{
+        	 Toast.makeText(this, "Data was Null!", Toast.LENGTH_LONG).show();
+        }
     }
     
     @Override
@@ -110,7 +124,6 @@ public class MobileMetagenomics extends Activity{
 					
 					fileName.setText(filename);
 				}				
-				
 			}
 			break;
         }
