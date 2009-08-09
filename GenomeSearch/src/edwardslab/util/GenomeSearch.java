@@ -255,22 +255,24 @@ public class GenomeSearch extends Activity implements Runnable {
 	}   
 	
 	private void noConnectionDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    	builder.setMessage("No internet connection...")
-    	       .setCancelable(false)
-    	       .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
-    	           public void onClick(DialogInterface dialog, int id) {
-    	        	   	noConnectionDialog();
-    		        	dialog.cancel();
-    	           }
-    	       })
-    	       .setNegativeButton("Quit", new DialogInterface.OnClickListener() {
-    	           public void onClick(DialogInterface dialog, int id) {
-    	                finish();
-    	           }
-    	       });
-    	AlertDialog alert = builder.create();
-    	alert.show();
+		if(!isConnectionOk()){
+	        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	    	builder.setMessage("No internet connection...")
+	    	       .setCancelable(false)
+	    	       .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	        	   	noConnectionDialog();
+	    		        	dialog.cancel();
+	    	           }
+	    	       })
+	    	       .setNegativeButton("Quit", new DialogInterface.OnClickListener() {
+	    	           public void onClick(DialogInterface dialog, int id) {
+	    	                finish();
+	    	           }
+	    	       });
+	    	AlertDialog alert = builder.create();
+	    	alert.show();
+		}
 	}
 	
 	private void displayErrorToast(String s){
