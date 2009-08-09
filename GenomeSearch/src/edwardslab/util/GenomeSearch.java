@@ -22,9 +22,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.res.Resources;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -57,6 +60,7 @@ public class GenomeSearch extends Activity implements Runnable {
     String getWebInfoErr = "Failed to connect to the SEED...";
     String parseJsonErr = "We're sorry, there was an error parsing your results...";
     String genSearchResultsErr = "Search did not generate any results...";
+    String appFailedWith;
 	
 	public String getWebInfo(String s){
 		/* Will be filled and displayed later. */
@@ -86,7 +90,8 @@ public class GenomeSearch extends Activity implements Runnable {
              /* On any Error we want to display it. */
              myString = e.getMessage();
              statusOk = false;
-             displayErrorToast(getWebInfoErr);
+             //displayErrorToast(getWebInfoErr);
+             appFailedWith = getWebInfoErr;
         }
         return myString;
 	}
@@ -111,8 +116,9 @@ public class GenomeSearch extends Activity implements Runnable {
 	            //TODO: Make this exception more meaningful? Or is it good enough?
 	        } catch (JSONException e){
 	        	//Error parsing JSON data in parseJSON. We should retry here, but currently don't!
-	             displayErrorToast(parseJsonErr);
+	             //displayErrorToast(parseJsonErr);
 	        	statusOk = false;
+	        	appFailedWith = parseJsonErr;
 	        	return null;
 	        }
 		}
@@ -142,7 +148,8 @@ public class GenomeSearch extends Activity implements Runnable {
         } catch (Exception E){
         	//result.setText("Error parsing JSON data in JSONToHash");
         	statusOk = false;
-            displayErrorToast(parseJsonErr);
+            //displayErrorToast(parseJsonErr);
+        	appFailedWith = parseJsonErr;
         }	
         return myHash;}
 		else return null;
@@ -152,7 +159,9 @@ public class GenomeSearch extends Activity implements Runnable {
 		if(statusOk){
 		String resString = "";
 		if(h.isEmpty()){
-			displayErrorToast(genSearchResultsErr);
+			statusOk = false;
+			//displayErrorToast(genSearchResultsErr);
+			appFailedWith = genSearchResultsErr;
 			resString = "No search results, please try again.";
 		}
 		else{
@@ -193,9 +202,14 @@ public class GenomeSearch extends Activity implements Runnable {
 	        		//This if check ensures we don't crash if the user hasn't entered any text.
 	        		if(autoComplete.length() > 0 && edittext.length() > 0){
 	        			inputManager.hideSoftInputFromWindow(edittext.getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS); 
-	        			pd = ProgressDialog.show(GenomeSearch.this, "Performing Search...", "Please wait (this may take a few moments)", true, false);
-	        			Thread thread = new Thread(GenomeSearch.this);
-	        			thread.start();
+	        			if(isConnectionOk()){
+	        				pd = ProgressDialog.show(GenomeSearch.this, "Performing Search...", "Please wait (this may take a few moments)", true, false);
+		        			Thread thread = new Thread(GenomeSearch.this);
+		        			thread.start();
+	        	        }
+	        	        else{
+	        	        	noConnectionDialog();
+	        	        }	        			
 	        		}
 	        	}
 	        });
@@ -218,7 +232,12 @@ public class GenomeSearch extends Activity implements Runnable {
 	        });
 	//Populate User Interface Elements
 	    //Pull JSON file from the seed, parse it, call setUpSpinner method
-        setUpAuto(parseJson(getWebInfo(queryUrl)));
+	        if(isConnectionOk()){
+	        	setUpAuto(parseJson(getWebInfo(queryUrl)));
+	        }
+	        else{
+	        	noConnectionDialog();
+	        }
     }
 
 	@Override
@@ -235,11 +254,41 @@ public class GenomeSearch extends Activity implements Runnable {
 		handler.sendEmptyMessage(0);
 	}   
 	
+	private void noConnectionDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setMessage("No internet connection...")
+    	       .setCancelable(false)
+    	       .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+    	           public void onClick(DialogInterface dialog, int id) {
+    	        	   	noConnectionDialog();
+    		        	dialog.cancel();
+    	           }
+    	       })
+    	       .setNegativeButton("Quit", new DialogInterface.OnClickListener() {
+    	           public void onClick(DialogInterface dialog, int id) {
+    	                finish();
+    	           }
+    	       });
+    	AlertDialog alert = builder.create();
+    	alert.show();
+	}
+	
 	private void displayErrorToast(String s){
         Toast toast = new Toast(this);
         toast.setText(s);
         toast.setDuration(Toast.LENGTH_LONG);
         toast.show();
+	}
+	
+	private boolean isConnectionOk(){
+		 ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+		    if (cm.getNetworkInfo(cm.TYPE_MOBILE).isConnected() || 
+		         cm.getNetworkInfo(cm.TYPE_WIFI).isConnected()){
+		    	return true;
+		    }
+		    else{
+		       return false;
+		    }
 	}
 	
 	private Handler handler = new Handler() {

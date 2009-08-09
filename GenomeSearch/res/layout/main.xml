@@ -7,14 +7,14 @@
     
     <AutoCompleteTextView android:id="@+id/autoComplete"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50sp"
         android:prompt="@string/genomeList"
     android:hint="Enter genome to search"/>
 
 	<EditText
         android:id="@+id/entry"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50sp"
         android:background="@android:drawable/editbox_background"
         android:layout_below="@id/autoComplete" android:hint="Enter a search term"/>
         <!-- used to be: android:layout_below="@id/spinner"-->
