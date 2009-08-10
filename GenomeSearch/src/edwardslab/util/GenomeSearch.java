@@ -297,8 +297,13 @@ public class GenomeSearch extends Activity implements Runnable {
 	        @Override
 	        public void handleMessage(Message msg) {
 	            pd.dismiss();
-	    		result.setText(Html.fromHtml(myResultString));
-	    		result.setMovementMethod(LinkMovementMethod.getInstance());
+	            if(myResultString != null && myResultString != ""){
+		    		result.setText(Html.fromHtml(myResultString));
+		    		result.setMovementMethod(LinkMovementMethod.getInstance());
+	            }
+	            else{
+	            	result.setText("Invalid search term, please try again.");
+	            }
 	        }
 	    };
 }
