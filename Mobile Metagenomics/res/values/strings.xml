@@ -11,5 +11,5 @@
     <string name="share">Share</string>
     <string name="save">Save Results</string>
     <string name="load">Load Results</string>
-    <string name="no_filemanager_installed">No File Manager is Installed!</string>
+    <string name="no_filemanager_installed">No File Manager installed; install one, or type in file name to annotate.</string>
 </resources>

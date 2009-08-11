@@ -76,14 +76,14 @@ public class MobileMetagenomics extends Activity{
         }); 
 
        // if((getIntent().getType() != null) && (getIntent().getData() != null)){
-        if(getIntent().getData() != null){
+        /*if(getIntent().getData() != null){
 
         	Uri tmpName = getIntent().getData();
         	fileName.setText(FileUtils.getFile(tmpName).getName());
         }
         else{
         	 Toast.makeText(this, "Data was Null!", Toast.LENGTH_LONG).show();
-        }
+        }*/
     }
     
     @Override

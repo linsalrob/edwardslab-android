@@ -43,6 +43,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ResultView extends Activity{
 
@@ -56,8 +57,8 @@ public class ResultView extends Activity{
 	static final int  ID_DIALOG_SHARE=3;
 	String fileName;
 	String shareMode;
-	int stringency;
-	int level;
+	int stringency = -1;
+	int level = -1;
 	Object[] keyArr;
 	ListView resultListView;
 	ArrayList<String> myList;
@@ -90,20 +91,37 @@ public class ResultView extends Activity{
 		fileName = extras.getString(MobileMetagenomics.FILE_NAME);
 		level = extras.getInt(MobileMetagenomics.LEVEL);
 		stringency = extras.getInt(MobileMetagenomics.STRINGENCY);
-		new DownloadResults().execute("String");
-		}
 		
+			if((fileName == null) || (level == -1) || (stringency == -1) || (fileName.equals(""))){
+				 Toast.makeText(this, "Invalid parameters, please try again.", Toast.LENGTH_LONG).show();
+				 finish();
+			}
+			else{
+				new DownloadResults().execute("String");
+			}	
+		}
 	}
 
     private void setupAsync(String resString){
     	if(statusOk){
 	    	Hashtable tmpHash = JSONToHash(resString);
-	    	url = (String) tmpHash.get("url");
-	    	max = Integer.parseInt((String) tmpHash.get("max"));
-			PROGRESS_MODIFIER = 10000 / max;
-	        mBar.setMax(max);
-	    	ArrayList<String> myList = new ArrayList<String>();
-	    	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
+	    	if(tmpHash != null){
+		    	url = (String) tmpHash.get("url");
+		    	String tmpMax = (String) tmpHash.get("max");
+	    		if(url != null && tmpMax != null){
+	    	    	max = Integer.parseInt(tmpMax);
+	    			PROGRESS_MODIFIER = 10000 / max;
+	    	        mBar.setMax(max);
+	    	    	ArrayList<String> myList = new ArrayList<String>();
+	    	    	loadList(JSONToHash((makeWebRequest((String) url + 1))), myList);
+	    		}
+	    		else{
+	    			statusOk = false;
+	    		}
+	    	}
+	    	else{
+	    		statusOk = false;
+	    	}
     	}
     }
 
@@ -558,19 +576,25 @@ public class ResultView extends Activity{
     	
 		@Override
 		protected Integer doInBackground(String... params) {
-			// TODO: do meaningful work and update
 			Integer status = 0;
 			setupAsync(doFileUpload(fileName.toString(),
         			level,
         			stringency));
-			status++;
-			publishProgress(status);			
-			//Do remaining blocks.
-			for(int i=2; i<=max; i++){
-            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
-            	status++;
-            	publishProgress(status);
-        	}
+			if(statusOk){
+				status++;
+				publishProgress(status);			
+				//Do remaining blocks.
+				for(int i=2; i<=max; i++){
+	            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+	            	status++;
+	            	publishProgress(status);
+	        	}
+			}
+			else{
+				dismissDialog(ID_DIALOG_ANNOTATE);
+				//publish an error!
+				return(-1);
+			}
 			return 1;
 		}
     	
@@ -582,13 +606,18 @@ public class ResultView extends Activity{
 			mBar.setProgress(values[0]);
             setProgress(PROGRESS_MODIFIER * mBar.getProgress());
             setTitle("Downloading segments: " + values[0] + "/" + max);
-        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+        	 resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
         }
 
 		@Override
         protected void onPostExecute(Integer value) {
-            // TODO: Conclude progress dialogues etc...
-            setProgress(10000);
+			if(value == 1){
+				setProgress(10000);
+			}
+			else if(value == -1){
+	    		Toast.makeText(ResultView.this, "Error: Server down or incorrect filetype", Toast.LENGTH_LONG).show();
+	    		finish();
+			}
         }
 
     }
