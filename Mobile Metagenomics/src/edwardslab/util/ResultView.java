@@ -64,7 +64,7 @@ public class ResultView extends Activity{
 	ArrayList<String> myList;
 	int max;
 	int downloadIterationValue;
-	String url;
+	String url, onResumeAction;
     private ProgressDialog pd;
     Thread setupInitialResult;
 	Thread downloadRemainingResults;
@@ -98,6 +98,7 @@ public class ResultView extends Activity{
 				 finish();
 			}
 			else{
+				onResumeAction = "initialDownloadResults";
 				new DownloadResults().execute("String");
 			}	
 		}
@@ -108,11 +109,26 @@ public class ResultView extends Activity{
 		super.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putInt("max", max);
 		savedInstanceState.putString("url", url);
+		savedInstanceState.putString("onResumeAction", onResumeAction);
+		savedInstanceState.putInt("downloadIterationValue", downloadIterationValue);
+		savedInstanceState.putStringArray("keyArr", (String[]) keyArr);
 	}
 	
 	@Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
       super.onRestoreInstanceState(savedInstanceState);
+      max = savedInstanceState.getInt("max");
+      downloadIterationValue = savedInstanceState.getInt("downloadIterationValue");
+      url = savedInstanceState.getString("url");
+      onResumeAction = savedInstanceState.getString("onResumeAction");
+      keyArr = savedInstanceState.getStringArray("keyArr");
+      if(onResumeAction == "continueDownloadResults"){
+    	  resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+    	  new DownloadResults().execute("String");
+      }
+      else if(onResumeAction == "initialDownloadResults"){
+    	  new DownloadResults().execute("String");
+      }
 	}
 	
     private void setupAsync(String resString){
@@ -584,32 +600,53 @@ public class ResultView extends Activity{
     private class DownloadResults extends AsyncTask<String, Integer, Integer> {
     	@Override
     	protected void onPreExecute(){
-			showDialog(ID_DIALOG_ANNOTATE);
+    		if(onResumeAction == "initialDownloadResults"){
+    			showDialog(ID_DIALOG_ANNOTATE);
+    		}
     	}
     	
 		@Override
 		protected Integer doInBackground(String... params) {
-			Integer status = 0;
-			setupAsync(doFileUpload(fileName.toString(),
-        			level,
-        			stringency));
-			if(statusOk){
-				status++;
-				publishProgress(status);			
-				//Do remaining blocks.
-				for(int i=2; i<=max; i++){
-	            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
-	            	status++;
+			Integer status;
+			if(onResumeAction == "initialDownloadResults"){
+				status = 0;
+				setupAsync(doFileUpload(fileName.toString(),
+	        			level,
+	        			stringency));
+				if(statusOk){
+					status++;
+					publishProgress(status);			
+					//Do remaining blocks.
+					onResumeAction = "continueDownloadResults";
+					for(int i=2; i<=max; i++){
+						status++;
+		            	downloadIterationValue = i;
+		            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);            	
+		            	publishProgress(status);
+		        	}
+				}
+				else{
+					dismissDialog(ID_DIALOG_ANNOTATE);
+					//publish an error!
+					return(-1);
+				}
+				return 1;
+			}
+			else if(onResumeAction == "continueDownloadResults"){
+				status = downloadIterationValue-2;
+				for(int i=downloadIterationValue; i<=max; i++){
+					status++;
+					//Need this on all passes except the first one...
 	            	downloadIterationValue = i;
+	            	//TODO: make sure that addToList doesn't do anything crazy if it gets interrupted!
+	            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);            	
 	            	publishProgress(status);
-	        	}
+				}
+				return 1;
 			}
 			else{
-				dismissDialog(ID_DIALOG_ANNOTATE);
-				//publish an error!
-				return(-1);
+				return -1;
 			}
-			return 1;
 		}
     	
 		@Override
@@ -620,7 +657,7 @@ public class ResultView extends Activity{
 			mBar.setProgress(values[0]);
             setProgress(PROGRESS_MODIFIER * mBar.getProgress());
             setTitle("Downloading segments: " + values[0] + "/" + max);
-        	 resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
         }
 
 		@Override
