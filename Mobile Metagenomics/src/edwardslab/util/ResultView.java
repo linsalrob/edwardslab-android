@@ -63,6 +63,7 @@ public class ResultView extends Activity{
 	ListView resultListView;
 	ArrayList<String> myList;
 	int max;
+	int downloadIterationValue;
 	String url;
     private ProgressDialog pd;
     Thread setupInitialResult;
@@ -102,6 +103,18 @@ public class ResultView extends Activity{
 		}
 	}
 
+	@Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+		super.onSaveInstanceState(savedInstanceState);
+		savedInstanceState.putInt("max", max);
+		savedInstanceState.putString("url", url);
+	}
+	
+	@Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+      super.onRestoreInstanceState(savedInstanceState);
+	}
+	
     private void setupAsync(String resString){
     	if(statusOk){
 	    	Hashtable tmpHash = JSONToHash(resString);
@@ -587,6 +600,7 @@ public class ResultView extends Activity{
 				for(int i=2; i<=max; i++){
 	            	addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
 	            	status++;
+	            	downloadIterationValue = i;
 	            	publishProgress(status);
 	        	}
 			}
