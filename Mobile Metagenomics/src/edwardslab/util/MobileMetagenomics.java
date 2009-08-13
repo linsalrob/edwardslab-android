@@ -141,7 +141,7 @@ public class MobileMetagenomics extends Activity{
 		Intent intent = new Intent(FileManagerIntents.ACTION_PICK_FILE);
 		
 		// Construct URI from file name.
-		intent.setData(Uri.parse("file://" + fileName));
+		//intent.setData(Uri.parse("file://" + fileName));
 		
 		// Set fancy title and button (optional)
 //		intent.putExtra(FileManagerIntents.EXTRA_TITLE, getString(R.string.open_title));
