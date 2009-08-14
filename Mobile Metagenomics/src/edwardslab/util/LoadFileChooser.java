@@ -54,23 +54,25 @@ public class LoadFileChooser extends Activity {
 	@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        Bundle extras = intent.getExtras();
-        switch(requestCode) {
-        case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:
-			if (resultCode == RESULT_OK && intent != null) {
-				// obtain the filename
-				fileName = intent.getDataString();
-				if (fileName != null) {
-					// Get rid of URI prefix:
-					if (fileName.startsWith("file://")) {
-						fileName = fileName.substring(7);
-					}
+        if(intent != null){
+	        Bundle extras = intent.getExtras();
+	        switch(requestCode) {
+	        case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:
+				if (resultCode == RESULT_OK && intent != null) {
+					// obtain the filename
+					fileName = intent.getDataString();
+					if (fileName != null) {
+						// Get rid of URI prefix:
+						if (fileName.startsWith("file://")) {
+							fileName = fileName.substring(7);
+						}
+						
+						loadFileName.setText(fileName);
+					}				
 					
-					loadFileName.setText(fileName);
-				}				
-				
-			}
-			break;
+				}
+				break;
+	        }
         }
     }
 	

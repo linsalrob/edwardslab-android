@@ -107,25 +107,27 @@ public class MobileMetagenomics extends Activity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-        Bundle extras = intent.getExtras();
-        switch(requestCode) {
-        case ACTIVITY_CHOOSE_FILE:
-    		loadResults(extras.getString(LOAD_FILE_NAME));
-        	break;
-        case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:
-			if (resultCode == RESULT_OK && intent != null) {
-				// obtain the filename
-				String filename = intent.getDataString();
-				if (filename != null) {
-					// Get rid of URI prefix:
-					if (filename.startsWith("file://")) {
-						filename = filename.substring(7);
-					}
-					
-					fileName.setText(filename);
-				}				
-			}
-			break;
+        if(intent != null){
+	        Bundle extras = intent.getExtras();
+	        switch(requestCode) {
+	        case ACTIVITY_CHOOSE_FILE:
+	    		loadResults(extras.getString(LOAD_FILE_NAME));
+	        	break;
+	        case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:
+				if (resultCode == RESULT_OK && intent != null) {
+					// obtain the filename
+					String filename = intent.getDataString();
+					if (filename != null) {
+						// Get rid of URI prefix:
+						if (filename.startsWith("file://")) {
+							filename = filename.substring(7);
+						}
+						
+						fileName.setText(filename);
+					}				
+				}
+				break;
+	        }
         }
     }
     
@@ -141,7 +143,7 @@ public class MobileMetagenomics extends Activity{
 		Intent intent = new Intent(FileManagerIntents.ACTION_PICK_FILE);
 		
 		// Construct URI from file name.
-		//intent.setData(Uri.parse("file://" + fileName));
+		intent.setData(Uri.parse("file://" + fileName));
 		
 		// Set fancy title and button (optional)
 //		intent.putExtra(FileManagerIntents.EXTRA_TITLE, getString(R.string.open_title));
