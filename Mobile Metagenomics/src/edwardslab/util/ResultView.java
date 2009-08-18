@@ -206,7 +206,6 @@ public class ResultView extends Activity{
 	    	for(int j=0; j<keyArr.length; j++){
 	    		tmp[j]=keyArr[j];
 	    	}
-	    	int q = 4;
 	    	for (Enumeration<String> e = myHash.keys(); e.hasMoreElements();) {
 	    		thisElem = e.nextElement();
 	            tmp[i++] = ((String) thisElem) + " value: " + ((String) myHash.get(thisElem));
