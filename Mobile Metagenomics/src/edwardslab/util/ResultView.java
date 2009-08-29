@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
@@ -32,20 +33,21 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ResultView extends Activity{
+public class ResultView extends Activity implements TaskListener<MaxAndResults>{
 
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
@@ -72,9 +74,119 @@ public class ResultView extends Activity{
     ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
     
+	private static final int TASK1 = 0;  
+	  
+    private static final int TASK2 = 1;  
+  
+    private Task<MaxAndResults> task1, task2;  
+  
+    private Callable<MaxAndResults> callable1 = new Callable<MaxAndResults>() {  
+ 
+       public MaxAndResults call() throws Exception {	  
+			Hashtable tmpHash = setupAsync(doFileUpload( "sdcard/51.hits.fa", 0,1));
+	    	   if(tmpHash != null){
+	    		   String tmpUrl = (String) tmpHash.get("url");
+	    		   String tmpMax = (String) tmpHash.get("max");
+	    		   Log.e("Concurrency","Completed setupAsync, launching for-loop.");
+	    		   max = Integer.parseInt(tmpMax);
+	    		   url = tmpUrl;
+	        	   task2.run(ResultView.this, callable2);
+	    		   return new MaxAndResults(tmpUrl, Integer.parseInt(tmpMax), keyArr);
+	    	   }
+	    	   else{
+	   				Log.e("Concurrency","Failed setupAsync, tmpHash was null!.");
+	   				return null;
+	    	   }
+       };  
+    };  
+ 
+   private Callable<MaxAndResults> callable2 = new Callable<MaxAndResults>() {  
+ 
+       public MaxAndResults call() throws Exception {  
+    	   for(int i=2; i<=max; i++){
+           		addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+    	   }
+    	   Log.e("Concurrency","Completed addToList for-loop.");
+          return new MaxAndResults(url, max, keyArr);  
+       };  
+   };  
+	
+   @Override  
+   protected void onPause() {  
+       super.onPause();  
+       task1.unregisterCallback();  
+       task2.unregisterCallback();  
+   }  
+ 
+   @Override  
+   protected void onResume() {  
+       super.onResume();  
+
+       task1 = Task.getOrCreate(this, TASK1);  
+       task2 = Task.getOrCreate(this, TASK2);  
+ 
+       switch (task1.state()) {  
+       case NOT_STARTED:  
+           task1.run(this, callable1);  
+          break;  
+       case RUNNING:  
+           System.out.println("task1 still running");  
+           break;  
+       case COMPLETED:  
+			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
+			switch(task2.state()){
+			case RUNNING:
+				System.out.println("task2 still running"); 
+				break;
+			case COMPLETED:
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
+				MobileMetagenomics.launchResultView = false;
+			}
+           break;  
+       } 
+ 
+   }  
+ 
+   @Override  
+   public void onTaskFinished(Task<MaxAndResults> task) {
+       if (task.failed()) {  
+           System.err.println("task" + task.getTaskId() + " failed. Reason: "  
+                   + task.getError().getMessage());  
+       } else {
+    	   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult().arr));
+    	   max = task.getResult().max;
+    	   url = task.getResult().url; 
+       }
+       MobileMetagenomics.launchResultView = false;
+       boolean x = MobileMetagenomics.launchResultView;
+       boolean breakpoint = x;
+   }  
+ 
+   @Override
+   protected void onStop(){
+   	super.onStop();
+   	SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
+	    SharedPreferences.Editor editor = settings.edit();
+   	editor.putBoolean("launchResultView", MobileMetagenomics.launchResultView);
+	    editor.commit();
+   }
+   
+   @Override  
+   public boolean onKeyDown(int keyCode, KeyEvent event) {  
+ 
+       if (keyCode == KeyEvent.KEYCODE_BACK) {  
+          Task.cancelAll(this);  
+      }  
+
+      return super.onKeyDown(keyCode, event);  
+  } 
+   
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
+		setContentView(R.layout.resultview);
+		resultListView = (ListView)findViewById(R.id.ResultsListView);
+		/*
         requestWindowFeature(Window.FEATURE_PROGRESS);
 		setContentView(R.layout.resultview);
         setProgressBarVisibility(false);
@@ -101,9 +213,10 @@ public class ResultView extends Activity{
 				onResumeAction = "initialDownloadResults";
 				new DownloadResults().execute("String");
 			}	
-		}
+		}*/
 	}
-
+	
+/*
 	@Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
 		super.onSaveInstanceState(savedInstanceState);
@@ -130,7 +243,9 @@ public class ResultView extends Activity{
     	  new DownloadResults().execute("String");
       }
 	}
+	*/
 	
+	/*
     private void setupAsync(String resString){
     	if(statusOk){
 	    	Hashtable tmpHash = JSONToHash(resString);
@@ -152,7 +267,20 @@ public class ResultView extends Activity{
 	    		statusOk = false;
 	    	}
     	}
-    }
+    }*/
+	
+	   private Hashtable setupAsync(String resString){
+		   	Hashtable tmpHash = JSONToHash(resString);
+		   	if(tmpHash != null){
+		   			String tmpUrl = (String) tmpHash.get("url");
+			    	String tmpMax = (String) tmpHash.get("max");
+		   		if(tmpUrl != null && tmpMax != null){
+		   	    	ArrayList<String> myList = new ArrayList<String>();
+		   	    	loadList(JSONToHash((makeWebRequest((String) tmpUrl + 1))), myList);
+		   		}
+		   	}
+		   	return tmpHash;
+		}
 
     
     public Hashtable<String,String> JSONToHash(String myString){
@@ -216,6 +344,7 @@ public class ResultView extends Activity{
     }
     
     public String makeWebRequest(String s){
+    	 Log.e("makeWebRequest","Performing " + s);
     	if(statusOk){
 		/* Will be filled and displayed later. */
         String myString = null;
@@ -663,6 +792,7 @@ public class ResultView extends Activity{
         protected void onPostExecute(Integer value) {
 			if(value == 1){
 				setProgress(10000);
+				MobileMetagenomics.launchResultView = false;
 			}
 			else if(value == -1){
 	    		Toast.makeText(ResultView.this, "Error: Server down or incorrect filetype", Toast.LENGTH_LONG).show();
@@ -674,13 +804,10 @@ public class ResultView extends Activity{
     
     public void writeFileOut(){
     	try{
-    	//DataOutputStream dos = new DataOutputStream(
-    					//new BufferedOutputStream(
     		 OutputStreamWriter osw = new OutputStreamWriter(	new FileOutputStream(
     					new File("/sdcard/" + fileName + ".txt")));
         for(int i=0; i<keyArr.length; i++){
         	osw.write((String) keyArr[i] + "\n\r");
-        	//osw.write();
         }
         osw.flush();
         osw.close();

@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import org.openintents.filemanager.util.FileUtils;
 
 public class MobileMetagenomics extends Activity{
+	public static final String PREFS_NAME = "MmPrefs";
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	static final int ACTIVITY_CHOOSE_FILE = 0;
 	private static final int LOAD_ID = Menu.FIRST;
@@ -30,6 +32,7 @@ public class MobileMetagenomics extends Activity{
 	static final String FILE_NAME = "filename";
 	static final String LEVEL = "level";
 	static final String STRINGENCY = "stringency";
+	public static boolean launchResultView;
 	EditText fileName;
 	Spinner stringencySpinner;
 	Spinner levelSpinner;
@@ -41,7 +44,12 @@ public class MobileMetagenomics extends Activity{
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        launchResultView = settings.getBoolean("launchResultView", false);
+        if(launchResultView){
+        	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+    		startActivity(i);
+        }
         setContentView(R.layout.main);
         
         //Initialize UI from xml
@@ -59,6 +67,7 @@ public class MobileMetagenomics extends Activity{
         		i.putExtra(FILE_NAME, fileName.getText().toString());
         		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition());
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
+        		launchResultView = true;
         		startActivity(i);
         	}
         });       
@@ -91,6 +100,15 @@ public class MobileMetagenomics extends Activity{
         super.onCreateOptionsMenu(menu);
         menu.add(0, LOAD_ID, 0, R.string.load).setIcon(android.R.drawable.ic_menu_set_as);
         return true;
+    }
+    
+    @Override
+    protected void onStop(){
+    	super.onStop();
+    	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	    SharedPreferences.Editor editor = settings.edit();
+    	editor.putBoolean("launchResultView", launchResultView);
+	    editor.commit();
     }
     
     @Override
