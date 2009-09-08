@@ -5,4 +5,5 @@ package edwardslab.util;
 public interface TaskListener<ResultType> {
 
     void onTaskFinished(Task<ResultType> task);
+    void onTaskPosted(Task<ResultType> task);
 }

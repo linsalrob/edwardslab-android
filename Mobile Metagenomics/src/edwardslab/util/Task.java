@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -31,6 +30,8 @@ public final class Task<ResultType> {
     private Exception error;
 
     private Handler finishedHandler = new Handler();
+    
+    private Handler postedHandler = new Handler();
 
     private int taskId;
 
@@ -157,21 +158,21 @@ public final class Task<ResultType> {
         Task<ResultType> that = (Task<ResultType>) obj;
         return this.taskId == that.taskId;
     }
-
+    
     /**
      * Executes the task. When the task completes and the callback is still
      * registered, the result will be posted to the caller's thread. Otherwise,
      * the result will be kept in memory until claimed by the caller. If a
      * {@link ProgressDialog} has been registered using
-     * {@link setProgressDialog}, it will be shown while the callable is
+     * {@link setProgressDialog}, it will be shown while the QueryableCallable is
      * executing.
      * 
      * @param context
      *            The caller
-     * @param callable
-     *            The callable to run for this task
+     * @param QueryableCallable
+     *            The QueryableCallable to run for this task
      */
-    public void run(Context context, final Callable<ResultType> callable) {
+    public void run(Context context, final QueryableCallable<ResultType> QueryableCallable) {
 
         final String caller = context.getClass().getCanonicalName();
         state = State.RUNNING;
@@ -198,7 +199,7 @@ public final class Task<ResultType> {
                 ResultType result = null;
                 Exception error = null;
                 try {
-                    result = callable.call();
+                    result = QueryableCallable.call();
                 } catch (Exception e) {
                     error = e;
                 }
@@ -218,6 +219,27 @@ public final class Task<ResultType> {
         }, threadName).start();
     }
 
+    public void post(Context context, final QueryableCallable<ResultType> queryableCallable) {
+    	final String caller = context.getClass().getCanonicalName();
+        try {
+			result = queryableCallable.postResult();
+		} catch (Exception e) {
+			error = e;
+		}
+		
+		final ResultType finalResult = result;
+		final Exception finalError = error;
+		
+		if (state != State.CANCELED) {
+            postedHandler.post(new Runnable() {
+
+                public void run() {
+                    onTaskPosted(caller, finalResult, finalError);
+                }
+            });
+        }
+    }
+    
     public void bringToFront(Context context) {
         if (!running()) {
             return;
@@ -303,6 +325,22 @@ public final class Task<ResultType> {
         }
     }
 
+    private void onTaskPosted(String caller, ResultType result,
+            Exception error) {
+
+        // lock the tasks object, so no thread can see a result without the
+        // COMPLETED status being set
+        synchronized (tasks) {
+            this.state = state.RUNNING;
+            this.result = result;
+            this.error = error;
+        }
+
+        if (callback != null) {
+            callback.onTaskPosted(this);
+        }
+    }
+    
     /**
      * @return true if the task is still running
      */

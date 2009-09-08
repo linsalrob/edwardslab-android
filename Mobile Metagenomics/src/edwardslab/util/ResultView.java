@@ -37,17 +37,20 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ResultView extends Activity implements TaskListener<MaxAndResults>{
+public class ResultView extends Activity implements TaskListener<Integer>{
 
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
@@ -73,13 +76,18 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
     TextView mDisplay;
     ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
-    
+    int deleteme;
+    int bigI = 1;
+	
 	private static final int TASK1 = 0;  
 	  
     private static final int TASK2 = 1;  
   
-    private Task<MaxAndResults> task1, task2;  
-  
+    private static final int TASK3 = 2;
+    
+    private Task<MaxAndResults> task1, task2;
+    private Task<Integer> task3;  
+  /*
     private Callable<MaxAndResults> callable1 = new Callable<MaxAndResults>() {  
  
        public MaxAndResults call() throws Exception {	  
@@ -90,6 +98,12 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
 	    		   Log.e("Concurrency","Completed setupAsync, launching for-loop.");
 	    		   max = Integer.parseInt(tmpMax);
 	    		   url = tmpUrl;
+//	        	   setProgress(PROGRESS_MODIFIER * 1);
+//	               setTitle("Downloading segments: " + 1 + "/" + max);
+	    		   Message myMsg = handler1.obtainMessage();
+                   myMsg.obj = 1;
+                   handler1.sendMessage(myMsg);
+                   
 	        	   task2.run(ResultView.this, callable2);
 	    		   return new MaxAndResults(tmpUrl, Integer.parseInt(tmpMax), keyArr);
 	    	   }
@@ -105,34 +119,129 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
        public MaxAndResults call() throws Exception {  
     	   for(int i=2; i<=max; i++){
            		addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+//           		setProgress(PROGRESS_MODIFIER * i);
+//           		setTitle("Downloading segments: " + i + "/" + max);
+           		Message myMsg = handler1.obtainMessage();
+           		myMsg.obj = i;
+           		Log.e("Concurrency","Sent a msg with: " + i);
+                handler1.sendMessage(myMsg);
     	   }
     	   Log.e("Concurrency","Completed addToList for-loop.");
           return new MaxAndResults(url, max, keyArr);  
        };  
    };  
-	
+	*/
+ /*  private Callable<MaxAndResults > callableTest = new Callable<MaxAndResults >(){
+	   public MaxAndResults call() throws Exception {
+		   for(int i=0; i<3; i++){
+			   //Log.e("Concurrency","Iterated, i is: " + i);
+			   deleteme = i;
+			  // Log.e("Concurrency","Iterated, deleteme is: " + deleteme);
+			   Callable<MaxAndResults> inner = new Callable<MaxAndResults>(){
+				   public MaxAndResults call() throws Exception {
+					   //addToList(JSONToHash((makeWebRequest((String) url + deleteme))), myList);
+//	           		setProgress(PROGRESS_MODIFIER * i);
+//	           		setTitle("Downloading segments: " + i + "/" + max);
+	           		//Message myMsg = handler1.obtainMessage();
+	           		//myMsg.obj = deleteme;
+	           		Log.e("Concurrency","Sent a msg with: " + deleteme);
+	               // handler1.sendMessage(myMsg);
+					   return null;
+				   };
+			   };
+			   
+			   task3 = Task.getOrCreate(ResultView.this, TASK3); 
+			   task3.run(ResultView.this, inner);
+		   }
+		   return null;
+	   };
+   };*/
+   
+   private QueryableCallable<Integer> callableTest = new QueryableCallable<Integer>(){
+	   int myLocalResult;
+	   
+	   public Integer call() throws Exception {
+		   for(int i=0; i<5; i++){
+			   Thread.sleep(1000);
+			   Log.e("Concurrency","Task iterated, i is: " + i);
+			   myLocalResult = i;
+			   task3.post(ResultView.this, this);
+		   }
+			   return myLocalResult;
+	   };
+	   
+	   public Integer postResult() throws Exception {
+		   return myLocalResult;
+	   }
+   };
+   
+   Handler handler1 = new Handler()
+   {
+           @Override public void handleMessage(Message msg)
+           {
+        	   /*
+        	    mBar.setProgress(values[0]);
+            setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+            setTitle("Downloading segments: " + values[0] + "/" + max);
+        	    */
+        	   Log.e("Concurrency","Setting adapter!");
+        	   if((Integer) msg.obj == 1){
+        		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
+        	   }
+        	   else{
+        		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
+        	   }
+        	   mBar.setProgress((Integer) msg.obj);
+        	   setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+               setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+           }
+   };
+   
    @Override  
    protected void onPause() {  
        super.onPause();  
+       Log.e("Concurrency","onPause'd");
        task1.unregisterCallback();  
-       task2.unregisterCallback();  
+       task2.unregisterCallback();
+       task3.unregisterCallback();
+       //dismissDialog(ID_DIALOG_ANNOTATE);
    }  
  
    @Override  
    protected void onResume() {  
        super.onResume();  
-
+       Log.e("Concurrency","onResume'd");
        task1 = Task.getOrCreate(this, TASK1);  
        task2 = Task.getOrCreate(this, TASK2);  
- 
-       switch (task1.state()) {  
-       case NOT_STARTED:  
-           task1.run(this, callable1);  
-          break;  
-       case RUNNING:  
-           System.out.println("task1 still running");  
-           break;  
-       case COMPLETED:  
+       task3 = Task.getOrCreate(this, TASK3);
+       setSecondaryProgress(0);
+//       switch (task1.state()) {  
+//       case NOT_STARTED:  
+//           task1.run(this, callable1);  
+//           showDialog(ID_DIALOG_ANNOTATE);
+//          break;  
+//       case RUNNING:  
+//    	   //If task 2 is running, task 1 is actually COMPLETED!
+//    	   if(task2.state() == Task.State.RUNNING)
+//    	   {
+//    		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
+//	   			switch(task2.state()){
+//	   			case RUNNING:
+//	   				System.out.println("task2 still running"); 
+//	   				break;
+//	   			case COMPLETED:
+//	   				//resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
+//	   				MobileMetagenomics.launchResultView = false;
+//	   			}
+//    	   }
+//    	   else{
+//        	   System.out.println("task1 still running");
+//        	   showDialog(ID_DIALOG_ANNOTATE);
+//    	   }
+//           break;  
+       
+       
+       /*case COMPLETED:  
 			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
 			switch(task2.state()){
 			case RUNNING:
@@ -142,29 +251,51 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
 				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
 				MobileMetagenomics.launchResultView = false;
 			}
-           break;  
-       } 
- 
+           break;  */
+     //  } 
+     switch (task3.state()) {  
+     case NOT_STARTED:  
+    	 task3.run(this, callableTest);
+        break;  
+     case RUNNING:  
+         break;  
+     case COMPLETED:  
+    	 if(task3.getResult() != null){
+    	   		Toast.makeText(this, task3.getResult().toString(), Toast.LENGTH_SHORT).show();
+    	    	 Log.e("Concurrency","task was completed and result was: " + task3.getResult().toString());
+    	 }
+    	 else
+    		 Log.e("Concurrency","task was completed and result was: null");
+    	 break;
+     } 
+       
    }  
  
    @Override  
-   public void onTaskFinished(Task<MaxAndResults> task) {
-       if (task.failed()) {  
-           System.err.println("task" + task.getTaskId() + " failed. Reason: "  
-                   + task.getError().getMessage());  
-       } else {
-    	   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult().arr));
-    	   max = task.getResult().max;
-    	   url = task.getResult().url; 
-       }
-       MobileMetagenomics.launchResultView = false;
-       boolean x = MobileMetagenomics.launchResultView;
-       boolean breakpoint = x;
+   public void onTaskFinished(Task<Integer> task) {
+	   if(task.getTaskId() == TASK1){
+		//   dismissDialog(ID_DIALOG_ANNOTATE);
+	   }
+	   else if(task.getTaskId() == TASK2){
+		 //  setProgress(10000);
+	     //  MobileMetagenomics.launchResultView = false;
+	   }
+	   else{
+	   }
+//       if (task.failed()) {  
+//           System.err.println("task" + task.getTaskId() + " failed. Reason: "  
+//                   + task.getError().getMessage());  
+//       } else {
+//    	   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult().arr));
+//    	   max = task.getResult().max;
+//    	   url = task.getResult().url; 
+//       }
    }  
  
    @Override
    protected void onStop(){
    	super.onStop();
+   	Log.e("Concurrency","onStop'd");
    	SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
 	    SharedPreferences.Editor editor = settings.edit();
    	editor.putBoolean("launchResultView", MobileMetagenomics.launchResultView);
@@ -183,9 +314,14 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		requestWindowFeature(Window.FEATURE_PROGRESS);
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.resultview);
+		Log.e("Concurrency","onCreate'd");
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
+		setProgressBarVisibility(false);
+        mBar = (ProgressBar) findViewById(R.id.placeholder);
+		mBar.setVisibility(ProgressBar.GONE);
 		/*
         requestWindowFeature(Window.FEATURE_PROGRESS);
 		setContentView(R.layout.resultview);
@@ -275,6 +411,8 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
 		   			String tmpUrl = (String) tmpHash.get("url");
 			    	String tmpMax = (String) tmpHash.get("max");
 		   		if(tmpUrl != null && tmpMax != null){
+		   			max = Integer.parseInt(tmpMax);
+		   			PROGRESS_MODIFIER = 10000 / max;
 		   	    	ArrayList<String> myList = new ArrayList<String>();
 		   	    	loadList(JSONToHash((makeWebRequest((String) tmpUrl + 1))), myList);
 		   		}
@@ -816,6 +954,16 @@ public class ResultView extends Activity implements TaskListener<MaxAndResults>{
             System.err.println("exception thrown");
             statusOk = false;
     	}
-    } 
+    }
+
+	@Override
+	public void onTaskPosted(Task<Integer> task) {
+		 if (task.failed()) {  
+           System.err.println("task" + task.getTaskId() + " failed. Reason: "  
+                   + task.getError().getMessage());  
+       } else {
+   		Toast.makeText(this, task.getResult().toString(), Toast.LENGTH_SHORT).show();
+       }
+	}
 }
 	
