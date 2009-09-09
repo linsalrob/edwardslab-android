@@ -76,8 +76,6 @@ public class ResultView extends Activity implements TaskListener<Integer>{
     TextView mDisplay;
     ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
-    int deleteme;
-    int bigI = 1;
 	
 	private static final int TASK1 = 0;  
 	  
@@ -87,9 +85,10 @@ public class ResultView extends Activity implements TaskListener<Integer>{
     
     private Task<MaxAndResults> task1, task2;
     private Task<Integer> task3;  
-  /*
-    private Callable<MaxAndResults> callable1 = new Callable<MaxAndResults>() {  
- 
+  
+    private QueryableCallable<MaxAndResults> callable1 = new QueryableCallable<MaxAndResults>() {  
+    	MaxAndResults myLocalMar;
+    	
        public MaxAndResults call() throws Exception {	  
 			Hashtable tmpHash = setupAsync(doFileUpload( "sdcard/51.hits.fa", 0,1));
 	    	   if(tmpHash != null){
@@ -97,40 +96,28 @@ public class ResultView extends Activity implements TaskListener<Integer>{
 	    		   String tmpMax = (String) tmpHash.get("max");
 	    		   Log.e("Concurrency","Completed setupAsync, launching for-loop.");
 	    		   max = Integer.parseInt(tmpMax);
-	    		   url = tmpUrl;
-//	        	   setProgress(PROGRESS_MODIFIER * 1);
-//	               setTitle("Downloading segments: " + 1 + "/" + max);
-	    		   Message myMsg = handler1.obtainMessage();
-                   myMsg.obj = 1;
-                   handler1.sendMessage(myMsg);
-                   
-	        	   task2.run(ResultView.this, callable2);
-	    		   return new MaxAndResults(tmpUrl, Integer.parseInt(tmpMax), keyArr);
+	    		   url = tmpUrl;                  
+	    		   myLocalMar = new MaxAndResults(url, max, keyArr);
+	    		   task1.post(ResultView.this, this);
+                   for(int i=2; i<=max; i++){
+                  		addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+                  		myLocalMar = new MaxAndResults(url, max, keyArr);
+                  		task1.post(ResultView.this, this);
+                   }
+	    		   return myLocalMar;
 	    	   }
 	    	   else{
 	   				Log.e("Concurrency","Failed setupAsync, tmpHash was null!.");
 	   				return null;
 	    	   }
-       };  
+       }
+
+		@Override
+		public MaxAndResults postResult() throws Exception {
+			return myLocalMar;
+		};  
     };  
- 
-   private Callable<MaxAndResults> callable2 = new Callable<MaxAndResults>() {  
- 
-       public MaxAndResults call() throws Exception {  
-    	   for(int i=2; i<=max; i++){
-           		addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
-//           		setProgress(PROGRESS_MODIFIER * i);
-//           		setTitle("Downloading segments: " + i + "/" + max);
-           		Message myMsg = handler1.obtainMessage();
-           		myMsg.obj = i;
-           		Log.e("Concurrency","Sent a msg with: " + i);
-                handler1.sendMessage(myMsg);
-    	   }
-    	   Log.e("Concurrency","Completed addToList for-loop.");
-          return new MaxAndResults(url, max, keyArr);  
-       };  
-   };  
-	*/
+	
  /*  private Callable<MaxAndResults > callableTest = new Callable<MaxAndResults >(){
 	   public MaxAndResults call() throws Exception {
 		   for(int i=0; i<3; i++){
