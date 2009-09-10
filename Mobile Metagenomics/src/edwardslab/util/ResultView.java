@@ -50,7 +50,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ResultView extends Activity implements TaskListener<Integer>{
+public class ResultView extends Activity implements TaskListener<Object[]>{
 
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
@@ -83,28 +83,21 @@ public class ResultView extends Activity implements TaskListener<Integer>{
   
     private static final int TASK3 = 2;
     
-    private Task<MaxAndResults> task1, task2;
+    private Task<Object[]> task1, task2;
     private Task<Integer> task3;  
   
-    private QueryableCallable<MaxAndResults> callable1 = new QueryableCallable<MaxAndResults>() {  
-    	MaxAndResults myLocalMar;
-    	
-       public MaxAndResults call() throws Exception {	  
+    private QueryableCallable<Object[]> callable1 = new QueryableCallable<Object[]>() {  
+ 
+       public Object[] call() throws Exception {	  
 			Hashtable tmpHash = setupAsync(doFileUpload( "sdcard/51.hits.fa", 0,1));
 	    	   if(tmpHash != null){
 	    		   String tmpUrl = (String) tmpHash.get("url");
 	    		   String tmpMax = (String) tmpHash.get("max");
 	    		   Log.e("Concurrency","Completed setupAsync, launching for-loop.");
 	    		   max = Integer.parseInt(tmpMax);
-	    		   url = tmpUrl;                  
-	    		   myLocalMar = new MaxAndResults(url, max, keyArr);
-	    		   task1.post(ResultView.this, this);
-                   for(int i=2; i<=max; i++){
-                  		addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
-                  		myLocalMar = new MaxAndResults(url, max, keyArr);
-                  		task1.post(ResultView.this, this);
-                   }
-	    		   return myLocalMar;
+	    		   url = tmpUrl;  
+	        	   task2.run(ResultView.this, callable2);
+	    		   return keyArr;
 	    	   }
 	    	   else{
 	   				Log.e("Concurrency","Failed setupAsync, tmpHash was null!.");
@@ -112,37 +105,30 @@ public class ResultView extends Activity implements TaskListener<Integer>{
 	    	   }
        }
 
-		@Override
-		public MaxAndResults postResult() throws Exception {
-			return myLocalMar;
-		};  
+	@Override
+	public Object[] postResult() throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	};  
     };  
-	
- /*  private Callable<MaxAndResults > callableTest = new Callable<MaxAndResults >(){
-	   public MaxAndResults call() throws Exception {
-		   for(int i=0; i<3; i++){
-			   //Log.e("Concurrency","Iterated, i is: " + i);
-			   deleteme = i;
-			  // Log.e("Concurrency","Iterated, deleteme is: " + deleteme);
-			   Callable<MaxAndResults> inner = new Callable<MaxAndResults>(){
-				   public MaxAndResults call() throws Exception {
-					   //addToList(JSONToHash((makeWebRequest((String) url + deleteme))), myList);
-//	           		setProgress(PROGRESS_MODIFIER * i);
-//	           		setTitle("Downloading segments: " + i + "/" + max);
-	           		//Message myMsg = handler1.obtainMessage();
-	           		//myMsg.obj = deleteme;
-	           		Log.e("Concurrency","Sent a msg with: " + deleteme);
-	               // handler1.sendMessage(myMsg);
-					   return null;
-				   };
-			   };
-			   
-			   task3 = Task.getOrCreate(ResultView.this, TASK3); 
-			   task3.run(ResultView.this, inner);
-		   }
-		   return null;
-	   };
-   };*/
+ 
+   private QueryableCallable<Object[]> callable2 = new QueryableCallable<Object[]>() {
+	   
+       public Object[] call() throws Exception {  
+    	   for(int i=2; i<=max; i++){
+           		addToList(JSONToHash((makeWebRequest((String) url + i))), myList);
+           		task2.post(ResultView.this, this);
+    	   }
+    	   Log.e("Concurrency","Completed addToList for-loop.");
+          return keyArr;  
+       }
+
+	@Override
+	public Object[] postResult() throws Exception {
+		//TODO: if there are problems, it is because this is global.
+		return keyArr;
+	};  
+   };  
    
    private QueryableCallable<Integer> callableTest = new QueryableCallable<Integer>(){
 	   int myLocalResult;
@@ -162,36 +148,13 @@ public class ResultView extends Activity implements TaskListener<Integer>{
 	   }
    };
    
-   Handler handler1 = new Handler()
-   {
-           @Override public void handleMessage(Message msg)
-           {
-        	   /*
-        	    mBar.setProgress(values[0]);
-            setProgress(PROGRESS_MODIFIER * mBar.getProgress());
-            setTitle("Downloading segments: " + values[0] + "/" + max);
-        	    */
-        	   Log.e("Concurrency","Setting adapter!");
-        	   if((Integer) msg.obj == 1){
-        		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
-        	   }
-        	   else{
-        		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
-        	   }
-        	   mBar.setProgress((Integer) msg.obj);
-        	   setProgress(PROGRESS_MODIFIER * mBar.getProgress());
-               setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
-           }
-   };
-   
    @Override  
    protected void onPause() {  
        super.onPause();  
        Log.e("Concurrency","onPause'd");
        task1.unregisterCallback();  
        task2.unregisterCallback();
-       task3.unregisterCallback();
-       //dismissDialog(ID_DIALOG_ANNOTATE);
+       dismissDialog(ID_DIALOG_ANNOTATE);
    }  
  
    @Override  
@@ -200,83 +163,69 @@ public class ResultView extends Activity implements TaskListener<Integer>{
        Log.e("Concurrency","onResume'd");
        task1 = Task.getOrCreate(this, TASK1);  
        task2 = Task.getOrCreate(this, TASK2);  
-       task3 = Task.getOrCreate(this, TASK3);
+     //  task3 = Task.getOrCreate(this, TASK3);
        setSecondaryProgress(0);
-//       switch (task1.state()) {  
-//       case NOT_STARTED:  
-//           task1.run(this, callable1);  
-//           showDialog(ID_DIALOG_ANNOTATE);
-//          break;  
-//       case RUNNING:  
-//    	   //If task 2 is running, task 1 is actually COMPLETED!
-//    	   if(task2.state() == Task.State.RUNNING)
-//    	   {
-//    		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
-//	   			switch(task2.state()){
-//	   			case RUNNING:
-//	   				System.out.println("task2 still running"); 
-//	   				break;
-//	   			case COMPLETED:
-//	   				//resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
-//	   				MobileMetagenomics.launchResultView = false;
-//	   			}
-//    	   }
-//    	   else{
-//        	   System.out.println("task1 still running");
-//        	   showDialog(ID_DIALOG_ANNOTATE);
-//    	   }
-//           break;  
+       switch (task1.state()) {  
+       case NOT_STARTED:  
+           task1.run(this, callable1);  
+           showDialog(ID_DIALOG_ANNOTATE);
+          break;  
+       case RUNNING:  
+    	   //If task 2 is running, task 1 is actually COMPLETED!
+    	   if(task2.state() == Task.State.RUNNING)
+    	   {
+    		   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult()));
+	   			switch(task2.state()){
+	   			case RUNNING:
+	   				System.out.println("task2 still running"); 
+	   				break;
+	   			case COMPLETED:
+	   				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult()));
+	   				MobileMetagenomics.launchResultView = false;
+	   			}
+    	   }
+    	   else{
+        	   System.out.println("task1 still running");
+        	   showDialog(ID_DIALOG_ANNOTATE);
+    	   }
+           break;  
        
        
-       /*case COMPLETED:  
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult().arr));
+       case COMPLETED:  
+			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task1.getResult()));
 			switch(task2.state()){
 			case RUNNING:
 				System.out.println("task2 still running"); 
 				break;
 			case COMPLETED:
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult().arr));
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult()));
 				MobileMetagenomics.launchResultView = false;
 			}
-           break;  */
-     //  } 
-     switch (task3.state()) {  
-     case NOT_STARTED:  
-    	 task3.run(this, callableTest);
-        break;  
-     case RUNNING:  
-         break;  
-     case COMPLETED:  
-    	 if(task3.getResult() != null){
-    	   		Toast.makeText(this, task3.getResult().toString(), Toast.LENGTH_SHORT).show();
-    	    	 Log.e("Concurrency","task was completed and result was: " + task3.getResult().toString());
-    	 }
-    	 else
-    		 Log.e("Concurrency","task was completed and result was: null");
-    	 break;
+           break;
      } 
        
    }  
  
    @Override  
-   public void onTaskFinished(Task<Integer> task) {
+   public void onTaskFinished(Task<Object[]> task) {
 	   if(task.getTaskId() == TASK1){
-		//   dismissDialog(ID_DIALOG_ANNOTATE);
+		   dismissDialog(ID_DIALOG_ANNOTATE);
+		   mBar.setProgress(1);
+		   setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+           setTitle("Downloading segments: 1/" + max);
 	   }
 	   else if(task.getTaskId() == TASK2){
-		 //  setProgress(10000);
-	     //  MobileMetagenomics.launchResultView = false;
+		   setProgress(10000);
+	       MobileMetagenomics.launchResultView = false;
 	   }
 	   else{
 	   }
-//       if (task.failed()) {  
-//           System.err.println("task" + task.getTaskId() + " failed. Reason: "  
-//                   + task.getError().getMessage());  
-//       } else {
-//    	   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult().arr));
-//    	   max = task.getResult().max;
-//    	   url = task.getResult().url; 
-//       }
+       if (task.failed()) {  
+           System.err.println("task" + task.getTaskId() + " failed. Reason: "  
+                   + task.getError().getMessage());  
+       } else {
+    	   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult()));
+       }
    }  
  
    @Override
@@ -944,12 +893,15 @@ public class ResultView extends Activity implements TaskListener<Integer>{
     }
 
 	@Override
-	public void onTaskPosted(Task<Integer> task) {
+	public void onTaskPosted(Task<Object[]> task) {
 		 if (task.failed()) {  
            System.err.println("task" + task.getTaskId() + " failed. Reason: "  
                    + task.getError().getMessage());  
        } else {
-   		Toast.makeText(this, task.getResult().toString(), Toast.LENGTH_SHORT).show();
+    	   mBar.setProgress(mBar.getProgress() + 1);
+		   setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+           setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+    	   resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task2.getResult()));
        }
 	}
 }
