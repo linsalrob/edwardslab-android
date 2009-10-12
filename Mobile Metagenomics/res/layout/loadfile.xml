@@ -15,5 +15,11 @@
 		android:text="@string/browse" 
 		android:layout_height="wrap_content">
 	</Button>
+	<Button android:id="@+id/Load" 
+		android:layout_below="@+id/LoadFilename" 
+		android:layout_width="wrap_content" 
+		android:text="@string/load" 
+		android:layout_height="wrap_content">
+	</Button>
   
 </RelativeLayout>

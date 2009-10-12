@@ -22,9 +22,9 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.concurrent.Callable;
 
 import org.apache.http.util.ByteArrayBuffer;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -37,8 +37,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -161,6 +159,11 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
    protected void onResume() {  
        super.onResume();  
        Log.e("Concurrency","onResume'd");
+		Bundle extras = getIntent().getExtras();
+		if(extras.containsKey(MobileMetagenomics.LOAD_FILE_NAME)){
+			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+		}
+		else{
        task1 = Task.getOrCreate(this, TASK1);  
        task2 = Task.getOrCreate(this, TASK2);  
      //  task3 = Task.getOrCreate(this, TASK3);
@@ -202,7 +205,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 				MobileMetagenomics.launchResultView = false;
 			}
            break;
-     } 
+     }
+		}
        
    }  
  
@@ -267,11 +271,9 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		mDisplay = (TextView)findViewById(R.id.display);
         mBar.setVisibility(ProgressBar.GONE);
+		*/
 		
-		Bundle extras = getIntent().getExtras();
-		if(extras.containsKey(MobileMetagenomics.LOAD_FILE_NAME)){
-			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
-		}
+		/*
 		else{
 		fileName = extras.getString(MobileMetagenomics.FILE_NAME);
 		level = extras.getInt(MobileMetagenomics.LEVEL);
@@ -666,16 +668,24 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		@Override
 		protected Integer doInBackground(String... params) {
 			try {
-		    	  FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + fileName + ".mmr"));
-	             ObjectOutputStream oos =
-	                 new ObjectOutputStream(fos);
-	             oos.writeObject(keyArr);
-	             oos.flush();
-	             fos.close();
+		    	  FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + fileName + ".json"));
+//	             ObjectOutputStream oos =
+//	                 new ObjectOutputStream(fos);
+//	             oos.writeObject(keyArr);
+//	             oos.flush();
+//	             fos.close();
+				JSONArray tmpJsA = new JSONArray();
+				JSONObject tmpJo = new JSONObject();
+				for(int i=0; i<keyArr.length; i++){
+					tmpJo.put("" + i, keyArr[i]);
+				}
+				OutputStreamWriter osw = new OutputStreamWriter(fos);
+				osw.write(tmpJo.toString());
 	    	     return 1;
 	     }
 	     catch (Throwable e) {
-	             System.err.println("exception thrown");
+	    	 Log.e("SaveRes","exception thrown: " + e.toString());
+	             System.err.println("exception thrown: " + e.toString());
 	             statusOk = false;
 	             return -1;
 	     }
@@ -718,7 +728,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		            return 1;
 		    }
 		    catch (Throwable e) {
-		            System.err.println("exception thrown");
+		            System.err.println("exception thrown from LoadResults doInBackground");
 		            statusOk = false;
 		            return -1;
 		             // TODO: Pop up a toast or something

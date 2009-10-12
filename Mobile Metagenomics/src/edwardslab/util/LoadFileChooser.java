@@ -24,6 +24,7 @@ public class LoadFileChooser extends Activity {
         setContentView(R.layout.loadfile);
         loadFileName = (EditText) findViewById(R.id.LoadFilename);
         final Button browseButton = (Button) findViewById(R.id.Browse);
+        final Button confirmButton = (Button) findViewById(R.id.Load);
         fileName = "";
         loadFileName.setOnKeyListener(new OnKeyListener() {
     	    public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -44,9 +45,20 @@ public class LoadFileChooser extends Activity {
         browseButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				fileName = loadFileName.getText().toString();
 				openFile();
+			}
+    	});
+        
+        confirmButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Bundle bundle = new Bundle();            
+				bundle.putString(MobileMetagenomics.LOAD_FILE_NAME, loadFileName.getText().toString());
+	            Intent mIntent = new Intent();
+	            mIntent.putExtras(bundle);
+	            setResult(RESULT_OK, mIntent);
+	            finish();
 			}
     	});
 	}
