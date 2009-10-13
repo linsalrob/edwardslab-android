@@ -568,6 +568,117 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
     		return null;
     	}
     	}
+    
+    private String doJsonUpload(String ourFile, int level, int stringency){
+    	if(statusOk){
+	  	  final String existingFileName = ourFile;   	  
+    	  final String lineEnd = "\r\n";
+    	  final String twoHyphens = "--";
+    	  final String boundary =  "*****";
+    	  final int maxBufferSize = 1*1024*1024;
+    	  final String urlString = "http://bioseed.mcs.anl.gov/~redwards/FIG/RTMg_cellphone.cgi";
+    	  HttpURLConnection conn = null;
+    	  DataOutputStream dos = null;
+    	  DataInputStream inStream = null;
+    	  int bytesRead, bytesAvailable, bufferSize;
+    	  byte[] buffer;
+    	 String responseFromServer = "";
+
+    	  try
+    	  {
+    	   //------------------ CLIENT REQUEST
+    	  FileInputStream fileInputStream = new FileInputStream(new File(existingFileName) );
+    	  URL url = new URL(urlString);
+
+    	   // Open a HTTP connection to the URL
+    	   conn = (HttpURLConnection) url.openConnection();
+    	   conn.setDoInput(true);
+    	   conn.setDoOutput(true);
+    	   conn.setUseCaches(false);
+    	   conn.setRequestMethod("POST");
+    	   conn.setRequestProperty("Connection", "Keep-Alive");  	 
+    	   conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+
+    	   // Set up a data output stream to write to the web
+    	   dos = new DataOutputStream( conn.getOutputStream() );
+    	   dos.writeBytes(twoHyphens + boundary + lineEnd +
+    			   "Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"" 
+    			   + existingFileName +"\"" + lineEnd
+    			   + "Content-Type: text/plain" + lineEnd + lineEnd);    	   
+    	   Log.e("UploadFile","Headers are written");
+
+    	   // create a buffer of maximum size
+    	   bytesAvailable = fileInputStream.available();
+    	   bufferSize = Math.min(bytesAvailable, maxBufferSize);
+    	   buffer = new byte[bufferSize];
+
+    	   // read file and write it into form...
+    	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);  	   
+    	   while (bytesRead > 0)
+    	   {
+    	    dos.write(buffer, 0, bufferSize);
+    	    bytesAvailable = fileInputStream.available();
+    	    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+    	    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+    	   }
+    	   // send multipart form data necesssary after file data...
+
+    	   dos.writeBytes(lineEnd + lineEnd 
+    			   + twoHyphens + boundary + lineEnd 
+    			   
+    			   + "Content-Disposition: form-data; name=\"stringency\"" + lineEnd + lineEnd
+    			   + stringency + lineEnd
+    			   + twoHyphens + boundary + lineEnd
+    			   
+    			   + "Content-Disposition: form-data; name=\"level\"" + lineEnd + lineEnd
+    	   		   + level + lineEnd
+    	   		   + twoHyphens + boundary + lineEnd
+    	   		   
+    	   		   + "Content-Disposition: form-data; name=\"submit\"" + lineEnd + lineEnd 
+    	   		   + "Upload" + lineEnd
+    	   		   + twoHyphens + boundary + twoHyphens + lineEnd
+    	   	);
+    	   
+    	   // close streams
+    	   Log.e("UploadFile","File is written");
+    	   fileInputStream.close();
+    	   dos.flush();
+    	   dos.close();
+    	  }
+    	  catch (MalformedURLException ex)
+    	  {
+    		  statusOk = false;
+  		    Log.e("UploadFile", "error: " + ex.getMessage(), ex);
+    	  }
+    	  catch (IOException ioe)
+    	  {
+    		  statusOk = false;
+  		    Log.e("UploadFile", "error: " + ioe.getMessage(), ioe);
+    	  }
+
+    	  //------------------ read the SERVER RESPONSE
+    	  try {
+    	        inStream = new DataInputStream ( conn.getInputStream() );
+    	        String str;   	       
+    	        while (( str = inStream.readLine()) != null)
+    	        {
+    	        	//TODO: We can verify success/failure here, just need to know what to expect from server!
+    	        	responseFromServer += str;
+    	            Log.e("UploadFile","Server Response"+str);
+    	        }
+    	        inStream.close();
+    	  }
+    	  catch (IOException ioex){
+    		  statusOk = false;
+    	       Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
+    	  }
+	      return responseFromServer;
+    	}
+    	else{
+    		//pop up a toast or something
+    		return null;
+    	}
+    	}
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -584,16 +695,16 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
         case SHARE_ID:
 			AlertDialog.Builder builder = new AlertDialog.Builder(ResultView.this);
 			builder.setMessage("Share as plain text or Android-viewable format?")
-			       .setCancelable(false)
-			       .setPositiveButton(".txt", new DialogInterface.OnClickListener() {
+			       .setCancelable(true)
+			       .setPositiveButton("text", new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
 			                shareMode = "txt";
 			                new shareResults().execute("String");
 			           }
 			       })
-			       .setNegativeButton(".mmr", new DialogInterface.OnClickListener() {
+			       .setNegativeButton("json", new DialogInterface.OnClickListener() {
 			           public void onClick(DialogInterface dialog, int id) {
-			                shareMode = "mmr";
+			                shareMode = "json";
 			                new shareResults().execute("String");
 			           }
 			       });
@@ -769,6 +880,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			File saveFile;
 			if(shareMode == "mmr"){
 			saveFile = new File("/sdcard/" + fileName + ".mmr");
+			// MMR is broken if it is ever re-enabled. See the else block upload.
+			// it used to be outside of the else block.
 			try {
 		    	  FileOutputStream fos = new FileOutputStream(saveFile);
 	             ObjectOutputStream oos =
@@ -783,16 +896,42 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	             statusOk = false;
 	             return -1;
 	     }}
+			else if(shareMode == "json"){
+				saveFile = new File("/sdcard/" + fileName + ".json");
+		             try {
+				    	  FileOutputStream fos = new FileOutputStream(saveFile);
+//			             ObjectOutputStream oos =
+//			                 new ObjectOutputStream(fos);
+//			             oos.writeObject(keyArr);
+//			             oos.flush();
+//			             fos.close();
+						JSONArray tmpJsA = new JSONArray();
+						JSONObject tmpJo = new JSONObject();
+						for(int i=0; i<keyArr.length; i++){
+							tmpJo.put("" + i, keyArr[i]);
+						}
+						OutputStreamWriter osw = new OutputStreamWriter(fos);
+						osw.write(tmpJo.toString());
+			    	     return 1;
+			     }
+			     catch (Throwable e) {
+			    	 Log.e("SaveRes","exception thrown: " + e.toString());
+			             System.err.println("exception thrown: " + e.toString());
+			             statusOk = false;
+			             return -1;
+			     }
+			}
 			else{
 				writeFileOut();
 				saveFile = new File("/sdcard/" + fileName + ".txt");
+				// Use this later to fix SHARE
+				final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+				emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached are the results of the Mobile Metagenomics app on " + fileName);
+				emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Annotation Results: " + fileName);
+				emailIntent.setType("message/rfc822");
+				emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(saveFile));
+				startActivity(Intent.createChooser(emailIntent, "Send mail..."));
 			}
-			final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
-			emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached are the results of the Mobile Metagenomics app on " + fileName);
-			emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Annotation Results: " + fileName);
-			emailIntent.setType("message/rfc822");
-			emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(saveFile));
-			startActivity(Intent.createChooser(emailIntent, "Send mail..."));
 			return 1;
 		}
     	
