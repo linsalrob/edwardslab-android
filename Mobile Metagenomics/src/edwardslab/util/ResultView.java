@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -31,12 +32,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -912,6 +915,16 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 						}
 						OutputStreamWriter osw = new OutputStreamWriter(fos);
 						osw.write(tmpJo.toString());
+						
+						//set up phone number query
+						  TelephonyManager mTelephonyMgr;  
+						  mTelephonyMgr = (TelephonyManager)  
+						  getSystemService(Context.TELEPHONY_SERVICE);   
+						  
+						URL myURL = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi?phoneNumber=" +
+								mTelephonyMgr.getLine1Number() + "&put=true&title=" + fileName + "&jsonObject=" + URLEncoder.encode(tmpJo.toString()));
+			             /* Open a connection to that URL. */
+			             URLConnection ucon = myURL.openConnection();
 			    	     return 1;
 			     }
 			     catch (Throwable e) {
