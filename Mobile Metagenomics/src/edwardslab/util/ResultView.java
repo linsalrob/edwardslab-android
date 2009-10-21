@@ -90,6 +90,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
     private QueryableCallable<Object[]> callable1 = new QueryableCallable<Object[]>() {  
  
        public Object[] call() throws Exception {	  
+    	   // TODO: this hard coding will be a source of error in the future
 			Hashtable tmpHash = setupAsync(doFileUpload( "sdcard/51.hits.fa", 0,1));
 	    	   if(tmpHash != null){
 	    		   String tmpUrl = (String) tmpHash.get("url");
@@ -833,6 +834,13 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
     	}	
 		@Override
 		protected Integer doInBackground(String... params) {
+			String[] tmpStringArr = params[0].split("/sdcard/");
+			//TODO: this may be unneeded, look at what happens when a normal (non-loaded) result is done.
+			if(tmpStringArr.length > 1)
+				tmpStringArr = tmpStringArr[1].split(".mmr");
+			else
+				tmpStringArr = tmpStringArr[0].split(".mmr");
+			fileName = tmpStringArr[0];
 			try {
 		    	  FileInputStream fis = new FileInputStream(new File(params[0]));
 		            ObjectInputStream ois =
@@ -882,24 +890,26 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		protected Integer doInBackground(String... params) {
 			File saveFile;
 			if(shareMode == "mmr"){
-			saveFile = new File("/sdcard/" + fileName + ".mmr");
-			// MMR is broken if it is ever re-enabled. See the else block upload.
-			// it used to be outside of the else block.
-			try {
-		    	  FileOutputStream fos = new FileOutputStream(saveFile);
-	             ObjectOutputStream oos =
-	                 new ObjectOutputStream(fos);
-	             oos.writeObject(keyArr);
-	             oos.flush();
-	             fos.close();
-	             publishProgress(1);
-	     }
-	     catch (Throwable e) {
-	             System.err.println("exception thrown");
-	             statusOk = false;
-	             return -1;
-	     }}
+				saveFile = new File("/sdcard/" + fileName + ".mmr");
+				// MMR is broken if it is ever re-enabled. See the else block upload.
+				// it used to be outside of the else block.
+				try {
+			    	  FileOutputStream fos = new FileOutputStream(saveFile);
+		             ObjectOutputStream oos =
+		                 new ObjectOutputStream(fos);
+		             oos.writeObject(keyArr);
+		             oos.flush();
+		             fos.close();
+		             publishProgress(1);
+				}
+		    	catch (Throwable e) {
+		             System.err.println("exception thrown");
+		             statusOk = false;
+		             return -1;
+		    	}
+		    }
 			else if(shareMode == "json"){
+				Log.e("shareResults","shareMode set to json. Setting up JSON Object");
 				saveFile = new File("/sdcard/" + fileName + ".json");
 		             try {
 				    	  FileOutputStream fos = new FileOutputStream(saveFile);
@@ -913,6 +923,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 						for(int i=0; i<keyArr.length; i++){
 							tmpJo.put("" + i, keyArr[i]);
 						}
+						Log.e("shareResults","JSON Object assembled without errors.");
 						OutputStreamWriter osw = new OutputStreamWriter(fos);
 						osw.write(tmpJo.toString());
 						
@@ -924,11 +935,14 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 						URL myURL = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi?phoneNumber=" +
 								mTelephonyMgr.getLine1Number() + "&put=true&title=" + fileName + "&jsonObject=" + URLEncoder.encode(tmpJo.toString()));
 			             /* Open a connection to that URL. */
-			             URLConnection ucon = myURL.openConnection();
+						Log.e("shareResults","Preparing to open connection, assembled url is: " + myURL.toString());
+						Intent i = new Intent(MobileMetagenomics.this, LoadFileChooser.class);
+			        	startActivityForResult(i, ACTIVITY_CHOOSE_FILE);
+			             Log.e("shareResults","Connection sent successfully!");
 			    	     return 1;
 			     }
 			     catch (Throwable e) {
-			    	 Log.e("SaveRes","exception thrown: " + e.toString());
+			    	 Log.e("shareResults","exception thrown: " + e.toString());
 			             System.err.println("exception thrown: " + e.toString());
 			             statusOk = false;
 			             return -1;
@@ -958,6 +972,9 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		@Override
         protected void onPostExecute(Integer value) {
             // TODO: Conclude progress dialogues etc...
+			if(value == 1){
+				dismissDialog(ID_DIALOG_SHARE);
+			}
         }
 	}	
 	
