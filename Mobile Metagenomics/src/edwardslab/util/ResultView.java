@@ -936,10 +936,15 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 								mTelephonyMgr.getLine1Number() + "&put=true&title=" + fileName + "&jsonObject=" + URLEncoder.encode(tmpJo.toString()));
 			             /* Open a connection to that URL. */
 						Log.e("shareResults","Preparing to open connection, assembled url is: " + myURL.toString());
-						Intent i = new Intent(MobileMetagenomics.this, LoadFileChooser.class);
-			        	startActivityForResult(i, ACTIVITY_CHOOSE_FILE);
-			             Log.e("shareResults","Connection sent successfully!");
-			    	     return 1;
+			        	// use android.intent.action.WEB_SEARCH
+			        	Intent i = new Intent();
+			        	i.setAction(Intent.ACTION_WEB_SEARCH);
+			        	Uri dummy = null;
+			        	dummy.parse(myURL.toString());
+			        	i.setData( dummy );
+			        	startActivity(i);
+			            Log.e("shareResults","Connection sent successfully!");
+			    	    return 1;
 			     }
 			     catch (Throwable e) {
 			    	 Log.e("shareResults","exception thrown: " + e.toString());
