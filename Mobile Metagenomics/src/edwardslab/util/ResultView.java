@@ -15,6 +15,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -32,6 +33,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -573,116 +575,88 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
     	}
     	}
     
-    private String doJsonUpload(String ourFile, int level, int stringency){
-    	if(statusOk){
-	  	  final String existingFileName = ourFile;   	  
-    	  final String lineEnd = "\r\n";
-    	  final String twoHyphens = "--";
-    	  final String boundary =  "*****";
-    	  final int maxBufferSize = 1*1024*1024;
-    	  final String urlString = "http://bioseed.mcs.anl.gov/~redwards/FIG/RTMg_cellphone.cgi";
-    	  HttpURLConnection conn = null;
-    	  DataOutputStream dos = null;
-    	  DataInputStream inStream = null;
-    	  int bytesRead, bytesAvailable, bufferSize;
-    	  byte[] buffer;
-    	 String responseFromServer = "";
+    private String doJsonUpload(String phoneNumber, String fileName, File JsonObject){
+      	  final String lineEnd = "\r\n";
+      	  final String twoHyphens = "--";
+      	  final String boundary =  "---------------------------2916890032591";
+      	  final int maxBufferSize = 1*1024*1024;
+      	  HttpURLConnection conn = null;
+      	  DataOutputStream dos = null;
+      	  DataInputStream inStream = null;
+      	  int bytesRead, bytesAvailable, bufferSize;
+      	  byte[] buffer;
+      	 String responseFromServer = "";
 
-    	  try
-    	  {
-    	   //------------------ CLIENT REQUEST
-    	  FileInputStream fileInputStream = new FileInputStream(new File(existingFileName) );
-    	  URL url = new URL(urlString);
+      	  try
+      	  {
+      	   //------------------ CLIENT REQUEST
+      	  URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes_josh.cgi");
 
-    	   // Open a HTTP connection to the URL
-    	   conn = (HttpURLConnection) url.openConnection();
-    	   conn.setDoInput(true);
-    	   conn.setDoOutput(true);
-    	   conn.setUseCaches(false);
-    	   conn.setRequestMethod("POST");
-    	   conn.setRequestProperty("Connection", "Keep-Alive");  	 
-    	   conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+      	   // Open a HTTP connection to the URL
+      	   conn = (HttpURLConnection) url.openConnection();
+      	   conn.setDoInput(true);
+      	   conn.setDoOutput(true);
+      	   conn.setUseCaches(false);
+      	   conn.setRequestMethod("POST");
+      	   conn.setRequestProperty("Connection", "Keep-Alive");  	 
+      	   conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
 
-    	   // Set up a data output stream to write to the web
-    	   dos = new DataOutputStream( conn.getOutputStream() );
-    	   dos.writeBytes(twoHyphens + boundary + lineEnd +
-    			   "Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"" 
-    			   + existingFileName +"\"" + lineEnd
-    			   + "Content-Type: text/plain" + lineEnd + lineEnd);    	   
-    	   Log.e("UploadFile","Headers are written");
-
-    	   // create a buffer of maximum size
-    	   bytesAvailable = fileInputStream.available();
-    	   bufferSize = Math.min(bytesAvailable, maxBufferSize);
-    	   buffer = new byte[bufferSize];
-
-    	   // read file and write it into form...
-    	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);  	   
-    	   while (bytesRead > 0)
-    	   {
-    	    dos.write(buffer, 0, bufferSize);
-    	    bytesAvailable = fileInputStream.available();
-    	    bufferSize = Math.min(bytesAvailable, maxBufferSize);
-    	    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-    	   }
-    	   // send multipart form data necesssary after file data...
-
-    	   dos.writeBytes(lineEnd + lineEnd 
-    			   + twoHyphens + boundary + lineEnd 
+      	   // Set up a data output stream to write to the web
+      	   dos = new DataOutputStream( conn.getOutputStream() );
+      	   dos.writeBytes(twoHyphens + boundary + lineEnd +
+      			   "Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
+      			   phoneNumber + lineEnd +
+      			   twoHyphens + boundary + lineEnd +
+      			   
+      			   "Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
+      			   lineEnd +
+      			   twoHyphens + boundary + lineEnd +
     			   
-    			   + "Content-Disposition: form-data; name=\"stringency\"" + lineEnd + lineEnd
-    			   + stringency + lineEnd
-    			   + twoHyphens + boundary + lineEnd
+    			   "Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
+    			   fileName + lineEnd +
+    			   twoHyphens + boundary + lineEnd +
+      			   
+      			   "Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
+      			   JsonObject + lineEnd +
+      			   twoHyphens + boundary + lineEnd +
     			   
-    			   + "Content-Disposition: form-data; name=\"level\"" + lineEnd + lineEnd
-    	   		   + level + lineEnd
-    	   		   + twoHyphens + boundary + lineEnd
-    	   		   
-    	   		   + "Content-Disposition: form-data; name=\"submit\"" + lineEnd + lineEnd 
-    	   		   + "Upload" + lineEnd
-    	   		   + twoHyphens + boundary + twoHyphens + lineEnd
-    	   	);
-    	   
-    	   // close streams
-    	   Log.e("UploadFile","File is written");
-    	   fileInputStream.close();
-    	   dos.flush();
-    	   dos.close();
-    	  }
-    	  catch (MalformedURLException ex)
-    	  {
-    		  statusOk = false;
-  		    Log.e("UploadFile", "error: " + ex.getMessage(), ex);
-    	  }
-    	  catch (IOException ioe)
-    	  {
-    		  statusOk = false;
-  		    Log.e("UploadFile", "error: " + ioe.getMessage(), ioe);
-    	  }
+    			   "Content-Disposition: form-data; name=\"put\"" + lineEnd + lineEnd +
+    			   "Save this JSON Object" + lineEnd +
+    			   twoHyphens + boundary + twoHyphens + lineEnd);
+      	   
+      	   Log.e("UploadFile","JSON is written");
+      	   dos.flush();
+      	   dos.close();
+      	  }
+      	  catch (MalformedURLException ex)
+      	  {
+      		  statusOk = false;
+    		    Log.e("UploadFile", "error: " + ex.getMessage(), ex);
+      	  }
+      	  catch (IOException ioe)
+      	  {
+      		  statusOk = false;
+    		    Log.e("UploadFile", "error: " + ioe.getMessage(), ioe);
+      	  }
 
-    	  //------------------ read the SERVER RESPONSE
-    	  try {
-    	        inStream = new DataInputStream ( conn.getInputStream() );
-    	        String str;   	       
-    	        while (( str = inStream.readLine()) != null)
-    	        {
-    	        	//TODO: We can verify success/failure here, just need to know what to expect from server!
-    	        	responseFromServer += str;
-    	            Log.e("UploadFile","Server Response"+str);
-    	        }
-    	        inStream.close();
-    	  }
-    	  catch (IOException ioex){
-    		  statusOk = false;
-    	       Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
-    	  }
-	      return responseFromServer;
-    	}
-    	else{
-    		//pop up a toast or something
-    		return null;
-    	}
-    	}
+      	  //------------------ read the SERVER RESPONSE
+      	  try {
+      	        inStream = new DataInputStream ( conn.getInputStream() );
+      	        String str;   	       
+      	        while (( str = inStream.readLine()) != null)
+      	        {
+      	        	//TODO: We can verify success/failure here, just need to know what to expect from server!
+      	        	responseFromServer += str;
+      	            Log.e("UploadFile","Server Response"+str);
+      	        }
+      	        inStream.close();
+      	  }
+      	  catch (IOException ioex){
+      		  statusOk = false;
+      	       Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
+      	  }
+  	      return responseFromServer;
+      	}
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -910,6 +884,30 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		    }
 			else if(shareMode == "json"){
 				Log.e("shareResults","shareMode set to json. Setting up JSON Object");
+				
+				TelephonyManager mTelephonyMgr;  
+				  mTelephonyMgr = (TelephonyManager)  
+				  getSystemService(Context.TELEPHONY_SERVICE); 
+				  
+				  try {
+				  saveFile = new File("/sdcard/" + fileName + ".json");
+				  FileOutputStream fos = new FileOutputStream(saveFile);
+//		             ObjectOutputStream oos =
+//		                 new ObjectOutputStream(fos);
+//		             oos.writeObject(keyArr);
+//		             oos.flush();
+//		             fos.close();
+					JSONArray tmpJsA = new JSONArray();
+					JSONObject tmpJo = new JSONObject();
+					for(int i=0; i<keyArr.length; i++){
+						tmpJo.put("" + i, keyArr[i]);
+					}
+				  
+				doJsonUpload(mTelephonyMgr.getLine1Number(), fileName, URLEncoder.encode(tmpJo.toString()));
+				
+				/* commented out all old attempts to code this
+				 * 
+
 				saveFile = new File("/sdcard/" + fileName + ".json");
 		             try {
 				    	  FileOutputStream fos = new FileOutputStream(saveFile);
@@ -934,24 +932,64 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 						  
 						URL myURL = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi?phoneNumber=" +
 								mTelephonyMgr.getLine1Number() + "&put=true&title=" + fileName + "&jsonObject=" + URLEncoder.encode(tmpJo.toString()));
-			             /* Open a connection to that URL. */
+			             // Open a connection to that URL.
 						Log.e("shareResults","Preparing to open connection, assembled url is: " + myURL.toString());
+						
+
+						 // INTENT APPROACH
 			        	// use android.intent.action.WEB_SEARCH
+						/*
 			        	Intent i = new Intent();
 			        	i.setAction(Intent.ACTION_WEB_SEARCH);
 			        	Uri dummy = null;
 			        	dummy.parse(myURL.toString());
 			        	i.setData( dummy );
 			        	startActivity(i);
-			            Log.e("shareResults","Connection sent successfully!");
+			        	Log.e("shareResults","Connection sent successfully!");
+						/
+						
+						String stupidUrl = "http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi?phoneNumber=" +
+								mTelephonyMgr.getLine1Number() + "&put=true&title=" + fileName + "&jsonObject=" + URLEncoder.encode(tmpJo.toString());
+			            
+			        	 try {
+		                        Intent i = new Intent();
+
+		                        i.setAction("android.intent.action.VIEW");
+		                        i.addCategory("android.intent.category.BROWSABLE");
+		                        Uri uri = Uri.parse(stupidUrl);
+		                        i.setData(uri);
+		                        startActivity(i);
+		                } catch (Exception e) {
+		                        // TODO Auto-generated catch block
+		                        e.printStackTrace();
+		                }
+			        	
+						/*
+						 * DIRECT APPROACH
+						String url = "http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi?phoneNumber=" +
+						mTelephonyMgr.getLine1Number() + "&put=true&title=" + fileName + "&jsonObject=" + URLEncoder.encode(tmpJo.toString());
+						HttpClient client = new DefaultHttpClient();
+						HttpGet request = new HttpGet(url);
+						try
+						{
+						client.execute(request);
+						}
+						catch(Exception ex)
+						{
+							Log.e("shareResults","Connection failed: " + ex.toString());
+						}
+						*/
+		                
 			    	    return 1;
 			     }
+			
 			     catch (Throwable e) {
 			    	 Log.e("shareResults","exception thrown: " + e.toString());
 			             System.err.println("exception thrown: " + e.toString());
 			             statusOk = false;
 			             return -1;
 			     }
+			     
 			}
 			else{
 				writeFileOut();
