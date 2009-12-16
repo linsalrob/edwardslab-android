@@ -590,7 +590,6 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		try
 		{
 			//------------------ CLIENT REQUEST
-			FileInputStream fileInputStream = new FileInputStream(jsonObject);
 			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes_josh.cgi");
 
 			// Open a HTTP connection to the URL
@@ -920,7 +919,9 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 					JSONArray tmpJsA = new JSONArray();
 					JSONObject tmpJo = new JSONObject();
 					for(int i=0; i<keyArr.length; i++){
-						tmpJo.put("" + i, keyArr[i]);
+						//This is the offending line of code!
+						String[] tmpStringArr = keyArr[i].toString().split(" value: ");
+						tmpJo.put(tmpStringArr[0], tmpStringArr[1]);
 					}
 
 					String tmpString = tmpJo.toString();
