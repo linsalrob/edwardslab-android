@@ -921,7 +921,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 					for(int i=0; i<keyArr.length; i++){
 						//This is the offending line of code!
 						String[] tmpStringArr = keyArr[i].toString().split(" value: ");
-						tmpJo.put(tmpStringArr[0], tmpStringArr[1]);
+						tmpJo.put(tmpStringArr[0], Integer.parseInt(tmpStringArr[1]));
 					}
 
 					String tmpString = tmpJo.toString();
