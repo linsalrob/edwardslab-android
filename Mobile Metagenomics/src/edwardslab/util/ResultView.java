@@ -409,6 +409,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	}
 
 	public void addToList(Hashtable<String,String> myHash, ArrayList<String> myList){
+		//NOTE: this is likely where the non-combining of duplicate results is happening,
+		// but it will take more than a simple line-or-two change to correct.
 		if(statusOk){
 			Object thisElem;
 			Object[] tmp = new Object[keyArr.length + myHash.size()];
