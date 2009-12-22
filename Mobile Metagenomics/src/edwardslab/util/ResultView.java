@@ -409,12 +409,22 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	}
 
 	public void addToList(Hashtable<String,String> myHash, ArrayList<String> myList){
-		//NOTE: this is likely where the non-combining of duplicate results is happening,
-		// but it will take more than a simple line-or-two change to correct.
 		if(statusOk){
 			Object thisElem;
-			Object[] tmp = new Object[keyArr.length + myHash.size()];
 			int i=keyArr.length;
+			//Massaging data so that duplicate entries end up with the same values.
+			for(int h=0; h<keyArr.length; h++){
+				String[] arrParts = ((String) keyArr[h]).split(" value: ");
+				if(myHash.containsKey(arrParts[0])){
+					keyArr[h] = (arrParts[0] 
+					        + " value: " 
+					        + (Integer.parseInt(arrParts[1]) + Integer.parseInt(myHash.get(arrParts[0])))
+							);	
+					myHash.remove(arrParts[0]);
+				}
+			}
+			
+			Object[] tmp = new Object[keyArr.length + myHash.size()];
 			for(int j=0; j<keyArr.length; j++){
 				tmp[j]=keyArr[j];
 			}
