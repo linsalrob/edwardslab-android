@@ -1,7 +1,5 @@
 package edwardslab.util;
 
-import java.io.File;
-
 import org.openintents.intents.FileManagerIntents;
 
 import android.app.Activity;
@@ -21,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
-import org.openintents.filemanager.util.FileUtils;
 
 public class MobileMetagenomics extends Activity{
 	public static final String PREFS_NAME = "MmPrefs";

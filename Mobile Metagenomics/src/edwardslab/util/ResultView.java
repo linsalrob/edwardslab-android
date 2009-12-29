@@ -1,6 +1,11 @@
 package edwardslab.util;
 
-//References: http://www.glenmccl.com/tip_030.htm for serializable code.
+/*References: http://www.glenmccl.com/tip_030.htm for serializable code.
+	http://brainflush.wordpress.com/2009/04/08/android-in-sync-handling-concurrent-tasks-in-google-android/
+	for Task/Task Interface code
+	http://www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
+	Used for the web access portion of code.
+*/
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -15,10 +20,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -33,7 +36,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -251,7 +253,10 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	@Override  
 	public boolean onKeyDown(int keyCode, KeyEvent event) {  
 
-		if (keyCode == KeyEvent.KEYCODE_BACK) {  
+		if (keyCode == KeyEvent.KEYCODE_BACK) { 
+			/* If we are killing the MM/ResultView process, we don't
+				want the tasks to continue work floating in memory.
+			*/
 			Task.cancelAll(this);  
 		}  
 
