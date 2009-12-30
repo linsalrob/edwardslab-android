@@ -42,12 +42,12 @@ public class MobileMetagenomics extends Activity{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        /*
+        
         launchResultView = settings.getBoolean("launchResultView", false);
         if(launchResultView){
         	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
     		startActivity(i);
-        }*/
+        }
         setContentView(R.layout.main);
         
         //Initialize UI from xml
