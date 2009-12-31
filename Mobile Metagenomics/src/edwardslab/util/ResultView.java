@@ -81,7 +81,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	int PROGRESS_MODIFIER;
 	private static final int TASK1 = 0;  
 	private static final int TASK2 = 1;  
-	private Task<Object[]> startBackgroundWorkTask, continueBackgroundWorkTask;
+	private Task<Object[]> startAsynchWorkTask, continueAsynchWorkTask;
 	private Task<Integer> task3;   
 
 	@Override
@@ -105,26 +105,31 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 		}
 		else{
-			startBackgroundWorkTask = Task.getOrCreate(this, TASK1);  
-			continueBackgroundWorkTask = Task.getOrCreate(this, TASK2);  
+			//TODO: verify that nothing stupid happens if the intent is actually empty here!
+	        level = (extras.getInt(MobileMetagenomics.LEVEL));
+	        stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
+	        fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
+	        
+			startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
+			continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
 			//  task3 = Task.getOrCreate(this, TASK3);
 			setSecondaryProgress(0);
-			switch (startBackgroundWorkTask.state()) {  
+			switch (startAsynchWorkTask.state()) {  
 			case NOT_STARTED:  
-				startBackgroundWorkTask.run(this, startBackgroundWork);  
+				startAsynchWorkTask.run(this, startAsynchWork);  
 				showDialog(ID_DIALOG_ANNOTATE);
 				break;  
 			case RUNNING:  
 				//If task 2 is running, task 1 is actually COMPLETED!
-				if(continueBackgroundWorkTask.state() == Task.State.RUNNING)
+				if(continueAsynchWorkTask.state() == Task.State.RUNNING)
 				{
-					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startBackgroundWorkTask.getResult()));
-					switch(continueBackgroundWorkTask.state()){
+					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
+					switch(continueAsynchWorkTask.state()){
 					case RUNNING:
 						System.out.println("task2 still running"); 
 						break;
 					case COMPLETED:
-						resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueBackgroundWorkTask.getResult()));
+						resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
 						MobileMetagenomics.launchResultView = false;
 					}
 				}
@@ -136,13 +141,13 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 
 
 			case COMPLETED:  
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startBackgroundWorkTask.getResult()));
-				switch(continueBackgroundWorkTask.state()){
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
+				switch(continueAsynchWorkTask.state()){
 				case RUNNING:
 					System.out.println("task2 still running"); 
 					break;
 				case COMPLETED:
-					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueBackgroundWorkTask.getResult()));
+					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
 					MobileMetagenomics.launchResultView = false;
 				}
 				break;
@@ -155,8 +160,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	protected void onPause() {  
 		super.onPause();  
 		Log.e("Concurrency","onPause'd");
-		startBackgroundWorkTask.unregisterCallback();  
-		continueBackgroundWorkTask.unregisterCallback();
+		startAsynchWorkTask.unregisterCallback();  
+		continueAsynchWorkTask.unregisterCallback();
 		dismissDialog(ID_DIALOG_ANNOTATE);
 	}
 	
@@ -303,18 +308,19 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		return super.onCreateDialog(id);
 	}
 	
-	private QueryableCallable<Object[]> startBackgroundWork = new QueryableCallable<Object[]>() {  
+	private QueryableCallable<Object[]> startAsynchWork = new QueryableCallable<Object[]>() {  
 
 		public Object[] call() throws Exception {	  
 			// TODO: this hard coding will be a source of error in the future
-			Hashtable tmpHash = startAsyncWork(doFileUpload( "sdcard/51.hits.fa", 0,1));
+			//Hashtable tmpHash = doInitialAsynchWork(doFileUpload( "sdcard/51.hits.fa", 0,1));
+			Hashtable tmpHash = doInitialAsynchWork(doFileUpload(fileName.toString(), level, stringency));
 			if(tmpHash != null){
 				String tmpUrl = (String) tmpHash.get("url");
 				String tmpMax = (String) tmpHash.get("max");
 				Log.e("Concurrency","Completed setupAsync, launching for-loop.");
 				max = Integer.parseInt(tmpMax);
 				url = tmpUrl;  
-				continueBackgroundWorkTask.run(ResultView.this, continueBackgroundWork);
+				continueAsynchWorkTask.run(ResultView.this, continueAsynchWork);
 				return resultsArr;
 			}
 			else{
@@ -330,12 +336,12 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		};  
 	};  
 
-	private QueryableCallable<Object[]> continueBackgroundWork = new QueryableCallable<Object[]>() {
+	private QueryableCallable<Object[]> continueAsynchWork = new QueryableCallable<Object[]>() {
 
 		public Object[] call() throws Exception {  
 			for(int i=2; i<=max; i++){
 				addToResults(JSONToHash((makeWebRequest((String) url + i))));
-				continueBackgroundWorkTask.post(ResultView.this, this);
+				continueAsynchWorkTask.post(ResultView.this, this);
 			}
 			Log.e("Concurrency","Completed addToList for-loop.");
 			return resultsArr;  
@@ -357,7 +363,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			mBar.setProgress(mBar.getProgress() + 1);
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueBackgroundWorkTask.getResult()));
+			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
 		}
 	}
 	
@@ -450,7 +456,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 	}
 
-	private Hashtable startAsyncWork(String resString){
+	private Hashtable doInitialAsynchWork(String resString){
 		Hashtable tmpHash = JSONToHash(resString);
 		if(tmpHash != null){
 			String tmpUrl = (String) tmpHash.get("url");
@@ -868,7 +874,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			Integer status;
 			if(onResumeAction == "initialDownloadResults"){
 				status = 0;
-				startAsyncWork(doFileUpload(fileName.toString(),
+				doInitialAsynchWork(doFileUpload(fileName.toString(),
 						level,
 						stringency));
 				if(statusOk){
