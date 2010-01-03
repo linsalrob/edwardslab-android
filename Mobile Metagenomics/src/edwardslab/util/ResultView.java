@@ -39,20 +39,28 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.LinearLayout.LayoutParams;
 
 public class ResultView extends Activity implements TaskListener<Object[]>{
 
@@ -73,7 +81,6 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	int max;
 	int downloadIterationValue;
 	String url, onResumeAction;
-	private ProgressDialog pd;
 	Thread setupInitialResult;
 	Thread downloadRemainingResults;
 	TextView mDisplay;
@@ -81,8 +88,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	int PROGRESS_MODIFIER;
 	private static final int TASK1 = 0;  
 	private static final int TASK2 = 1;  
-	private Task<Object[]> startAsynchWorkTask, continueAsynchWorkTask;
-	private Task<Integer> task3;   
+	private Task<Object[]> startAsynchWorkTask, continueAsynchWorkTask; 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -110,48 +116,14 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	        stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
 	        fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
 	        
-			startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
-			continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
-			//  task3 = Task.getOrCreate(this, TASK3);
-			setSecondaryProgress(0);
-			switch (startAsynchWorkTask.state()) {  
-			case NOT_STARTED:  
-				startAsynchWorkTask.run(this, startAsynchWork);  
-				showDialog(ID_DIALOG_ANNOTATE);
-				break;  
-			case RUNNING:  
-				//If task 2 is running, task 1 is actually COMPLETED!
-				if(continueAsynchWorkTask.state() == Task.State.RUNNING)
-				{
-					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
-					switch(continueAsynchWorkTask.state()){
-					case RUNNING:
-						System.out.println("task2 still running"); 
-						break;
-					case COMPLETED:
-						resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
-						MobileMetagenomics.launchResultView = false;
-					}
-				}
-				else{
-					System.out.println("task1 still running");
-					showDialog(ID_DIALOG_ANNOTATE);
-				}
-				break;  
-
-
-			case COMPLETED:  
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
-				switch(continueAsynchWorkTask.state()){
-				case RUNNING:
-					System.out.println("task2 still running"); 
-					break;
-				case COMPLETED:
-					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
-					MobileMetagenomics.launchResultView = false;
-				}
-				break;
-			}
+	        switch (level){
+	        //Handle the "Function" operation mode
+	        case 0: doFunctionWork();
+	        case 1: doSubsystemsWork();
+	        //TODO: replace this with some proper means of handling this error.
+	        default: System.out.println("Invalid mode - terminating."); break;
+	        }
+			
 		}
 
 	}
@@ -389,6 +361,130 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 	}  
 
+	public void doFunctionWork(){
+		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
+		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
+		//  task3 = Task.getOrCreate(this, TASK3);
+		setSecondaryProgress(0);
+		switch (startAsynchWorkTask.state()) {  
+		case NOT_STARTED:  
+			startAsynchWorkTask.run(this, startAsynchWork);  
+			showDialog(ID_DIALOG_ANNOTATE);
+			break;  
+		case RUNNING:  
+			//If task 2 is running, task 1 is actually COMPLETED!
+			if(continueAsynchWorkTask.state() == Task.State.RUNNING)
+			{
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
+				switch(continueAsynchWorkTask.state()){
+				case RUNNING:
+					System.out.println("task2 still running"); 
+					break;
+				case COMPLETED:
+					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
+					MobileMetagenomics.launchResultView = false;
+				}
+			}
+			else{
+				System.out.println("task1 still running");
+				showDialog(ID_DIALOG_ANNOTATE);
+			}
+			break;
+		case COMPLETED:  
+			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
+			switch(continueAsynchWorkTask.state()){
+			case RUNNING:
+				System.out.println("task2 still running"); 
+				break;
+			case COMPLETED:
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
+				MobileMetagenomics.launchResultView = false;
+			}
+			break;
+		}
+	}
+	
+	public void doSubsystemsWork(){
+		WindowManager wm =
+    		(WindowManager) getSystemService(Context.WINDOW_SERVICE);
+    	Display disp = wm.getDefaultDisplay();
+    	int width = disp.getWidth();
+
+		Hashtable tmpHash = doInitialAsynchWork(doFileUpload( "sdcard/51.hits.fa", 2,1));
+		if(tmpHash != null){
+ 		   String tmpUrl = (String) tmpHash.get("url");
+ 		   String tmpMax = (String) tmpHash.get("max");
+ 		   Log.e("Concurrency","Completed setupAsync, launching for-loop.");
+ 		   max = Integer.parseInt(tmpMax);
+ 		   url = tmpUrl;  
+		}
+		for(int i=2; i<=max; i++){
+       		addToResults(JSONToHash((makeWebRequest((String) url + i))));
+		}
+		
+		
+		LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
+		LinearLayout.LayoutParams params2 = new
+		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		
+		Hashtable helperHash = new Hashtable();
+		for(int i=0; i<resultsArr.length; i++){
+			String delims = "value: ";
+			String[] tokens = ((String) resultsArr[i]).split(delims);
+			if(!helperHash.containsKey(tokens[0])){
+				helperHash.put(tokens[0], tokens[1]);
+			}
+			else{
+				helperHash.put(tokens[0] + "value ", (helperHash.get(tokens[0]) + tokens[1]));
+			}
+		}
+		String[] newArr = new String[helperHash.size()];
+		Enumeration col = helperHash.keys();
+		int index = 0;
+		while(col.hasMoreElements()){
+			String tmp = (String) col.nextElement();
+			newArr[index++] = tmp + " value: " + helperHash.get(tmp);
+		}
+		Arrays.sort(newArr);
+		
+		int largest = 0;
+		for(int i=0; i<newArr.length; i++){
+			String delims = "value: ";
+			String[] tokens = ((String) newArr[i]).split(delims);
+			if(Integer.parseInt(tokens[1]) > largest){
+				largest = Integer.parseInt(tokens[1]);
+			}
+		}
+		ShapeDrawable myShape;
+		TextView myTv;
+		
+		for(int i=0; i<newArr.length; i++){
+			String delims = "value: ";
+			String[] tokens = ((String) newArr[i]).split(delims);			
+			myTv = new TextView(this);
+			myTv.setGravity(Gravity.LEFT);		
+			Float tmp = Float.parseFloat(tokens[1]) / largest;			
+			Integer w = (int) (width * tmp);
+			myTv.setWidth(w+1);			
+			myShape = new ShapeDrawable();
+			myShape.setIntrinsicHeight(25);
+			/*if(i%2 == 1){
+				myShape.getPaint().setColor(Color.GREEN);
+			}
+			else{*/
+				myShape.getPaint().setColor(Color.BLUE);
+			//}
+			myTv.setBackgroundDrawable(myShape);
+			myLayout.addView(myTv, params2);
+			
+			myTv = new TextView(this);
+			myTv.setGravity(Gravity.LEFT);
+			myTv.setText(tokens[0]);
+			myLayout.addView(myTv, params2);
+			           
+		}
+	}
+	
 	public String makeWebRequest(String s){
 		Log.e("makeWebRequest","Performing " + s);
 		if(statusOk){
