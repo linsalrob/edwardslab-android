@@ -9,10 +9,9 @@
 
     <string-array name="levels">
         <item>Function</item>
-        <item>Subsystems</item>
-        <item>One level hierarchy</item>
-        <item>Two level hierarchy</item>
-        <item>Three level hierarchy</item>
+        <item>One level Subsystems</item>
+        <item>Two level Subsystems</item>
+        <item>Three level Subsystems</item>
         <item>OTUs</item>
     </string-array>
     

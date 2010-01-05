@@ -120,6 +120,9 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	        //Handle the "Function" operation mode
 	        case 0: doFunctionWork();
 	        case 1: doSubsystemsWork();
+	        case 2: doSubsystemsWork();
+	        case 3: doSubsystemsWork();
+	        case 4: doSubsystemsWork();
 	        //TODO: replace this with some proper means of handling this error.
 	        default: System.out.println("Invalid mode - terminating."); break;
 	        }
@@ -285,7 +288,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		public Object[] call() throws Exception {	  
 			// TODO: this hard coding will be a source of error in the future
 			//Hashtable tmpHash = doInitialAsynchWork(doFileUpload( "sdcard/51.hits.fa", 0,1));
-			Hashtable tmpHash = doInitialAsynchWork(doFileUpload(fileName.toString(), level, stringency));
+			Hashtable tmpHash = doInitialAsynchWork(doFileUpload(fileName.toString(), 2, stringency));
 			if(tmpHash != null){
 				String tmpUrl = (String) tmpHash.get("url");
 				String tmpMax = (String) tmpHash.get("max");
@@ -335,7 +338,17 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			mBar.setProgress(mBar.getProgress() + 1);
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
+			
+			 switch (level){
+		        //Handle the "Function" operation mode
+		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
+		        case 1: displaySubsystemsGraph();
+		        case 2: doSubsystemsWork();
+		        case 3: doSubsystemsWork();
+		        case 4: doSubsystemsWork();
+		        //TODO: replace this with some proper means of handling this error.
+		        default: System.out.println("Invalid mode - terminating."); break;
+		        }
 		}
 	}
 	
@@ -357,7 +370,16 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			System.err.println("task" + task.getTaskId() + " failed. Reason: "  
 					+ task.getError().getMessage());  
 		} else {
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult()));
+			switch (level){
+	        //Handle the "Function" operation mode
+	        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
+	        case 1: displaySubsystemsGraph();
+	        case 2: doSubsystemsWork();
+	        case 3: doSubsystemsWork();
+	        case 4: doSubsystemsWork();
+	        //TODO: replace this with some proper means of handling this error.
+	        default: System.out.println("Invalid mode - terminating."); break;
+	        }
 		}
 	}  
 
@@ -404,29 +426,16 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 	}
 	
-	public void doSubsystemsWork(){
+	public void displaySubsystemsGraph(){
 		WindowManager wm =
     		(WindowManager) getSystemService(Context.WINDOW_SERVICE);
     	Display disp = wm.getDefaultDisplay();
     	int width = disp.getWidth();
-
-		Hashtable tmpHash = doInitialAsynchWork(doFileUpload( "sdcard/51.hits.fa", 2,1));
-		if(tmpHash != null){
- 		   String tmpUrl = (String) tmpHash.get("url");
- 		   String tmpMax = (String) tmpHash.get("max");
- 		   Log.e("Concurrency","Completed setupAsync, launching for-loop.");
- 		   max = Integer.parseInt(tmpMax);
- 		   url = tmpUrl;  
-		}
-		for(int i=2; i<=max; i++){
-       		addToResults(JSONToHash((makeWebRequest((String) url + i))));
-		}
-		
-		
-		LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
+    	
+    	LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
 		LinearLayout.LayoutParams params2 = new
 		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		
+    	
 		Hashtable helperHash = new Hashtable();
 		for(int i=0; i<resultsArr.length; i++){
 			String delims = "value: ";
@@ -482,6 +491,49 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			myTv.setText(tokens[0]);
 			myLayout.addView(myTv, params2);
 			           
+		}
+	}
+	
+	public void doSubsystemsWork(){
+		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
+		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
+		//  task3 = Task.getOrCreate(this, TASK3);
+		setSecondaryProgress(0);
+		switch (startAsynchWorkTask.state()) {  
+		case NOT_STARTED:  
+			startAsynchWorkTask.run(this, startAsynchWork);  
+			showDialog(ID_DIALOG_ANNOTATE);
+			break;  
+		case RUNNING:  
+			//If task 2 is running, task 1 is actually COMPLETED!
+			if(continueAsynchWorkTask.state() == Task.State.RUNNING)
+			{
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
+				switch(continueAsynchWorkTask.state()){
+				case RUNNING:
+					System.out.println("task2 still running"); 
+					break;
+				case COMPLETED:
+			    	displaySubsystemsGraph();
+					MobileMetagenomics.launchResultView = false;
+				}
+			}
+			else{
+				System.out.println("task1 still running");
+				showDialog(ID_DIALOG_ANNOTATE);
+			}
+			break;
+		case COMPLETED:  
+			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
+			switch(continueAsynchWorkTask.state()){
+			case RUNNING:
+				System.out.println("task2 still running"); 
+				break;
+			case COMPLETED:
+				displaySubsystemsGraph();
+				MobileMetagenomics.launchResultView = false;
+			}
+			break;
 		}
 	}
 	
@@ -971,7 +1023,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			if(onResumeAction == "initialDownloadResults"){
 				status = 0;
 				doInitialAsynchWork(doFileUpload(fileName.toString(),
-						level,
+						2,
 						stringency));
 				if(statusOk){
 					status++;
