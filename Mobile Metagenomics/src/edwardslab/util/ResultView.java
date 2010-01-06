@@ -288,7 +288,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		public Object[] call() throws Exception {	  
 			// TODO: this hard coding will be a source of error in the future
 			//Hashtable tmpHash = doInitialAsynchWork(doFileUpload( "sdcard/51.hits.fa", 0,1));
-			Hashtable tmpHash = doInitialAsynchWork(doFileUpload(fileName.toString(), 2, stringency));
+			Log.e("Concurrency","Performing file upload with level " + level + " and stringency " + stringency);
+			Hashtable tmpHash = doInitialAsynchWork(doFileUpload(fileName.toString(), level, stringency));
 			if(tmpHash != null){
 				String tmpUrl = (String) tmpHash.get("url");
 				String tmpMax = (String) tmpHash.get("max");
@@ -481,6 +482,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		LinearLayout.LayoutParams params2 = new
 		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);   	
 		Hashtable helperHash = new Hashtable();
+		//TODO: this is an issue if the resultsArr isn't populated properly. Null ex
 		for(int i=0; i<resultsArr.length; i++){
 			String delims = "value: ";
 			String[] tokens = ((String) resultsArr[i]).split(delims);
@@ -1021,8 +1023,9 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			Integer status;
 			if(onResumeAction == "initialDownloadResults"){
 				status = 0;
+				Log.e("Concurrency","Performing file upload with level " + level + " and stringency " + stringency);
 				doInitialAsynchWork(doFileUpload(fileName.toString(),
-						2,
+						level,
 						stringency));
 				if(statusOk){
 					status++;

@@ -63,7 +63,7 @@ public class MobileMetagenomics extends Activity{
         	public void onClick(View v) { 
         		Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
         		i.putExtra(FILE_NAME, fileName.getText().toString());
-        		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition());
+        		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition() + 1);
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
         		launchResultView = true;
         		startActivity(i);
