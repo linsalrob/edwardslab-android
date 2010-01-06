@@ -118,11 +118,11 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	        
 	        switch (level){
 	        //Handle the "Function" operation mode
-	        case 0: doFunctionWork();
-	        case 1: doSubsystemsWork();
-	        case 2: doSubsystemsWork();
-	        case 3: doSubsystemsWork();
-	        case 4: doSubsystemsWork();
+	        case 0: doFunctionWork(); break;
+	        case 1: doSubsystemsWork(); break;
+	        case 2: doSubsystemsWork(); break;
+	        case 3: doSubsystemsWork(); break;
+	        case 4: doSubsystemsWork(); break;
 	        //TODO: replace this with some proper means of handling this error.
 	        default: System.out.println("Invalid mode - terminating."); break;
 	        }
@@ -341,13 +341,16 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			
 			 switch (level){
 		        //Handle the "Function" operation mode
-		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
-		        case 1: displaySubsystemsGraph();
-		        case 2: doSubsystemsWork();
-		        case 3: doSubsystemsWork();
-		        case 4: doSubsystemsWork();
+		        case 0:
+		        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult())); break;
+		        case 1:
+		        	displaySubsystemsGraph();
+		        	break;
+		        case 2: displaySubsystemsGraph(); break;
+		        case 3: displaySubsystemsGraph(); break;
+		        case 4: displaySubsystemsGraph(); break;
 		        //TODO: replace this with some proper means of handling this error.
-		        default: System.out.println("Invalid mode - terminating."); break;
+		        default: System.out.println("Invalid mode - terminating. Level was: "  + level); break;
 		        }
 		}
 	}
@@ -371,14 +374,14 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 					+ task.getError().getMessage());  
 		} else {
 			switch (level){
-	        //Handle the "Function" operation mode
-	        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
-	        case 1: displaySubsystemsGraph();
-	        case 2: doSubsystemsWork();
-	        case 3: doSubsystemsWork();
-	        case 4: doSubsystemsWork();
-	        //TODO: replace this with some proper means of handling this error.
-	        default: System.out.println("Invalid mode - terminating."); break;
+		        //Handle the "Function" operation mode
+		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult())); break;
+		        case 1: displaySubsystemsGraph(); break;
+		        case 2: displaySubsystemsGraph(); break;
+		        case 3: displaySubsystemsGraph(); break;
+		        case 4: displaySubsystemsGraph(); break;
+		        //TODO: replace this with some proper means of handling this error.
+		        default: System.out.println("Invalid mode - terminating. Level was: "  + level); break;
 	        }
 		}
 	}  
@@ -426,16 +429,57 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 	}
 	
+	public void doSubsystemsWork(){
+		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
+		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
+		//  task3 = Task.getOrCreate(this, TASK3);
+		setSecondaryProgress(0);
+		switch (startAsynchWorkTask.state()) {  
+		case NOT_STARTED:  
+			startAsynchWorkTask.run(this, startAsynchWork);  
+			showDialog(ID_DIALOG_ANNOTATE);
+			break;  
+		case RUNNING:  
+			//If task 2 is running, task 1 is actually COMPLETED!
+			if(continueAsynchWorkTask.state() == Task.State.RUNNING)
+			{
+				displaySubsystemsGraph();
+				switch(continueAsynchWorkTask.state()){
+				case RUNNING:
+					System.out.println("task2 still running"); 
+					break;
+				case COMPLETED:
+			    	displaySubsystemsGraph();
+					MobileMetagenomics.launchResultView = false;
+				}
+			}
+			else{
+				System.out.println("task1 still running");
+				showDialog(ID_DIALOG_ANNOTATE);
+			}
+			break;
+		case COMPLETED:  
+			displaySubsystemsGraph();
+			switch(continueAsynchWorkTask.state()){
+			case RUNNING:
+				System.out.println("task2 still running"); 
+				break;
+			case COMPLETED:
+				displaySubsystemsGraph();
+				MobileMetagenomics.launchResultView = false;
+			}
+			break;
+		}
+	}
+	
 	public void displaySubsystemsGraph(){
 		WindowManager wm =
     		(WindowManager) getSystemService(Context.WINDOW_SERVICE);
     	Display disp = wm.getDefaultDisplay();
-    	int width = disp.getWidth();
-    	
+    	int width = disp.getWidth();   	
     	LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
 		LinearLayout.LayoutParams params2 = new
-		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-    	
+		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);   	
 		Hashtable helperHash = new Hashtable();
 		for(int i=0; i<resultsArr.length; i++){
 			String delims = "value: ";
@@ -454,8 +498,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			String tmp = (String) col.nextElement();
 			newArr[index++] = tmp + " value: " + helperHash.get(tmp);
 		}
-		Arrays.sort(newArr);
-		
+		Arrays.sort(newArr);		
 		int largest = 0;
 		for(int i=0; i<newArr.length; i++){
 			String delims = "value: ";
@@ -465,8 +508,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			}
 		}
 		ShapeDrawable myShape;
-		TextView myTv;
-		
+		TextView myTv;		
 		for(int i=0; i<newArr.length; i++){
 			String delims = "value: ";
 			String[] tokens = ((String) newArr[i]).split(delims);			
@@ -484,8 +526,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 				myShape.getPaint().setColor(Color.BLUE);
 			//}
 			myTv.setBackgroundDrawable(myShape);
-			myLayout.addView(myTv, params2);
-			
+			myLayout.addView(myTv, params2);			
 			myTv = new TextView(this);
 			myTv.setGravity(Gravity.LEFT);
 			myTv.setText(tokens[0]);
@@ -494,48 +535,6 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 	}
 	
-	public void doSubsystemsWork(){
-		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
-		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
-		//  task3 = Task.getOrCreate(this, TASK3);
-		setSecondaryProgress(0);
-		switch (startAsynchWorkTask.state()) {  
-		case NOT_STARTED:  
-			startAsynchWorkTask.run(this, startAsynchWork);  
-			showDialog(ID_DIALOG_ANNOTATE);
-			break;  
-		case RUNNING:  
-			//If task 2 is running, task 1 is actually COMPLETED!
-			if(continueAsynchWorkTask.state() == Task.State.RUNNING)
-			{
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
-				switch(continueAsynchWorkTask.state()){
-				case RUNNING:
-					System.out.println("task2 still running"); 
-					break;
-				case COMPLETED:
-			    	displaySubsystemsGraph();
-					MobileMetagenomics.launchResultView = false;
-				}
-			}
-			else{
-				System.out.println("task1 still running");
-				showDialog(ID_DIALOG_ANNOTATE);
-			}
-			break;
-		case COMPLETED:  
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
-			switch(continueAsynchWorkTask.state()){
-			case RUNNING:
-				System.out.println("task2 still running"); 
-				break;
-			case COMPLETED:
-				displaySubsystemsGraph();
-				MobileMetagenomics.launchResultView = false;
-			}
-			break;
-		}
-	}
 	
 	public String makeWebRequest(String s){
 		Log.e("makeWebRequest","Performing " + s);
