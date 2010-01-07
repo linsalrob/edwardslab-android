@@ -119,7 +119,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	        switch (level){
 	        //Handle the "Function" operation mode
 	        case 0: doFunctionWork(); break;
-	        case 1: doSubsystemsWork(); break;
+	        case 1: doFunctionWork(); break;
 	        case 2: doSubsystemsWork(); break;
 	        case 3: doSubsystemsWork(); break;
 	        case 4: doSubsystemsWork(); break;
@@ -343,10 +343,9 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			 switch (level){
 		        //Handle the "Function" operation mode
 		        case 0:
-		        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult())); break;
+		        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult())); break;
 		        case 1:
-		        	displaySubsystemsGraph();
-		        	break;
+		        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult())); break;
 		        case 2: displaySubsystemsGraph(); break;
 		        case 3: displaySubsystemsGraph(); break;
 		        case 4: displaySubsystemsGraph(); break;
@@ -376,8 +375,13 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		} else {
 			switch (level){
 		        //Handle the "Function" operation mode
-		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult())); break;
-		        case 1: displaySubsystemsGraph(); break;
+		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult())); break;
+		        case 1: 
+		        	resultListView.setAdapter(
+		        			new ArrayAdapter(
+		        					ResultView.this, 
+		        					android.R.layout.simple_list_item_1, 
+		        					task.getResult())); break;
 		        case 2: displaySubsystemsGraph(); break;
 		        case 3: displaySubsystemsGraph(); break;
 		        case 4: displaySubsystemsGraph(); break;
