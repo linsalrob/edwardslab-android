@@ -72,6 +72,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	static final int  ID_DIALOG_LOAD=1;
 	static final int  ID_DIALOG_SAVE=2;
 	static final int  ID_DIALOG_SHARE=3;
+	String LEVEL = "level";
+	String MAX = "max";
 	String fileName;
 	String shareMode;
 	int stringency = -1;
@@ -80,6 +82,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	ListView resultListView;
 	int max;
 	int downloadIterationValue;
+	int errFlag = 0;
 	String url, onResumeAction;
 	Thread setupInitialResult;
 	Thread downloadRemainingResults;
@@ -107,15 +110,32 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		super.onResume();  
 		Log.e("Concurrency","onResume'd");
 		Bundle extras = getIntent().getExtras();
-		if(extras.containsKey(MobileMetagenomics.LOAD_FILE_NAME)){
-			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
-		}
+		if(extras != null){
+			if(extras.containsKey(
+					MobileMetagenomics.LOAD_FILE_NAME)){
+				new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+			}
+			else{
+				//TODO: stupid things happen when the intent above is empty, fix this!
+		        level = (extras.getInt(MobileMetagenomics.LEVEL));
+		        stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
+		        fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
+		        switch (level){
+		        //Handle the "Function" operation mode
+		        case 0: doFunctionWork(); break;
+		        case 1: doSubsystemsWork(); break;
+		        case 2: doSubsystemsWork(); break;
+		        case 3: doSubsystemsWork(); break;
+		        case 4: doSubsystemsWork(); break;
+		        //TODO: replace this with some proper means of handling this error.
+		        default: System.out.println("Invalid mode - terminating."); break;
+		        }
+			}
+		}		
 		else{
-			//TODO: verify that nothing stupid happens if the intent is actually empty here!
-	        level = (extras.getInt(MobileMetagenomics.LEVEL));
-	        stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
-	        fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
-	        
+			SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
+			level = settings.getInt(LEVEL, -1);
+			max = settings.getInt(MAX, 0);
 	        switch (level){
 	        //Handle the "Function" operation mode
 	        case 0: doFunctionWork(); break;
@@ -125,10 +145,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	        case 4: doSubsystemsWork(); break;
 	        //TODO: replace this with some proper means of handling this error.
 	        default: System.out.println("Invalid mode - terminating."); break;
-	        }
-			
+			}
 		}
-
 	}
 
 	@Override  
@@ -137,7 +155,6 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		Log.e("Concurrency","onPause'd");
 		startAsynchWorkTask.unregisterCallback();  
 		continueAsynchWorkTask.unregisterCallback();
-		dismissDialog(ID_DIALOG_ANNOTATE);
 	}
 	
 	@Override
@@ -147,6 +164,8 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean("launchResultView", MobileMetagenomics.launchResultView);
+		editor.putInt(LEVEL, level);
+		editor.putInt(MAX, max);
 		editor.commit();
 	}
 	
@@ -340,6 +359,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
 			
+			System.out.println("task " + task + " posted.");
 			 switch (level){
 		        //Handle the "Function" operation mode
 		        case 0:
@@ -356,6 +376,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	
 	@Override  
 	public void onTaskFinished(Task<Object[]> task) {
+		System.out.println("task " + task + " finished.");
 		if(task.getTaskId() == TASK1){
 			dismissDialog(ID_DIALOG_ANNOTATE);
 			mBar.setProgress(1);
@@ -405,6 +426,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 					System.out.println("task2 still running"); 
 					break;
 				case COMPLETED:
+					System.out.println("task2 completed"); 
 					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
 					MobileMetagenomics.launchResultView = false;
 				}
@@ -477,6 +499,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
     	Display disp = wm.getDefaultDisplay();
     	int width = disp.getWidth();   	
     	LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
+    	myLayout.removeAllViews();
 		LinearLayout.LayoutParams params2 = new
 		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);   	
 		Hashtable helperHash = new Hashtable();
@@ -511,7 +534,13 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		TextView myTv;		
 		for(int i=0; i<newArr.length; i++){
 			String delims = "value: ";
-			String[] tokens = ((String) newArr[i]).split(delims);			
+			String[] tokens = ((String) newArr[i]).split(delims);	
+			
+			myTv = new TextView(this);
+			myTv.setGravity(Gravity.LEFT);
+			myTv.setText(tokens[0]);
+			myLayout.addView(myTv, params2);
+			
 			myTv = new TextView(this);
 			myTv.setGravity(Gravity.LEFT);		
 			Float tmp = Float.parseFloat(tokens[1]) / largest;			
@@ -526,10 +555,6 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 				myShape.getPaint().setColor(Color.BLUE);
 			//}
 			myTv.setBackgroundDrawable(myShape);
-			myLayout.addView(myTv, params2);			
-			myTv = new TextView(this);
-			myTv.setGravity(Gravity.LEFT);
-			myTv.setText(tokens[0]);
 			myLayout.addView(myTv, params2);
 			           
 		}
