@@ -3,9 +3,10 @@
       package="edwardslab.util"
       android:versionCode="1"
       android:versionName="1.0">
-    <application android:icon="@drawable/icon" android:debuggable="true">
+    <application android:icon="@drawable/icon" android:debuggable="true" android:name="MobileMetagenomicsApplication">
         <activity android:name=".MobileMetagenomics"
-                  android:label="@string/app_name">              
+                  android:label="@string/app_name"
+                  android:launchMode="singleTask">              
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -17,7 +18,9 @@
             </intent-filter>           
         </activity>
     <activity android:name=".ResultView"
-			android:label="@string/app_name">
+			android:label="@string/app_name"
+			android:launchMode="singleTask">
+			
     </activity>
 	<activity android:name=".LoadFileChooser" 
 			android:theme="@android:style/Theme.Dialog"

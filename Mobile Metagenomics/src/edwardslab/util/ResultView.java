@@ -5,7 +5,7 @@ package edwardslab.util;
 	for Task/Task Interface code
 	http://www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
 	Used for the web access portion of code.
-*/
+ */
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -31,7 +31,6 @@ import java.util.Iterator;
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -57,12 +56,14 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
-public class ResultView extends Activity implements TaskListener<Object[]>{
+import com.github.droidfu.activities.BetterDefaultActivity;
+import com.github.droidfu.concurrent.BetterAsyncTask;
+
+public class ResultView extends BetterDefaultActivity{
 
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
@@ -89,9 +90,6 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 	TextView mDisplay;
 	ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
-	private static final int TASK1 = 0;  
-	private static final int TASK2 = 1;  
-	private Task<Object[]> startAsynchWorkTask, continueAsynchWorkTask; 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -104,22 +102,43 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		mBar = (ProgressBar) findViewById(R.id.placeholder);
 		mBar.setVisibility(ProgressBar.GONE);
 	}
-	
+
 	@Override  
 	protected void onResume() {  
 		super.onResume();  
-		Log.e("Concurrency","onResume'd");
+		Log.e("ResultView","onResume'd");
 		Bundle extras = getIntent().getExtras();
-		if(extras != null){
-			if(extras.containsKey(
-					MobileMetagenomics.LOAD_FILE_NAME)){
-				new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+		if(isResuming()){
+			Log.e("ResultView","Supposedly isResuming() == true");
+		}
+		else if(isLaunching()){
+			Log.e("ResultView","Supposedly isLaunching() == true");
+			if(extras != null){
+				Log.e("ResultView","extras != null");
+				if(extras.containsKey(
+						MobileMetagenomics.LOAD_FILE_NAME)){
+					Log.e("ResultView","extras.contains key LOAD FILE NAME");
+					new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+				}
+				else{
+					Log.e("ResultView","extras doesn't contain LOAD FILE NAME");
+					level = (extras.getInt(MobileMetagenomics.LEVEL));
+					stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
+					fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
+					MyBetterAsyncTask task = new MyBetterAsyncTask(this);
+					setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
+					setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
+					// task.disableDialog();
+					task.execute();
+				}
 			}
 			else{
-				//TODO: stupid things happen when the intent above is empty, fix this!
-		        level = (extras.getInt(MobileMetagenomics.LEVEL));
-		        stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
-		        fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
+				Log.e("ResultView","extras == null");
+			}
+
+			//TODO: stupid things happen when the intent above is empty, fix this!
+
+			/*
 		        switch (level){
 		        //Handle the "Function" operation mode
 		        case 0: doFunctionWork(); break;
@@ -129,38 +148,20 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		        case 4: doSubsystemsWork(); break;
 		        //TODO: replace this with some proper means of handling this error.
 		        default: System.out.println("Invalid mode - terminating."); break;
-		        }
-			}
+		        }*/
 		}		
-		else{
-			SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
-			level = settings.getInt(LEVEL, -1);
-			max = settings.getInt(MAX, 0);
-	        switch (level){
-	        //Handle the "Function" operation mode
-	        case 0: doFunctionWork(); break;
-	        case 1: doSubsystemsWork(); break;
-	        case 2: doSubsystemsWork(); break;
-	        case 3: doSubsystemsWork(); break;
-	        case 4: doSubsystemsWork(); break;
-	        //TODO: replace this with some proper means of handling this error.
-	        default: System.out.println("Invalid mode - terminating."); break;
-			}
-		}
 	}
 
 	@Override  
 	protected void onPause() {  
 		super.onPause();  
 		Log.e("Concurrency","onPause'd");
-		startAsynchWorkTask.unregisterCallback();  
-		continueAsynchWorkTask.unregisterCallback();
 	}
-	
+
 	@Override
 	protected void onStop(){
 		super.onStop();
-		Log.e("Concurrency","onStop'd");
+		Log.e("Concurrency","onStop'd, launchResultView is " + MobileMetagenomics.launchResultView);
 		SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean("launchResultView", MobileMetagenomics.launchResultView);
@@ -168,49 +169,21 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		editor.putInt(MAX, max);
 		editor.commit();
 	}
-	
-	/*
-	@Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-		super.onSaveInstanceState(savedInstanceState);
-		savedInstanceState.putInt("max", max);
-		savedInstanceState.putString("url", url);
-		savedInstanceState.putString("onResumeAction", onResumeAction);
-		savedInstanceState.putInt("downloadIterationValue", downloadIterationValue);
-		savedInstanceState.putStringArray("keyArr", (String[]) keyArr);
-	}
 
-	@Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-      super.onRestoreInstanceState(savedInstanceState);
-      max = savedInstanceState.getInt("max");
-      downloadIterationValue = savedInstanceState.getInt("downloadIterationValue");
-      url = savedInstanceState.getString("url");
-      onResumeAction = savedInstanceState.getString("onResumeAction");
-      keyArr = savedInstanceState.getStringArray("keyArr");
-      if(onResumeAction == "continueDownloadResults"){
-    	  resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
-    	  new DownloadResults().execute("String");
-      }
-      else if(onResumeAction == "initialDownloadResults"){
-    	  new DownloadResults().execute("String");
-      }
-	}
-	 */
-	
 	@Override  
 	public boolean onKeyDown(int keyCode, KeyEvent event) {  
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) { 
 			/* If we are killing the MM/ResultView process, we don't
 				want the tasks to continue work floating in memory.
-			*/
-			Task.cancelAll(this);  
+			 */
+			//Task.cancelAll(this);
+			MobileMetagenomics.launchResultView = false;
 		}  
 
 		return super.onKeyDown(keyCode, event);  
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
@@ -301,111 +274,106 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 		return super.onCreateDialog(id);
 	}
-	
-	private QueryableCallable<Object[]> startAsynchWork = new QueryableCallable<Object[]>() {  
 
-		public Object[] call() throws Exception {	  
-			// TODO: this hard coding will be a source of error in the future
-			//Hashtable tmpHash = doInitialAsynchWork(doFileUpload( "sdcard/51.hits.fa", 0,1));
+	private class MyBetterAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public MyBetterAsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status;
+			status = 0;
 			Log.e("Concurrency","Performing file upload with level " + level + " and stringency " + stringency);
-			Hashtable tmpHash = doInitialAsynchWork(doFileUpload(fileName.toString(), level, stringency));
-			if(tmpHash != null){
-				String tmpUrl = (String) tmpHash.get("url");
-				String tmpMax = (String) tmpHash.get("max");
-				Log.e("Concurrency","Completed setupAsync, launching for-loop.");
-				max = Integer.parseInt(tmpMax);
-				url = tmpUrl;  
-				continueAsynchWorkTask.run(ResultView.this, continueAsynchWork);
-				return resultsArr;
-			}
-			else{
-				Log.e("Concurrency","Failed setupAsync, tmpHash was null!.");
-				return null;
-			}
+			doInitialAsynchWork(doFileUpload(fileName.toString(),
+					level,
+					stringency));
+			Log.e("Concurrency","Supposedly finished doInitialAsynch");
+			status++;
+			publishProgress(status);
+			Log.e("Concurrency","Finished publishProgress(status) once");
+			Log.e("Concurrency","Didn't die on dismissDialog");
+			//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
+			return 1;
 		}
 
 		@Override
-		public Object[] postResult() throws Exception {
+		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
-			return null;
-		};  
-	};  
-
-	private QueryableCallable<Object[]> continueAsynchWork = new QueryableCallable<Object[]>() {
-
-		public Object[] call() throws Exception {  
-			for(int i=2; i<=max; i++){
-				addToResults(JSONToHash((makeWebRequest((String) url + i))));
-				continueAsynchWorkTask.post(ResultView.this, this);
-			}
-			Log.e("Concurrency","Completed addToList for-loop.");
-			return resultsArr;  
+			//Log.e("Concurrency","After, reporting in...");
+			//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
+			MySecondBetterAsyncTask task2 = new  MySecondBetterAsyncTask(ResultView.this);
+			task2.disableDialog();
+			task2.execute();
 		}
 
 		@Override
-		public Object[] postResult() throws Exception {
-			//TODO: if there are problems, it is because this is global.
-			return resultsArr;
-		};  
-	};
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
 
-	@Override
-	public void onTaskPosted(Task<Object[]> task) {
-		if (task.failed()) {  
-			System.err.println("task" + task.getTaskId() + " failed. Reason: "  
-					+ task.getError().getMessage());  
-		} else {
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+			resultListView.setAdapter(
+					new ArrayAdapter(
+							ResultView.this, 
+							android.R.layout.simple_list_item_1, resultsArr));
 			mBar.setProgress(mBar.getProgress() + 1);
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
-			
-			System.out.println("task " + task + " posted.");
-			 switch (level){
-		        //Handle the "Function" operation mode
-		        case 0:
-		        	resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult())); break;
-		        case 1: displaySubsystemsGraph(); break;
-		        case 2: displaySubsystemsGraph(); break;
-		        case 3: displaySubsystemsGraph(); break;
-		        case 4: displaySubsystemsGraph(); break;
-		        //TODO: replace this with some proper means of handling this error.
-		        default: System.out.println("Invalid mode - terminating. Level was: "  + level); break;
-		        }
-		}
-	}
-	
-	@Override  
-	public void onTaskFinished(Task<Object[]> task) {
-		System.out.println("task " + task + " finished.");
-		if(task.getTaskId() == TASK1){
-			dismissDialog(ID_DIALOG_ANNOTATE);
-			mBar.setProgress(1);
-			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
-			setTitle("Downloading segments: 1/" + max);
-		}
-		else if(task.getTaskId() == TASK2){
-			setProgress(10000);
-			MobileMetagenomics.launchResultView = false;
-		}
-		else{
-		}
-		if (task.failed()) {  
-			System.err.println("task" + task.getTaskId() + " failed. Reason: "  
-					+ task.getError().getMessage());  
-		} else {
-			switch (level){
-		        //Handle the "Function" operation mode
-		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, task.getResult())); break;
-		        case 1: displaySubsystemsGraph(); break;
-		        case 2: displaySubsystemsGraph(); break;
-		        case 3: displaySubsystemsGraph(); break;
-		        case 4: displaySubsystemsGraph(); break;
-		        //TODO: replace this with some proper means of handling this error.
-		        default: System.out.println("Invalid mode - terminating. Level was: "  + level); break;
-	        }
-		}
-	}  
+		} 
 
+	}
+
+	private class MySecondBetterAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public MySecondBetterAsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status = 1;
+			Log.e("Concurrency","Supposedly posted results");
+			//Do remaining blocks.
+			for(int i=2; i<=max; i++){
+				status++;
+				addToResults(JSONToHash((makeWebRequest((String) url + i))));    
+				Log.e("Concurrency","Supposedly finished addToResults");
+				publishProgress(status);
+				//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
+				Log.e("Concurrency","Supposedly posted results");
+			}
+			return 1;
+		}
+
+		@Override
+		protected void after(Context context, Integer result) {
+			// TODO Auto-generated method stub
+			setProgress(10000);
+		}
+
+		@Override
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+			resultListView.setAdapter(
+					new ArrayAdapter(
+							ResultView.this, 
+							android.R.layout.simple_list_item_1, resultsArr));
+			mBar.setProgress(mBar.getProgress() + 1);
+			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+		} 
+
+	}
+	/*
 	public void doFunctionWork(){
 		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
 		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
@@ -413,7 +381,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		setSecondaryProgress(0);
 		switch (startAsynchWorkTask.state()) {  
 		case NOT_STARTED:  
-			startAsynchWorkTask.run(this, startAsynchWork);  
+			//startAsynchWorkTask.run(this, startAsynchWork);  
 			showDialog(ID_DIALOG_ANNOTATE);
 			break;  
 		case RUNNING:  
@@ -449,7 +417,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			break;
 		}
 	}
-	
+
 	public void doSubsystemsWork(){
 		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
 		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
@@ -457,7 +425,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		setSecondaryProgress(0);
 		switch (startAsynchWorkTask.state()) {  
 		case NOT_STARTED:  
-			startAsynchWorkTask.run(this, startAsynchWork);  
+			//startAsynchWorkTask.run(this, startAsynchWork);  
 			showDialog(ID_DIALOG_ANNOTATE);
 			break;  
 		case RUNNING:  
@@ -491,15 +459,15 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			}
 			break;
 		}
-	}
-	
+	}*/
+
 	public void displaySubsystemsGraph(){
 		WindowManager wm =
-    		(WindowManager) getSystemService(Context.WINDOW_SERVICE);
-    	Display disp = wm.getDefaultDisplay();
-    	int width = disp.getWidth();   	
-    	LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
-    	myLayout.removeAllViews();
+			(WindowManager) getSystemService(Context.WINDOW_SERVICE);
+		Display disp = wm.getDefaultDisplay();
+		int width = disp.getWidth();   	
+		LinearLayout myLayout = (LinearLayout) findViewById(R.id.LinearLayout01);
+		myLayout.removeAllViews();
 		LinearLayout.LayoutParams params2 = new
 		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);   	
 		Hashtable helperHash = new Hashtable();
@@ -535,12 +503,12 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		for(int i=0; i<newArr.length; i++){
 			String delims = "value: ";
 			String[] tokens = ((String) newArr[i]).split(delims);	
-			
+
 			myTv = new TextView(this);
 			myTv.setGravity(Gravity.LEFT);
 			myTv.setText(tokens[0]);
 			myLayout.addView(myTv, params2);
-			
+
 			myTv = new TextView(this);
 			myTv.setGravity(Gravity.LEFT);		
 			Float tmp = Float.parseFloat(tokens[1]) / largest;			
@@ -552,15 +520,14 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 				myShape.getPaint().setColor(Color.GREEN);
 			}
 			else{*/
-				myShape.getPaint().setColor(Color.BLUE);
+			myShape.getPaint().setColor(Color.BLUE);
 			//}
 			myTv.setBackgroundDrawable(myShape);
 			myLayout.addView(myTv, params2);
-			           
+
 		}
 	}
-	
-	
+
 	public String makeWebRequest(String s){
 		Log.e("makeWebRequest","Performing " + s);
 		if(statusOk){
@@ -596,7 +563,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			return null;
 		}
 	}
-	
+
 	public Hashtable<String,String> JSONToHash(String jsonString){
 		if(statusOk){
 			//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
@@ -641,7 +608,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 		return tmpHash;
 	}
-	
+
 	public void loadInitialResults(Hashtable<String,String> newData){
 		if(statusOk){
 			Object thisElem;
@@ -654,7 +621,7 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 			Arrays.sort(resultsArr);
 		}
 	}
-	
+
 	public void addToResults(Hashtable<String,String> newData){
 		if(statusOk){
 			Object thisElem;
@@ -664,13 +631,13 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 				String[] arrParts = ((String) resultsArr[h]).split(" value: ");
 				if(newData.containsKey(arrParts[0])){
 					resultsArr[h] = (arrParts[0] 
-					        + " value: " 
-					        + (Integer.parseInt(arrParts[1]) + Integer.parseInt(newData.get(arrParts[0])))
-							);	
+					                          + " value: " 
+					                          + (Integer.parseInt(arrParts[1]) + Integer.parseInt(newData.get(arrParts[0])))
+					);	
 					newData.remove(arrParts[0]);
 				}
 			}
-			
+
 			Object[] tmp = new Object[resultsArr.length + newData.size()];
 			for(int j=0; j<resultsArr.length; j++){
 				tmp[j]=resultsArr[j];
@@ -1124,3 +1091,32 @@ public class ResultView extends Activity implements TaskListener<Object[]>{
 		}
 	}
 }
+
+/*
+@Override
+public void onSaveInstanceState(Bundle savedInstanceState) {
+	super.onSaveInstanceState(savedInstanceState);
+	savedInstanceState.putInt("max", max);
+	savedInstanceState.putString("url", url);
+	savedInstanceState.putString("onResumeAction", onResumeAction);
+	savedInstanceState.putInt("downloadIterationValue", downloadIterationValue);
+	savedInstanceState.putStringArray("keyArr", (String[]) keyArr);
+}
+
+@Override
+public void onRestoreInstanceState(Bundle savedInstanceState) {
+  super.onRestoreInstanceState(savedInstanceState);
+  max = savedInstanceState.getInt("max");
+  downloadIterationValue = savedInstanceState.getInt("downloadIterationValue");
+  url = savedInstanceState.getString("url");
+  onResumeAction = savedInstanceState.getString("onResumeAction");
+  keyArr = savedInstanceState.getStringArray("keyArr");
+  if(onResumeAction == "continueDownloadResults"){
+	  resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
+	  new DownloadResults().execute("String");
+  }
+  else if(onResumeAction == "initialDownloadResults"){
+	  new DownloadResults().execute("String");
+  }
+}
+ */

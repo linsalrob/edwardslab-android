@@ -2,6 +2,8 @@ package edwardslab.util;
 
 import org.openintents.intents.FileManagerIntents;
 
+import com.github.droidfu.activities.BetterDefaultActivity;
+
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +23,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-public class MobileMetagenomics extends Activity{
+public class MobileMetagenomics extends BetterDefaultActivity{
 	public static final String PREFS_NAME = "MmPrefs";
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	static final int ACTIVITY_CHOOSE_FILE = 0;
@@ -42,13 +45,9 @@ public class MobileMetagenomics extends Activity{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        
+        Log.e("MobileMetagenomics","onCreate'd, launchResultView is " + MobileMetagenomics.launchResultView);
         launchResultView = settings.getBoolean("launchResultView", false);
 //        launchResultView = false;
-        if(launchResultView){
-        	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
-    		startActivity(i);
-        }
         setContentView(R.layout.main);
         
         //Initialize UI from xml
@@ -92,6 +91,15 @@ public class MobileMetagenomics extends Activity{
         else{
         	 Toast.makeText(this, "Data was Null!", Toast.LENGTH_LONG).show();
         }*/
+    }
+    
+    @Override
+    protected void onResume() {
+    	 super.onResume();
+    	 if(launchResultView){
+         	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+     		startActivity(i);
+         }
     }
     
     @Override
