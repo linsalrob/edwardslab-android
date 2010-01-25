@@ -96,7 +96,7 @@ public class ResultView extends BetterDefaultActivity{
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.resultview);
-		Log.e("Concurrency","onCreate'd");
+		Log.e("ResultView","onCreate'd");
 		resultListView = (ListView)findViewById(R.id.ResultsListView);
 		setProgressBarVisibility(false);
 		mBar = (ProgressBar) findViewById(R.id.placeholder);

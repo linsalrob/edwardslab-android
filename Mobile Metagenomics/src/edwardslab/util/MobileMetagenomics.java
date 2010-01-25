@@ -66,7 +66,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition() /*+ 1*/);
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
         		launchResultView = true;
-        		startActivity(i);
+        		startActivityForResult(i, 0);
         	}
         });       
         resetButton.setOnClickListener(new OnClickListener(){
@@ -96,9 +96,10 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     @Override
     protected void onResume() {
     	 super.onResume();
+    	 
     	 if(launchResultView){
          	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
-     		startActivity(i);
+     		startActivityForResult(i, 0);
          }
     }
     
