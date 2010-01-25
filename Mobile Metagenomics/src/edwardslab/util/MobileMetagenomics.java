@@ -97,10 +97,17 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     protected void onResume() {
     	 super.onResume();
     	 
-    	 if(launchResultView){
+    	/* if(launchResultView){
          	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
      		startActivityForResult(i, 0);
-         }
+         }*/
+    }
+    
+    @Override
+    protected void onNewIntent(Intent intent){
+    	 Log.e("MobileMetagenomics","onNewIntent'd");
+    	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+    	startActivity(i);
     }
     
     @Override

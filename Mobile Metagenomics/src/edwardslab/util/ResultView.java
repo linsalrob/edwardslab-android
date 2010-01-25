@@ -336,7 +336,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 1;
-			Log.e("Concurrency","Supposedly posted results");
+			Log.e("Concurrency","Started second task");
 			//Do remaining blocks.
 			for(int i=2; i<=max; i++){
 				status++;
@@ -344,7 +344,7 @@ public class ResultView extends BetterDefaultActivity{
 				Log.e("Concurrency","Supposedly finished addToResults");
 				publishProgress(status);
 				//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
-				Log.e("Concurrency","Supposedly posted results");
+				Log.e("Concurrency","Supposedly posted second task results");
 			}
 			return 1;
 		}
@@ -373,6 +373,11 @@ public class ResultView extends BetterDefaultActivity{
 		} 
 
 	}
+	
+	@Override
+    protected void onNewIntent(Intent intent){
+    	 Log.e("ResultView","onNewIntent'd");
+    }
 	/*
 	public void doFunctionWork(){
 		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
@@ -598,12 +603,12 @@ public class ResultView extends BetterDefaultActivity{
 	private Hashtable doInitialAsynchWork(String resString){
 		Hashtable tmpHash = JSONToHash(resString);
 		if(tmpHash != null){
-			String tmpUrl = (String) tmpHash.get("url");
+			url = (String) tmpHash.get("url");
 			String tmpMax = (String) tmpHash.get("max");
-			if(tmpUrl != null && tmpMax != null){
+			if(url != null && tmpMax != null){
 				max = Integer.parseInt(tmpMax);
 				PROGRESS_MODIFIER = 10000 / max;
-				loadInitialResults(JSONToHash((makeWebRequest((String) tmpUrl + 1))));
+				loadInitialResults(JSONToHash((makeWebRequest((String) url + 1))));
 			}
 		}
 		return tmpHash;
