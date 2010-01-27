@@ -180,6 +180,18 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 				}
 				break;
 	        case ACTIVITY_LOAD_WEB:
+	        	if(extras != null){
+	        		int phoneNumber = extras.getInt(LOAD_FILE_PHONE_NUMBER);
+	        		int sampleNumber = extras.getInt(LOAD_FILE_SAMPLE_NUMBER);
+	        		String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
+	        		
+	        		if(phoneNumber != 0 && sampleNumber != 0){
+	        			
+	        		}
+	        		else if(phoneNumber != 0 && !sampleTitle.equals("")){
+	        			
+	        		}
+	        	}
 				break;
 	        }
         }
