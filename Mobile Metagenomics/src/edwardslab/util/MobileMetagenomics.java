@@ -60,6 +60,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         levelSpinner = (Spinner) findViewById(R.id.LevelSpinner);
         kmerSpinner = (Spinner) findViewById(R.id.KmerSpinner);
         maxGapSpinner = (Spinner) findViewById(R.id.MaxGapSpinner);
+        kmerSpinner.setSelection(1);
+        maxGapSpinner.setSelection(1);
     	final InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         final Button uploadButton = (Button)findViewById(R.id.Upload);
         final Button resetButton = (Button)findViewById(R.id.Reset);
