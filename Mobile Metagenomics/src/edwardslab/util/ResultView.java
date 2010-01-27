@@ -194,7 +194,7 @@ public class ResultView extends BetterDefaultActivity{
 		super.onCreateOptionsMenu(menu);
 		menu.add(0, SHARE_ID, 0, R.string.share).setIcon(android.R.drawable.ic_menu_share);
 		menu.add(0, SAVE_ID, 0, R.string.save).setIcon(android.R.drawable.ic_menu_save);
-		menu.add(0, LOAD_ID, 0, R.string.load).setIcon(android.R.drawable.ic_menu_set_as);
+		menu.add(0, LOAD_ID, 0, R.string.load_local).setIcon(android.R.drawable.ic_menu_set_as);
 		return true;
 	}
 
@@ -1026,81 +1026,7 @@ public class ResultView extends BetterDefaultActivity{
 			}
 		}
 	}	
-/*
-	private class DownloadResults extends AsyncTask<String, Integer, Integer> {
-		@Override
-		protected void onPreExecute(){
-			if(onResumeAction == "initialDownloadResults"){
-				showDialog(ID_DIALOG_ANNOTATE);
-			}
-		}
-		@Override
-		protected Integer doInBackground(String... params) {
-			Integer status;
-			if(onResumeAction == "initialDownloadResults"){
-				status = 0;
-				Log.e("ResultView","Performing file upload with level " + level + " and stringency " + stringency);
-				doInitialAsynchWork(doFileUpload(fileName.toString(),
-						level,
-						stringency));
-				if(statusOk){
-					status++;
-					publishProgress(status);			
-					//Do remaining blocks.
-					onResumeAction = "continueDownloadResults";
-					for(int i=2; i<=max; i++){
-						status++;
-						downloadIterationValue = i;
-						addToResults(JSONToHash((makeWebRequest((String) url + i))));            	
-						publishProgress(status);
-					}
-				}
-				else{
-					dismissDialog(ID_DIALOG_ANNOTATE);
-					//publish an error!
-					return(-1);
-				}
-				return 1;
-			}
-			else if(onResumeAction == "continueDownloadResults"){
-				status = downloadIterationValue-2;
-				for(int i=downloadIterationValue; i<=max; i++){
-					status++;
-					//Need this on all passes except the first one...
-					downloadIterationValue = i;
-					//TODO: make sure that addToList doesn't do anything crazy if it gets interrupted!
-					addToResults(JSONToHash((makeWebRequest((String) url + i))));            	
-					publishProgress(status);
-				}
-				return 1;
-			}
-			else{
-				return -1;
-			}
-		}
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-			if(values[0] == 1){
-				dismissDialog(ID_DIALOG_ANNOTATE);
-			}
-			mBar.setProgress(values[0]);
-			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
-			setTitle("Downloading segments: " + values[0] + "/" + max);
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
-		}
-		@Override
-		protected void onPostExecute(Integer value) {
-			if(value == 1){
-				setProgress(10000);
-				MobileMetagenomics.launchResultView = false;
-			}
-			else if(value == -1){
-				Toast.makeText(ResultView.this, "Error: Server down or incorrect filetype", Toast.LENGTH_LONG).show();
-				finish();
-			}
-		}
-	}
-*/
+	
 	public void writeFileOut(){
 		try{
 			OutputStreamWriter osw = new OutputStreamWriter(	new FileOutputStream(
@@ -1117,32 +1043,3 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 }
-
-/*
-@Override
-public void onSaveInstanceState(Bundle savedInstanceState) {
-	super.onSaveInstanceState(savedInstanceState);
-	savedInstanceState.putInt("max", max);
-	savedInstanceState.putString("url", url);
-	savedInstanceState.putString("onResumeAction", onResumeAction);
-	savedInstanceState.putInt("downloadIterationValue", downloadIterationValue);
-	savedInstanceState.putStringArray("keyArr", (String[]) keyArr);
-}
-
-@Override
-public void onRestoreInstanceState(Bundle savedInstanceState) {
-  super.onRestoreInstanceState(savedInstanceState);
-  max = savedInstanceState.getInt("max");
-  downloadIterationValue = savedInstanceState.getInt("downloadIterationValue");
-  url = savedInstanceState.getString("url");
-  onResumeAction = savedInstanceState.getString("onResumeAction");
-  keyArr = savedInstanceState.getStringArray("keyArr");
-  if(onResumeAction == "continueDownloadResults"){
-	  resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, keyArr));
-	  new DownloadResults().execute("String");
-  }
-  else if(onResumeAction == "initialDownloadResults"){
-	  new DownloadResults().execute("String");
-  }
-}
- */

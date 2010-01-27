@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  
+  	<EditText android:id="@+id/PhoneNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/phoneNumberHint">
+	</EditText>
+	<Button android:id="@+id/UseMyNumber" 
+		android:layout_below="@+id/PhoneNumber" 
+		android:layout_width="fill_parent" 
+		android:text="@string/useMyNumber" 
+		android:layout_height="wrap_content">
+	</Button>
+	<EditText android:id="@+id/SampleNumber" 
+		android:layout_below="@+id/UseMyNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/sampleNumberHint">
+	</EditText>
+	<EditText android:id="@+id/Title" 
+		android:layout_below="@+id/SampleNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/titleHint">
+	</EditText>
+	<Button android:id="@+id/LoadWeb" 
+		android:layout_below="@+id/Title" 
+		android:layout_width="fill_parent" 
+		android:text="@string/load_web" 
+		android:layout_height="wrap_content">
+	</Button>
+  
+</RelativeLayout>

@@ -27,7 +27,12 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	public static final String PREFS_NAME = "MmPrefs";
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	static final int ACTIVITY_CHOOSE_FILE = 0;
-	private static final int LOAD_ID = Menu.FIRST;
+	static final int ACTIVITY_LOAD_WEB = 2;
+	private static final int LOAD_LOCAL_ID = Menu.FIRST;
+	private static final int LOAD_WEB_ID = Menu.FIRST + 1;
+	static final String LOAD_FILE_PHONE_NUMBER = "load file phone number";
+	static final String LOAD_FILE_SAMPLE_NUMBER = "load file sample number";
+	static final String LOAD_FILE_SAMPLE_TITLE = "load file title";
 	static final String LOAD_FILE_NAME = "load file name";
 	static final String FILE_NAME = "filename";
 	static final String LEVEL = "level";
@@ -123,7 +128,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        menu.add(0, LOAD_ID, 0, R.string.load).setIcon(android.R.drawable.ic_menu_set_as);
+        menu.add(0, LOAD_LOCAL_ID, 0, R.string.load_local).setIcon(android.R.drawable.ic_menu_set_as);
+        menu.add(0, LOAD_WEB_ID, 0, R.string.load_web).setIcon(android.R.drawable.ic_menu_set_as);
         return true;
     }
     
@@ -139,10 +145,13 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch(item.getItemId()) {
-        case LOAD_ID:
+        case LOAD_LOCAL_ID:
         	Intent i = new Intent(MobileMetagenomics.this, LoadFileChooser.class);
         	startActivityForResult(i, ACTIVITY_CHOOSE_FILE);
         	return true;
+        case LOAD_WEB_ID:
+        	Intent j = new Intent(MobileMetagenomics.this, LoadWebChooser.class);
+        	startActivityForResult(j, ACTIVITY_LOAD_WEB);
         }
         return super.onMenuItemSelected(featureId, item);
 	}
@@ -169,6 +178,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 						fileName.setText(filename);
 					}				
 				}
+				break;
+	        case ACTIVITY_LOAD_WEB:
 				break;
 	        }
         }

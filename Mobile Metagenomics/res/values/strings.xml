@@ -3,6 +3,10 @@
     <string name="app_name">Mobile Metagenomics</string>
     <string name="load_name">Choose a file</string>
     <string name="fileHint">Enter a filename</string>
+    <string name="phoneNumberHint">Enter phone number</string>
+    <string name="sampleNumberHint">Enter sample number</string>
+    <string name="titleHint">Or enter title</string>
+    <string name="useMyNumber">Use this phone's number</string>
     <string name="browse">Browse</string>
     <string name="stringency">Stringency:</string>
     <string name="level">Level:</string>
@@ -10,7 +14,8 @@
     <string name="reset">Reset</string>
     <string name="share">Share</string>
     <string name="save">Save Results</string>
-    <string name="load">Load Results</string>
+    <string name="load_local">Load Local Results</string>
+    <string name="load_web">Load Web Results</string>
     <string name="no_filemanager_installed">No File Manager installed; install one, or type in file name to annotate.</string>
 	<string name="kmer">Word Size</string>
 	<string name="maxGap">Max Gap</string>
