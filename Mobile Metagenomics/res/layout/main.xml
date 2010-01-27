@@ -31,14 +31,30 @@
 		android:entries="@array/levels"
 		android:prompt="@string/level">	
 	</Spinner>
-	<Button android:id="@+id/Upload" 
+	<Spinner android:id="@+id/KmerSpinner" 
 		android:layout_below="@+id/LevelSpinner" 
+		android:layout_alignLeft="@+id/Filename"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:entries="@array/kmer"
+		android:prompt="@string/kmer">	
+	</Spinner>
+	<Spinner android:id="@+id/MaxGapSpinner" 
+		android:layout_below="@+id/KmerSpinner" 
+		android:layout_alignLeft="@+id/Filename"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:entries="@array/maxGap"
+		android:prompt="@string/maxGap">	
+	</Spinner>
+	<Button android:id="@+id/Upload" 
+		android:layout_below="@+id/MaxGapSpinner" 
 		android:layout_width="wrap_content" 
 		android:text="@string/upload" 
 		android:layout_height="wrap_content">
 	</Button>
 	<Button android:id="@+id/Reset"
-		android:layout_below="@+id/LevelSpinner"  
+		android:layout_below="@+id/MaxGapSpinner"  
 		android:layout_toRightOf="@+id/Upload" 
 		android:layout_width="wrap_content" 
 		android:text="@string/reset" 

@@ -79,6 +79,8 @@ public class ResultView extends BetterDefaultActivity{
 	String shareMode;
 	int stringency = -1;
 	int level = -1;
+	int kmer = -1;
+	int maxGap = 1;
 	Object[] resultsArr;
 	ListView resultListView;
 	int max;
@@ -125,6 +127,8 @@ public class ResultView extends BetterDefaultActivity{
 					level = (extras.getInt(MobileMetagenomics.LEVEL));
 					stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
 					fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
+					kmer = (extras.getInt(MobileMetagenomics.KMER));
+					maxGap = (extras.getInt(MobileMetagenomics.MAX_GAP));
 					MyBetterAsyncTask task = new MyBetterAsyncTask(this);
 					setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
 					setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
@@ -155,13 +159,13 @@ public class ResultView extends BetterDefaultActivity{
 	@Override  
 	protected void onPause() {  
 		super.onPause();  
-		Log.e("Concurrency","onPause'd");
+		Log.e("ResultView","onPause'd");
 	}
 
 	@Override
 	protected void onStop(){
 		super.onStop();
-		Log.e("Concurrency","onStop'd, launchResultView is " + MobileMetagenomics.launchResultView);
+		Log.e("ResultView","onStop'd, launchResultView is " + MobileMetagenomics.launchResultView);
 		SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putBoolean("launchResultView", MobileMetagenomics.launchResultView);
@@ -169,21 +173,22 @@ public class ResultView extends BetterDefaultActivity{
 		editor.putInt(MAX, max);
 		editor.commit();
 	}
-
+/*
 	@Override  
 	public boolean onKeyDown(int keyCode, KeyEvent event) {  
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) { 
-			/* If we are killing the MM/ResultView process, we don't
-				want the tasks to continue work floating in memory.
-			 */
+			// If we are killing the MM/ResultView process, we don't
+			//	want the tasks to continue work floating in memory.
+			 
 			//Task.cancelAll(this);
 			MobileMetagenomics.launchResultView = false;
 		}  
 
 		return super.onKeyDown(keyCode, event);  
 	}
-
+*/
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
@@ -285,24 +290,19 @@ public class ResultView extends BetterDefaultActivity{
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status;
 			status = 0;
-			Log.e("Concurrency","Performing file upload with level " + level + " and stringency " + stringency);
+			Log.e("ResultView","Performing file upload with level " + level + " and stringency " + stringency);
 			doInitialAsynchWork(doFileUpload(fileName.toString(),
 					level,
-					stringency));
-			Log.e("Concurrency","Supposedly finished doInitialAsynch");
+					stringency, kmer, maxGap));
 			status++;
 			publishProgress(status);
-			Log.e("Concurrency","Finished publishProgress(status) once");
-			Log.e("Concurrency","Didn't die on dismissDialog");
-			//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
 			return 1;
 		}
 
 		@Override
 		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
-			//Log.e("Concurrency","After, reporting in...");
-			//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
+			//Log.e("ResultView","After, reporting in...");
 			MySecondBetterAsyncTask task2 = new  MySecondBetterAsyncTask(ResultView.this);
 			task2.disableDialog();
 			task2.execute();
@@ -316,10 +316,16 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override  
 		public void onProgressUpdate(Integer...values){
-			resultListView.setAdapter(
-					new ArrayAdapter(
-							ResultView.this, 
-							android.R.layout.simple_list_item_1, resultsArr));
+			switch (level){
+	        //Handle the "Function" operation mode
+	        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+	        case 1: displaySubsystemsGraph(); break;
+	        case 2: displaySubsystemsGraph(); break;
+	        case 3: displaySubsystemsGraph(); break;
+	        case 4: displaySubsystemsGraph(); break;
+	        //TODO: replace this with some proper means of handling this error.
+	        default: System.out.println("Invalid mode - terminating."); break;
+	        }
 			mBar.setProgress(mBar.getProgress() + 1);
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
@@ -336,15 +342,15 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 1;
-			Log.e("Concurrency","Started second task");
+			Log.e("ResultView","Started second task");
 			//Do remaining blocks.
 			for(int i=2; i<=max; i++){
 				status++;
 				addToResults(JSONToHash((makeWebRequest((String) url + i))));    
-				Log.e("Concurrency","Supposedly finished addToResults");
+				Log.e("ResultView","Supposedly finished addToResults");
 				publishProgress(status);
 				//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
-				Log.e("Concurrency","Supposedly posted second task results");
+				Log.e("ResultView","Supposedly posted second task results");
 			}
 			return 1;
 		}
@@ -363,10 +369,16 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override  
 		public void onProgressUpdate(Integer...values){
-			resultListView.setAdapter(
-					new ArrayAdapter(
-							ResultView.this, 
-							android.R.layout.simple_list_item_1, resultsArr));
+			switch (level){
+	        //Handle the "Function" operation mode
+	        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+	        case 1: displaySubsystemsGraph(); break;
+	        case 2: displaySubsystemsGraph(); break;
+	        case 3: displaySubsystemsGraph(); break;
+	        case 4: displaySubsystemsGraph(); break;
+	        //TODO: replace this with some proper means of handling this error.
+	        default: System.out.println("Invalid mode - terminating."); break;
+	        }
 			mBar.setProgress(mBar.getProgress() + 1);
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
@@ -467,6 +479,7 @@ public class ResultView extends BetterDefaultActivity{
 	}*/
 
 	public void displaySubsystemsGraph(){
+		System.out.println("displaySubsystemsGraph was called. resultArr length is: " + resultsArr.length);
 		WindowManager wm =
 			(WindowManager) getSystemService(Context.WINDOW_SERVICE);
 		Display disp = wm.getDefaultDisplay();
@@ -478,6 +491,7 @@ public class ResultView extends BetterDefaultActivity{
 		Hashtable helperHash = new Hashtable();
 		//TODO: this is an issue if the resultsArr isn't populated properly. Null ex
 		for(int i=0; i<resultsArr.length; i++){
+			System.out.println("dSG adding " + resultsArr[i] + " to graph");
 			String delims = "value: ";
 			String[] tokens = ((String) resultsArr[i]).split(delims);
 			if(!helperHash.containsKey(tokens[0])){
@@ -571,6 +585,7 @@ public class ResultView extends BetterDefaultActivity{
 
 	public Hashtable<String,String> JSONToHash(String jsonString){
 		if(statusOk){
+			System.out.println("JSONToHash reached, input is: " + jsonString);
 			//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
 			Hashtable<String,String> resultHash = new Hashtable<String,String>();
 			try{// Take the stringified JSON Hash of Hashes and put it into our Hash
@@ -656,7 +671,7 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
-	private String doFileUpload(String ourFile, int level, int stringency){
+	private String doFileUpload(String ourFile, int level, int stringency, int kmer, int maxGap){
 		if(statusOk){
 			final String existingFileName = ourFile;   	  
 			final String lineEnd = "\r\n";
@@ -711,6 +726,12 @@ public class ResultView extends BetterDefaultActivity{
 						+ twoHyphens + boundary + lineEnd
 						+ "Content-Disposition: form-data; name=\"level\"" + lineEnd + lineEnd
 						+ level + lineEnd
+						+ twoHyphens + boundary + lineEnd
+						+ "Content-Disposition: form-data; name=\"kmer\"" + lineEnd + lineEnd
+						+ kmer + lineEnd
+						+ twoHyphens + boundary + lineEnd
+						+ "Content-Disposition: form-data; name=\"maxGap\"" + lineEnd + lineEnd
+						+ maxGap + lineEnd
 						+ twoHyphens + boundary + lineEnd
 						+ "Content-Disposition: form-data; name=\"submit\"" + lineEnd + lineEnd 
 						+ "Upload" + lineEnd
@@ -1005,7 +1026,7 @@ public class ResultView extends BetterDefaultActivity{
 			}
 		}
 	}	
-
+/*
 	private class DownloadResults extends AsyncTask<String, Integer, Integer> {
 		@Override
 		protected void onPreExecute(){
@@ -1018,7 +1039,7 @@ public class ResultView extends BetterDefaultActivity{
 			Integer status;
 			if(onResumeAction == "initialDownloadResults"){
 				status = 0;
-				Log.e("Concurrency","Performing file upload with level " + level + " and stringency " + stringency);
+				Log.e("ResultView","Performing file upload with level " + level + " and stringency " + stringency);
 				doInitialAsynchWork(doFileUpload(fileName.toString(),
 						level,
 						stringency));
@@ -1079,7 +1100,7 @@ public class ResultView extends BetterDefaultActivity{
 			}
 		}
 	}
-
+*/
 	public void writeFileOut(){
 		try{
 			OutputStreamWriter osw = new OutputStreamWriter(	new FileOutputStream(

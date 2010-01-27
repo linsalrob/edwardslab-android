@@ -32,10 +32,14 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String FILE_NAME = "filename";
 	static final String LEVEL = "level";
 	static final String STRINGENCY = "stringency";
+	static final String KMER = "kmer";
+	static final String MAX_GAP = "maxGap";
 	public static boolean launchResultView;
 	EditText fileName;
 	Spinner stringencySpinner;
 	Spinner levelSpinner;
+	Spinner kmerSpinner;
+	Spinner maxGapSpinner;
 	Object[] keyArr;
 	Object[] valArr;
 	ListView resultListView;
@@ -54,6 +58,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         fileName = (EditText) findViewById(R.id.Filename);
         stringencySpinner = (Spinner) findViewById(R.id.StringencySpinner);
         levelSpinner = (Spinner) findViewById(R.id.LevelSpinner);
+        kmerSpinner = (Spinner) findViewById(R.id.KmerSpinner);
+        maxGapSpinner = (Spinner) findViewById(R.id.MaxGapSpinner);
     	final InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
         final Button uploadButton = (Button)findViewById(R.id.Upload);
         final Button resetButton = (Button)findViewById(R.id.Reset);
@@ -65,6 +71,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         		i.putExtra(FILE_NAME, fileName.getText().toString());
         		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition() /*+ 1*/);
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
+        		i.putExtra(KMER, (kmerSpinner.getSelectedItemPosition() + 7));
+        		i.putExtra(MAX_GAP, (maxGapSpinner.getSelectedItemPosition() + 1)*300);
         		launchResultView = true;
         		startActivityForResult(i, 0);
         	}
