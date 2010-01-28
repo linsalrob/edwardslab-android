@@ -2,9 +2,6 @@ package edwardslab.util;
 
 import org.openintents.intents.FileManagerIntents;
 
-import com.github.droidfu.activities.BetterDefaultActivity;
-
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +19,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.github.droidfu.activities.BetterDefaultActivity;
 
 public class MobileMetagenomics extends BetterDefaultActivity{
 	public static final String PREFS_NAME = "MmPrefs";
@@ -44,7 +43,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String STRINGENCY = "stringency";
 	static final String KMER = "kmer";
 	static final String MAX_GAP = "maxGap";
-	public static boolean launchResultView;
 	EditText fileName;
 	Spinner stringencySpinner;
 	Spinner levelSpinner;
@@ -59,8 +57,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        Log.e("MobileMetagenomics","onCreate'd, launchResultView is " + MobileMetagenomics.launchResultView);
-        launchResultView = settings.getBoolean("launchResultView", false);
 //        launchResultView = false;
         setContentView(R.layout.main);
         
@@ -86,7 +82,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
         		i.putExtra(KMER, (kmerSpinner.getSelectedItemPosition() + 7));
         		i.putExtra(MAX_GAP, (maxGapSpinner.getSelectedItemPosition() + 1)*300);
-        		launchResultView = true;
         		startActivityForResult(i, 0);
         	}
         });       
@@ -117,11 +112,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     @Override
     protected void onResume() {
     	 super.onResume();
-    	 
-    	/* if(launchResultView){
-         	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
-     		startActivityForResult(i, 0);
-         }*/
     }
     
     @Override
@@ -144,7 +134,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     	super.onStop();
     	SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 	    SharedPreferences.Editor editor = settings.edit();
-    	editor.putBoolean("launchResultView", launchResultView);
 	    editor.commit();
     }
     
@@ -196,7 +185,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_1);
 	            		i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
 	            		i.putExtra(LOAD_FILE_SAMPLE_NUMBER, sampleNumber);
-	            		launchResultView = true;
 	            		startActivity(i);
 	        		}
 	        		else if(phoneNumber != 0 && (sampleTitle != null)){
@@ -204,7 +192,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_2);
 	        			i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
 	        			i.putExtra(LOAD_FILE_SAMPLE_TITLE, sampleTitle);
-	            		launchResultView = true;
 	            		startActivity(i);
 	        		}
 	        	}

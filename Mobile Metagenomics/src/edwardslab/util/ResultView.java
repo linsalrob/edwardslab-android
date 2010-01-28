@@ -47,7 +47,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -57,7 +56,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.github.droidfu.activities.BetterDefaultActivity;
@@ -191,10 +189,8 @@ public class ResultView extends BetterDefaultActivity{
 	@Override
 	protected void onStop(){
 		super.onStop();
-		Log.e("ResultView","onStop'd, launchResultView is " + MobileMetagenomics.launchResultView);
 		SharedPreferences settings = getSharedPreferences(MobileMetagenomics.PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
-		editor.putBoolean("launchResultView", MobileMetagenomics.launchResultView);
 		editor.putInt(LEVEL, level);
 		editor.putInt(MAX, max);
 		editor.commit();
