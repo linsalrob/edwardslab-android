@@ -28,6 +28,10 @@
 			android:theme="@android:style/Theme.Dialog"
 			android:label="@string/load_name">
 	</activity>
+	<activity android:name=".LoadWebChooser" 
+			android:theme="@android:style/Theme.Dialog"
+			android:label="@string/load_web">
+	</activity>
 </application>
     <uses-sdk android:minSdkVersion="3" />
 	<uses-permission android:name="android.permission.INTERNET"></uses-permission>

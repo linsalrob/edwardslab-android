@@ -1,15 +1,17 @@
 package edwardslab.util;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
 public class LoadWebChooser extends Activity{
-	int numberEntered;
+	Double numberEntered;
 	int sampleEntered;
 	String titleEntered;
 	EditText phoneNumber;
@@ -18,11 +20,13 @@ public class LoadWebChooser extends Activity{
 	
 	public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.loadfile);
-        phoneNumber = (EditText) findViewById(R.id.LoadFilename);
+        setContentView(R.layout.loadweb);
+        phoneNumber = (EditText) findViewById(R.id.PhoneNumber);
+        sampleNumber = (EditText) findViewById(R.id.SampleNumber);
+        title = (EditText) findViewById(R.id.Title);
         final Button myNumberButton = (Button) findViewById(R.id.UseMyNumber);
         final Button confirmButton = (Button) findViewById(R.id.LoadWeb);
-        numberEntered = 5555555;
+        numberEntered = new Double(5555555);
         sampleEntered = -1;
         titleEntered = "no title";
         
@@ -47,8 +51,9 @@ public class LoadWebChooser extends Activity{
         confirmButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if(Integer.parseInt(phoneNumber.getText().toString()) != 0){
-					numberEntered = Integer.parseInt(phoneNumber.getText().toString());
+				Double tmpPhoneNumber = Double.parseDouble((String)phoneNumber.getText().toString());
+				if(tmpPhoneNumber != 0){
+					numberEntered = tmpPhoneNumber;
 				}
 				if(Integer.parseInt(sampleNumber.getText().toString()) != 0){
 					sampleEntered = Integer.parseInt(sampleNumber.getText().toString());
@@ -58,7 +63,7 @@ public class LoadWebChooser extends Activity{
 				}
 				
 				Bundle bundle = new Bundle();            
-				bundle.putInt(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
+				bundle.putDouble(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
 				bundle.putInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleEntered);
 				if(!titleEntered.equals("no title")){
 					bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, titleEntered);
@@ -67,6 +72,17 @@ public class LoadWebChooser extends Activity{
 	            mIntent.putExtras(bundle);
 	            setResult(RESULT_OK, mIntent);
 	            finish();
+			}
+    	});
+        
+        myNumberButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				TelephonyManager mTelephonyMgr;  
+				mTelephonyMgr = (TelephonyManager)  
+				getSystemService(Context.TELEPHONY_SERVICE);
+				String tmpLineNumber = mTelephonyMgr.getLine1Number();
+				phoneNumber.setText(tmpLineNumber);
 			}
     	});
 	}

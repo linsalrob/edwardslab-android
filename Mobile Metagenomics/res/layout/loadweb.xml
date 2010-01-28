@@ -7,7 +7,8 @@
   	<EditText android:id="@+id/PhoneNumber" 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
-		android:hint="@string/phoneNumberHint">
+		android:hint="@string/phoneNumberHint"
+		android:inputType="phone">
 	</EditText>
 	<Button android:id="@+id/UseMyNumber" 
 		android:layout_below="@+id/PhoneNumber" 
@@ -19,7 +20,8 @@
 		android:layout_below="@+id/UseMyNumber" 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
-		android:hint="@string/sampleNumberHint">
+		android:hint="@string/sampleNumberHint"
+		android:inputType="number">
 	</EditText>
 	<EditText android:id="@+id/Title" 
 		android:layout_below="@+id/SampleNumber" 

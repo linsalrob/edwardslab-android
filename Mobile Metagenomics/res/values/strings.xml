@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Mobile Metagenomics</string>
     <string name="load_name">Choose a file</string>
+    <string name="web_name">Enter file info</string>
     <string name="fileHint">Enter a filename</string>
     <string name="phoneNumberHint">Enter phone number</string>
     <string name="sampleNumberHint">Enter sample number</string>
