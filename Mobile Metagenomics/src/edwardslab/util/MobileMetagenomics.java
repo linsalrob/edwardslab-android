@@ -34,6 +34,11 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String LOAD_FILE_SAMPLE_NUMBER = "load file sample number";
 	static final String LOAD_FILE_SAMPLE_TITLE = "load file title";
 	static final String LOAD_FILE_NAME = "load file name";
+	static final String RESULTVIEW_MODE = "resultView mode";
+	static final String NORMAL_MODE = "normal mode";
+	static final String LOAD_LOCAL_FILE = "load local mode";
+	static final String LOAD_WEB_JSON_1 = "load web json mode 1";
+	static final String LOAD_WEB_JSON_2 = "load web json mode 2";
 	static final String FILE_NAME = "filename";
 	static final String LEVEL = "level";
 	static final String STRINGENCY = "stringency";
@@ -75,6 +80,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         uploadButton.setOnClickListener(new OnClickListener(){
         	public void onClick(View v) { 
         		Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+        		i.putExtra(RESULTVIEW_MODE, NORMAL_MODE);
         		i.putExtra(FILE_NAME, fileName.getText().toString());
         		i.putExtra(LEVEL, levelSpinner.getSelectedItemPosition() /*+ 1*/);
         		i.putExtra(STRINGENCY, (stringencySpinner.getSelectedItemPosition() + 1));
@@ -186,10 +192,18 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        		String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
 	        		
 	        		if(phoneNumber != 0 && sampleNumber != 0){
-	        			
+	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_1);
+	            		i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	            		i.putExtra(LOAD_FILE_SAMPLE_NUMBER, sampleNumber);
+	            		launchResultView = true;
 	        		}
 	        		else if(phoneNumber != 0 && !sampleTitle.equals("")){
-	        			
+	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_2);
+	        			i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	        			i.putExtra(LOAD_FILE_SAMPLE_TITLE, sampleTitle);
+	            		launchResultView = true;
 	        		}
 	        	}
 				break;
@@ -199,6 +213,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     
 	public void loadResults(String resFile){
 		            Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+		            i.putExtra(RESULTVIEW_MODE, LOAD_LOCAL_FILE);
 	        		i.putExtra(LOAD_FILE_NAME, resFile);
 	        		startActivity(i);
 	}

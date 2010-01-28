@@ -81,6 +81,9 @@ public class ResultView extends BetterDefaultActivity{
 	int level = -1;
 	int kmer = -1;
 	int maxGap = 1;
+	int phoneNumber = -1;
+	int sampleNumber = 1;
+	String sampleTitle = "";
 	Object[] resultsArr;
 	ListView resultListView;
 	int max;
@@ -117,23 +120,46 @@ public class ResultView extends BetterDefaultActivity{
 			Log.e("ResultView","Supposedly isLaunching() == true");
 			if(extras != null){
 				Log.e("ResultView","extras != null");
-				if(extras.containsKey(
-						MobileMetagenomics.LOAD_FILE_NAME)){
-					Log.e("ResultView","extras.contains key LOAD FILE NAME");
-					new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+				if(extras.containsKey(MobileMetagenomics.RESULTVIEW_MODE)){
+					String mode = extras.getString(MobileMetagenomics.RESULTVIEW_MODE);
+					if(mode.equals(MobileMetagenomics.NORMAL_MODE)){
+						Log.e("ResultView","extras doesn't contain LOAD FILE NAME");
+						level = (extras.getInt(MobileMetagenomics.LEVEL));
+						stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
+						fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
+						kmer = (extras.getInt(MobileMetagenomics.KMER));
+						maxGap = (extras.getInt(MobileMetagenomics.MAX_GAP));
+						AnnotationAsyncTask1 task = new AnnotationAsyncTask1(this);
+						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
+						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
+						// task.disableDialog();
+						task.execute();
+					}
+					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){;
+							new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+					}
+					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
+						phoneNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+	            		sampleNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
+	            		LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
+						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
+						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
+						task.execute();
+					}
+					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_2)){
+						phoneNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+	            		sampleTitle = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE);
+	            		LoadJsonMode2AsyncTask task = new LoadJsonMode2AsyncTask(this);
+						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
+						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
+						task.execute();
+					}
+					else{
+						//TODO: error: invalid mode
+					}
 				}
 				else{
-					Log.e("ResultView","extras doesn't contain LOAD FILE NAME");
-					level = (extras.getInt(MobileMetagenomics.LEVEL));
-					stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
-					fileName = (extras.getString(MobileMetagenomics.FILE_NAME));
-					kmer = (extras.getInt(MobileMetagenomics.KMER));
-					maxGap = (extras.getInt(MobileMetagenomics.MAX_GAP));
-					MyBetterAsyncTask task = new MyBetterAsyncTask(this);
-					setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
-					setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
-					// task.disableDialog();
-					task.execute();
+					//TODO: error: no mode specified
 				}
 			}
 			else{
@@ -280,8 +306,8 @@ public class ResultView extends BetterDefaultActivity{
 		return super.onCreateDialog(id);
 	}
 
-	private class MyBetterAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
-		public MyBetterAsyncTask(Context context) {
+	private class AnnotationAsyncTask1 extends BetterAsyncTask<String, Integer, Integer> {
+		public AnnotationAsyncTask1(Context context) {
 			super(context);
 			// TODO Auto-generated constructor stub
 		}
@@ -303,7 +329,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
 			//Log.e("ResultView","After, reporting in...");
-			MySecondBetterAsyncTask task2 = new  MySecondBetterAsyncTask(ResultView.this);
+			AnnotationAsyncTask2 task2 = new  AnnotationAsyncTask2(ResultView.this);
 			task2.disableDialog();
 			task2.execute();
 		}
@@ -333,8 +359,8 @@ public class ResultView extends BetterDefaultActivity{
 
 	}
 
-	private class MySecondBetterAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
-		public MySecondBetterAsyncTask(Context context) {
+	private class AnnotationAsyncTask2 extends BetterAsyncTask<String, Integer, Integer> {
+		public AnnotationAsyncTask2(Context context) {
 			super(context);
 			// TODO Auto-generated constructor stub
 		}
@@ -382,6 +408,88 @@ public class ResultView extends BetterDefaultActivity{
 			mBar.setProgress(mBar.getProgress() + 1);
 			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+		} 
+
+	}
+	
+	private class LoadJsonMode1AsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public LoadJsonMode1AsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status;
+			status = 0;
+			Log.e("ResultView","Performing load json mode 1");
+			loadInitialResults(JSONToHash(doJsonQuery1(phoneNumber, sampleNumber)));
+			status++;
+			publishProgress(status);
+			return 1;
+		}
+
+		@Override
+		protected void after(Context context, Integer result) {
+			// TODO Auto-generated method stub
+			//Log.e("ResultView","After, reporting in...");
+			AnnotationAsyncTask2 task2 = new  AnnotationAsyncTask2(ResultView.this);
+			task2.disableDialog();
+			task2.execute();
+		}
+
+		@Override
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+	        //Handle the "Function" operation mode
+	        resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
+	        setProgress(10000);
+		} 
+
+	}
+	
+	private class LoadJsonMode2AsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public LoadJsonMode2AsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status;
+			status = 0;
+			Log.e("ResultView","Performing load json mode 1");
+			loadInitialResults(JSONToHash(doJsonQuery2(phoneNumber, sampleNumber)));
+			status++;
+			publishProgress(status);
+			return 1;
+		}
+
+		@Override
+		protected void after(Context context, Integer result) {
+			// TODO Auto-generated method stub
+			//Log.e("ResultView","After, reporting in...");
+			AnnotationAsyncTask2 task2 = new  AnnotationAsyncTask2(ResultView.this);
+			task2.disableDialog();
+			task2.execute();
+		}
+
+		@Override
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+	        //Handle the "Function" operation mode
+	        resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
+	        setProgress(10000);
 		} 
 
 	}
