@@ -52,11 +52,13 @@ public class LoadWebChooser extends Activity{
 			@Override
 			public void onClick(View v) {
 				Double tmpPhoneNumber = Double.parseDouble((String)phoneNumber.getText().toString());
+				Integer tmpSampleNumber = Integer.parseInt((String)sampleNumber.getText().toString());
+				System.out.println("");
 				if(tmpPhoneNumber != 0){
 					numberEntered = tmpPhoneNumber;
 				}
-				if(Integer.parseInt(sampleNumber.getText().toString()) != 0){
-					sampleEntered = Integer.parseInt(sampleNumber.getText().toString());
+				if(tmpSampleNumber != 0){
+					sampleEntered = tmpSampleNumber;
 				}
 				if(title.getText().toString() != null){
 					titleEntered = title.getText().toString();
