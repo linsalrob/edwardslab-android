@@ -177,6 +177,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        case ACTIVITY_LOAD_WEB:
 	        	if(extras != null){
 	        		double phoneNumber = extras.getDouble(LOAD_FILE_PHONE_NUMBER);
+	        		System.out.println("Mobile Metagenomics receiving: " + extras.getInt(LOAD_FILE_SAMPLE_NUMBER));
 	        		Integer sampleNumber = extras.getInt(LOAD_FILE_SAMPLE_NUMBER);
 	        		String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
 	        		

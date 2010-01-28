@@ -12,7 +12,7 @@ import android.widget.EditText;
 
 public class LoadWebChooser extends Activity{
 	Double numberEntered;
-	int sampleEntered;
+	Integer sampleEntered;
 	String titleEntered;
 	EditText phoneNumber;
 	EditText sampleNumber;
@@ -53,14 +53,14 @@ public class LoadWebChooser extends Activity{
 			public void onClick(View v) {
 				Double tmpPhoneNumber = Double.parseDouble((String)phoneNumber.getText().toString());
 				Integer tmpSampleNumber = Integer.parseInt((String)sampleNumber.getText().toString());
-				System.out.println("");
+				System.out.println("sample number is: " + tmpSampleNumber.toString());
 				if(tmpPhoneNumber != 0){
 					numberEntered = tmpPhoneNumber;
 				}
 				if(tmpSampleNumber != 0){
 					sampleEntered = tmpSampleNumber;
 				}
-				if(title.getText().toString() != null){
+				if(!title.getText().toString().equals("")){
 					titleEntered = title.getText().toString();
 				}
 				
@@ -68,7 +68,7 @@ public class LoadWebChooser extends Activity{
 				bundle.putDouble(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
 				bundle.putInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleEntered);
 				if(!titleEntered.equals("no title")){
-					bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, titleEntered);
+					bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE, titleEntered);
 				}
 	            Intent mIntent = new Intent();
 	            mIntent.putExtras(bundle);
