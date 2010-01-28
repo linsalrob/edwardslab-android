@@ -981,9 +981,12 @@ public class ResultView extends BetterDefaultActivity{
 					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
 					sampleNumber + lineEnd +
 					twoHyphens + boundary + lineEnd +
-				//	"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
-				//	fileName + lineEnd +
-				//	twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
 					"Give me this JSON Object" + lineEnd +
 					twoHyphens + boundary + twoHyphens + lineEnd);
@@ -1047,7 +1050,13 @@ public class ResultView extends BetterDefaultActivity{
 					phoneNumberForQuery2 + lineEnd +
 					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
 					sampleTitle + lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
+					lineEnd +
 					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
 					"Give me this JSON Object" + lineEnd +
