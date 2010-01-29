@@ -78,6 +78,9 @@ public class ResultView extends BetterDefaultActivity{
 	static final int  ID_DIALOG_SHARE=3;
 	static final String APP_NAME = "Mobile Metagenomics";
 	static final String ANNOTATION = "Annotation Complete!";
+	static final String LOADING = "Loading Complete!";
+	static final String SAVING = "Saving Complete!";
+	static final String SHARING = "Sharing Complete!";
 	String LEVEL = "level";
 	String MAX = "max";
 	String fileName;
@@ -472,6 +475,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void after(Context context, Integer value) {
 			if(value == 1){
+				showNotification(APP_NAME, SAVING);
 				dismissDialog(ID_DIALOG_SAVE);
 			}
 			if(value == -1){
@@ -522,6 +526,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void onProgressUpdate(Integer... values) {
 			if(values[0] == 1){
+				showNotification(APP_NAME, LOADING);
 				dismissDialog(ID_DIALOG_LOAD);
 			}
 			if(values[0] == -1){
@@ -627,6 +632,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected void after(Context context, Integer value) {
 			// TODO: Conclude progress dialogues etc...
 			if(value == 1){
+				showNotification(APP_NAME, SHARING);
 				dismissDialog(ID_DIALOG_SHARE);
 			}
 		}
