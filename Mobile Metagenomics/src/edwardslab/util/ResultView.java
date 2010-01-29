@@ -76,6 +76,8 @@ public class ResultView extends BetterDefaultActivity{
 	static final int  ID_DIALOG_LOAD=1;
 	static final int  ID_DIALOG_SAVE=2;
 	static final int  ID_DIALOG_SHARE=3;
+	static final String APP_NAME = "Mobile Metagenomics";
+	static final String ANNOTATION = "Annotation Complete!";
 	String LEVEL = "level";
 	String MAX = "max";
 	String fileName;
@@ -98,7 +100,8 @@ public class ResultView extends BetterDefaultActivity{
 	TextView mDisplay;
 	ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
-
+	boolean isInFocus;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_PROGRESS);
@@ -117,6 +120,7 @@ public class ResultView extends BetterDefaultActivity{
 		super.onResume();  
 		Log.e("ResultView","onResume'd");
 		Bundle extras = getIntent().getExtras();
+		isInFocus = true;
 		if(isResuming()){
 			Log.e("ResultView","Supposedly isResuming() == true");
 		}
@@ -140,7 +144,7 @@ public class ResultView extends BetterDefaultActivity{
 						task.execute();
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){;
-							new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+							new LoadResults(this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
@@ -169,26 +173,13 @@ public class ResultView extends BetterDefaultActivity{
 			else{
 				Log.e("ResultView","extras == null");
 			}
-
-			//TODO: stupid things happen when the intent above is empty, fix this!
-
-			/*
-		        switch (level){
-		        //Handle the "Function" operation mode
-		        case 0: doFunctionWork(); break;
-		        case 1: doSubsystemsWork(); break;
-		        case 2: doSubsystemsWork(); break;
-		        case 3: doSubsystemsWork(); break;
-		        case 4: doSubsystemsWork(); break;
-		        //TODO: replace this with some proper means of handling this error.
-		        default: System.out.println("Invalid mode - terminating."); break;
-		        }*/
 		}		
 	}
 
 	@Override  
 	protected void onPause() {  
 		super.onPause();  
+		isInFocus = false;
 		Log.e("ResultView","onPause'd");
 	}
 
@@ -201,21 +192,6 @@ public class ResultView extends BetterDefaultActivity{
 		editor.putInt(MAX, max);
 		editor.commit();
 	}
-/*
-	@Override  
-	public boolean onKeyDown(int keyCode, KeyEvent event) {  
-
-		if (keyCode == KeyEvent.KEYCODE_BACK) { 
-			// If we are killing the MM/ResultView process, we don't
-			//	want the tasks to continue work floating in memory.
-			 
-			//Task.cancelAll(this);
-			MobileMetagenomics.launchResultView = false;
-		}  
-
-		return super.onKeyDown(keyCode, event);  
-	}
-*/
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -236,20 +212,20 @@ public class ResultView extends BetterDefaultActivity{
 			.setPositiveButton("text", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "txt";
-					new shareResults().execute("String");
+					new shareResults(ResultView.this).execute("String");
 				}
 			})
 			.setNegativeButton("json", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "json";
-					new shareResults().execute("String");
+					new shareResults(ResultView.this).execute("String");
 				}
 			});
 			AlertDialog alert = builder.create();
 			alert.show();
 			return true;
 		case SAVE_ID:
-			new SaveResults().execute("String");
+			new SaveResults(this).execute("String");
 			return true;
 		case LOAD_ID:
 			Intent i = new Intent(ResultView.this, LoadFileChooser.class);
@@ -266,7 +242,7 @@ public class ResultView extends BetterDefaultActivity{
 		Bundle extras = intent.getExtras();
 		switch(requestCode) {
 		case MobileMetagenomics.ACTIVITY_CHOOSE_FILE:
-			new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+			new LoadResults(ResultView.this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 			break;
 		}
 	}
@@ -386,15 +362,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
-			Intent intent = new Intent(ResultView.this, ResultView.class);
-			Notification notification = new Notification(R.drawable.icon,
-                	"Notify", System.currentTimeMillis());
-        	notification.setLatestEventInfo(ResultView.this,
-                	"Mobile Metagenomics","Annotation Complete!",
-	                PendingIntent.getActivity(this.getCallingContext(), 0, intent,
-        	                PendingIntent.FLAG_CANCEL_CURRENT));
-	        notification.flags = Notification.FLAG_AUTO_CANCEL;
-	        mManager.notify(APP_ID, notification);
+	        showNotification(APP_NAME, ANNOTATION);
 			setProgress(10000);
 		}
 
@@ -462,6 +430,212 @@ public class ResultView extends BetterDefaultActivity{
 		} 
 
 	}
+	
+	private class SaveResults extends BetterAsyncTask<String, Integer, Integer> {
+		public SaveResults(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+		@Override
+		protected void before(Context context){
+			showDialog(ID_DIALOG_SAVE);
+		}   	
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) {
+			try {
+				FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + fileName + ".json"));
+				JSONObject tmpJo = new JSONObject();
+				for(int i=0; i<resultsArr.length; i++){
+					tmpJo.put("" + i, resultsArr[i]);
+				}
+				OutputStreamWriter osw = new OutputStreamWriter(fos);
+				osw.write(tmpJo.toString());
+				return 1;
+			}
+			catch (Throwable e) {
+				Log.e("SaveRes","exception thrown: " + e.toString());
+				System.err.println("exception thrown: " + e.toString());
+				statusOk = false;
+				return -1;
+			}
+		}   	
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			if(values[0] == 1){
+				dismissDialog(ID_DIALOG_SAVE);
+			}
+			if(values[0] == -1){
+				dismissDialog(ID_DIALOG_SAVE);
+				// TODO: popup toast that says save failed.
+			}
+		}
+		@Override
+		protected void after(Context context, Integer value) {
+			if(value == 1){
+				dismissDialog(ID_DIALOG_SAVE);
+			}
+			if(value == -1){
+				dismissDialog(ID_DIALOG_SAVE);
+				// TODO: popup toast that says save failed.
+			}
+		}
+		@Override
+		protected void handleError(Context arg0, Exception arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+	}
+
+	private class LoadResults extends BetterAsyncTask<String, Integer, Integer> {
+		public LoadResults(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+		@Override
+		protected void before(Context context){
+			showDialog(ID_DIALOG_LOAD);
+		}	
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) {
+			String[] tmpStringArr = params[0].split("/sdcard/");
+			//TODO: this may be unneeded, look at what happens when a normal (non-loaded) result is done.
+			if(tmpStringArr.length > 1)
+				tmpStringArr = tmpStringArr[1].split(".mmr");
+			else
+				tmpStringArr = tmpStringArr[0].split(".mmr");
+			fileName = tmpStringArr[0];
+			try {
+				FileInputStream fis = new FileInputStream(new File(params[0]));
+				ObjectInputStream ois =
+					new ObjectInputStream(fis);
+				resultsArr = (Object[])ois.readObject();
+				fis.close();
+				return 1;
+			}
+			catch (Throwable e) {
+				System.err.println("exception thrown from LoadResults doInBackground");
+				statusOk = false;
+				return -1;
+				// TODO: Pop up a toast or something
+			}
+		}    	
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			if(values[0] == 1){
+				dismissDialog(ID_DIALOG_LOAD);
+			}
+			if(values[0] == -1){
+				dismissDialog(ID_DIALOG_LOAD);
+				// TODO: popup toast that says save failed.
+			}
+		}
+		@Override
+		protected void after(Context context, Integer value) {
+			if(value == 1){
+				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
+				dismissDialog(ID_DIALOG_LOAD);
+			}
+			if(value == -1){
+				dismissDialog(ID_DIALOG_LOAD);
+				// TODO: popup toast that says save failed.
+			}
+		}
+		@Override
+		protected void handleError(Context arg0, Exception arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+	}
+
+	private class shareResults extends BetterAsyncTask<String, Integer, Integer> {
+		public shareResults(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+		@Override
+		protected void before(Context context){
+			showDialog(ID_DIALOG_SHARE);
+		}
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) {
+			File saveFile;
+			if(shareMode == "mmr"){
+				saveFile = new File("/sdcard/" + fileName + ".mmr");
+				// MMR is broken if it is ever re-enabled. See the else block upload.
+				// it used to be outside of the else block.
+				try {
+					FileOutputStream fos = new FileOutputStream(saveFile);
+					ObjectOutputStream oos =
+						new ObjectOutputStream(fos);
+					oos.writeObject(resultsArr);
+					oos.flush();
+					fos.close();
+					publishProgress(1);
+				}
+				catch (Throwable e) {
+					System.err.println("exception thrown");
+					statusOk = false;
+					return -1;
+				}
+			}
+			else if(shareMode == "json"){
+				Log.e("shareResults","shareMode set to json. Setting up JSON Object");
+				TelephonyManager mTelephonyMgr;  
+				mTelephonyMgr = (TelephonyManager)  
+				getSystemService(Context.TELEPHONY_SERVICE); 
+				try {
+					JSONObject tmpJo = new JSONObject();
+					for(int i=0; i<resultsArr.length; i++){
+						//This is the offending line of code!
+						String[] tmpStringArr = resultsArr[i].toString().split(" value: ");
+						tmpJo.put(tmpStringArr[0], Integer.parseInt(tmpStringArr[1]));
+					}
+					String tmpString = tmpJo.toString();
+					String tmpLineNumber = mTelephonyMgr.getLine1Number();
+					String tmpFileName = fileName;					
+					// TODO: can check success/failure here, just need to examine what the server does on failure!
+					doJsonUpload(tmpLineNumber, tmpFileName, tmpString);
+					return 1;
+				}
+				catch (Throwable e) {
+					Log.e("shareResults","exception thrown: " + e.toString());
+					System.err.println("exception thrown: " + e.toString());
+					statusOk = false;
+					return -1;
+				}
+			}
+			else{
+				writeFileOut();
+				saveFile = new File("/sdcard/" + fileName + ".txt");
+				// Use this later to fix SHARE
+				final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+				emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached are the results of the Mobile Metagenomics app on " + fileName);
+				emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Annotation Results: " + fileName);
+				emailIntent.setType("message/rfc822");
+				emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(saveFile));
+				startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+			}
+			return 1;
+		}
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			if(values[0] == 1){
+				dismissDialog(ID_DIALOG_SHARE);
+			}
+		}
+		@Override
+		protected void after(Context context, Integer value) {
+			// TODO: Conclude progress dialogues etc...
+			if(value == 1){
+				dismissDialog(ID_DIALOG_SHARE);
+			}
+		}
+		@Override
+		protected void handleError(Context arg0, Exception arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+	}	
 	/*
 	private class LoadJsonMode2AsyncTask extends BetterAsyncTask<String, Integer, Integer> {
 		public LoadJsonMode2AsyncTask(Context context) {
@@ -504,98 +678,20 @@ public class ResultView extends BetterDefaultActivity{
 
 	}*/
 	
-	@Override
-    protected void onNewIntent(Intent intent){
-    	 Log.e("ResultView","onNewIntent'd");
-    }
-	/*
-	public void doFunctionWork(){
-		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
-		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
-		//  task3 = Task.getOrCreate(this, TASK3);
-		setSecondaryProgress(0);
-		switch (startAsynchWorkTask.state()) {  
-		case NOT_STARTED:  
-			//startAsynchWorkTask.run(this, startAsynchWork);  
-			showDialog(ID_DIALOG_ANNOTATE);
-			break;  
-		case RUNNING:  
-			//If task 2 is running, task 1 is actually COMPLETED!
-			if(continueAsynchWorkTask.state() == Task.State.RUNNING)
-			{
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
-				switch(continueAsynchWorkTask.state()){
-				case RUNNING:
-					System.out.println("task2 still running"); 
-					break;
-				case COMPLETED:
-					System.out.println("task2 completed"); 
-					resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
-					MobileMetagenomics.launchResultView = false;
-				}
-			}
-			else{
-				System.out.println("task1 still running");
-				showDialog(ID_DIALOG_ANNOTATE);
-			}
-			break;
-		case COMPLETED:  
-			resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, startAsynchWorkTask.getResult()));
-			switch(continueAsynchWorkTask.state()){
-			case RUNNING:
-				System.out.println("task2 still running"); 
-				break;
-			case COMPLETED:
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, continueAsynchWorkTask.getResult()));
-				MobileMetagenomics.launchResultView = false;
-			}
-			break;
+	public void showNotification(String name, String msg){
+		if(!isInFocus){
+			Intent intent = new Intent(ResultView.this, ResultView.class);
+			Notification notification = new Notification(R.drawable.icon,
+	            	name, System.currentTimeMillis());
+	    	notification.setLatestEventInfo(ResultView.this,
+	            	name,msg,
+	                PendingIntent.getActivity(this.getBaseContext(), 0, intent,
+	    	                PendingIntent.FLAG_CANCEL_CURRENT));
+	        notification.flags = Notification.FLAG_AUTO_CANCEL;
+	        mManager.notify(APP_ID, notification);
 		}
 	}
-
-	public void doSubsystemsWork(){
-		startAsynchWorkTask = Task.getOrCreate(this, TASK1);  
-		continueAsynchWorkTask = Task.getOrCreate(this, TASK2);  
-		//  task3 = Task.getOrCreate(this, TASK3);
-		setSecondaryProgress(0);
-		switch (startAsynchWorkTask.state()) {  
-		case NOT_STARTED:  
-			//startAsynchWorkTask.run(this, startAsynchWork);  
-			showDialog(ID_DIALOG_ANNOTATE);
-			break;  
-		case RUNNING:  
-			//If task 2 is running, task 1 is actually COMPLETED!
-			if(continueAsynchWorkTask.state() == Task.State.RUNNING)
-			{
-				displaySubsystemsGraph();
-				switch(continueAsynchWorkTask.state()){
-				case RUNNING:
-					System.out.println("task2 still running"); 
-					break;
-				case COMPLETED:
-			    	displaySubsystemsGraph();
-					MobileMetagenomics.launchResultView = false;
-				}
-			}
-			else{
-				System.out.println("task1 still running");
-				showDialog(ID_DIALOG_ANNOTATE);
-			}
-			break;
-		case COMPLETED:  
-			displaySubsystemsGraph();
-			switch(continueAsynchWorkTask.state()){
-			case RUNNING:
-				System.out.println("task2 still running"); 
-				break;
-			case COMPLETED:
-				displaySubsystemsGraph();
-				MobileMetagenomics.launchResultView = false;
-			}
-			break;
-		}
-	}*/
-
+	
 	public void displaySubsystemsGraph(){
 		System.out.println("displaySubsystemsGraph was called. resultArr length is: " + resultsArr.length);
 		WindowManager wm =
@@ -1109,185 +1205,6 @@ public class ResultView extends BetterDefaultActivity{
 		}
 		return responseFromServer;
 	}*/
-	
-	private class SaveResults extends AsyncTask<String, Integer, Integer> {
-		@Override
-		protected void onPreExecute(){
-			showDialog(ID_DIALOG_SAVE);
-		}   	
-		@Override
-		protected Integer doInBackground(String... params) {
-			try {
-				FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + fileName + ".json"));
-				JSONObject tmpJo = new JSONObject();
-				for(int i=0; i<resultsArr.length; i++){
-					tmpJo.put("" + i, resultsArr[i]);
-				}
-				OutputStreamWriter osw = new OutputStreamWriter(fos);
-				osw.write(tmpJo.toString());
-				return 1;
-			}
-			catch (Throwable e) {
-				Log.e("SaveRes","exception thrown: " + e.toString());
-				System.err.println("exception thrown: " + e.toString());
-				statusOk = false;
-				return -1;
-			}
-		}   	
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-			if(values[0] == 1){
-				dismissDialog(ID_DIALOG_SAVE);
-			}
-			if(values[0] == -1){
-				dismissDialog(ID_DIALOG_SAVE);
-				// TODO: popup toast that says save failed.
-			}
-		}
-		@Override
-		protected void onPostExecute(Integer value) {
-			if(value == 1){
-				dismissDialog(ID_DIALOG_SAVE);
-			}
-			if(value == -1){
-				dismissDialog(ID_DIALOG_SAVE);
-				// TODO: popup toast that says save failed.
-			}
-		}
-	}
-
-	private class LoadResults extends AsyncTask<String, Integer, Integer> {
-		@Override
-		protected void onPreExecute(){
-			showDialog(ID_DIALOG_LOAD);
-		}	
-		@Override
-		protected Integer doInBackground(String... params) {
-			String[] tmpStringArr = params[0].split("/sdcard/");
-			//TODO: this may be unneeded, look at what happens when a normal (non-loaded) result is done.
-			if(tmpStringArr.length > 1)
-				tmpStringArr = tmpStringArr[1].split(".mmr");
-			else
-				tmpStringArr = tmpStringArr[0].split(".mmr");
-			fileName = tmpStringArr[0];
-			try {
-				FileInputStream fis = new FileInputStream(new File(params[0]));
-				ObjectInputStream ois =
-					new ObjectInputStream(fis);
-				resultsArr = (Object[])ois.readObject();
-				fis.close();
-				return 1;
-			}
-			catch (Throwable e) {
-				System.err.println("exception thrown from LoadResults doInBackground");
-				statusOk = false;
-				return -1;
-				// TODO: Pop up a toast or something
-			}
-		}    	
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-			if(values[0] == 1){
-				dismissDialog(ID_DIALOG_LOAD);
-			}
-			if(values[0] == -1){
-				dismissDialog(ID_DIALOG_LOAD);
-				// TODO: popup toast that says save failed.
-			}
-		}
-		@Override
-		protected void onPostExecute(Integer value) {
-			if(value == 1){
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
-				dismissDialog(ID_DIALOG_LOAD);
-			}
-			if(value == -1){
-				dismissDialog(ID_DIALOG_LOAD);
-				// TODO: popup toast that says save failed.
-			}
-		}
-	}
-
-	private class shareResults extends AsyncTask<String, Integer, Integer> {
-		@Override
-		protected void onPreExecute(){
-			showDialog(ID_DIALOG_SHARE);
-		}
-		@Override
-		protected Integer doInBackground(String... params) {
-			File saveFile;
-			if(shareMode == "mmr"){
-				saveFile = new File("/sdcard/" + fileName + ".mmr");
-				// MMR is broken if it is ever re-enabled. See the else block upload.
-				// it used to be outside of the else block.
-				try {
-					FileOutputStream fos = new FileOutputStream(saveFile);
-					ObjectOutputStream oos =
-						new ObjectOutputStream(fos);
-					oos.writeObject(resultsArr);
-					oos.flush();
-					fos.close();
-					publishProgress(1);
-				}
-				catch (Throwable e) {
-					System.err.println("exception thrown");
-					statusOk = false;
-					return -1;
-				}
-			}
-			else if(shareMode == "json"){
-				Log.e("shareResults","shareMode set to json. Setting up JSON Object");
-				TelephonyManager mTelephonyMgr;  
-				mTelephonyMgr = (TelephonyManager)  
-				getSystemService(Context.TELEPHONY_SERVICE); 
-				try {
-					JSONObject tmpJo = new JSONObject();
-					for(int i=0; i<resultsArr.length; i++){
-						//This is the offending line of code!
-						String[] tmpStringArr = resultsArr[i].toString().split(" value: ");
-						tmpJo.put(tmpStringArr[0], Integer.parseInt(tmpStringArr[1]));
-					}
-					String tmpString = tmpJo.toString();
-					String tmpLineNumber = mTelephonyMgr.getLine1Number();
-					String tmpFileName = fileName;					
-					// TODO: can check success/failure here, just need to examine what the server does on failure!
-					doJsonUpload(tmpLineNumber, tmpFileName, tmpString);
-					return 1;
-				}
-				catch (Throwable e) {
-					Log.e("shareResults","exception thrown: " + e.toString());
-					System.err.println("exception thrown: " + e.toString());
-					statusOk = false;
-					return -1;
-				}
-			}
-			else{
-				writeFileOut();
-				saveFile = new File("/sdcard/" + fileName + ".txt");
-				// Use this later to fix SHARE
-				final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
-				emailIntent.putExtra(Intent.EXTRA_TEXT, "Attached are the results of the Mobile Metagenomics app on " + fileName);
-				emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Annotation Results: " + fileName);
-				emailIntent.setType("message/rfc822");
-				emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(saveFile));
-				startActivity(Intent.createChooser(emailIntent, "Send mail..."));
-			}
-			return 1;
-		}
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-			if(values[0] == 1){
-				dismissDialog(ID_DIALOG_SHARE);
-			}
-		}
-		@Override
-		protected void onPostExecute(Integer value) {
-			// TODO: Conclude progress dialogues etc...
-			if(value == 1){
-				dismissDialog(ID_DIALOG_SHARE);
-			}
-		}
-	}	
 	
 	public void writeFileOut(){
 		try{
