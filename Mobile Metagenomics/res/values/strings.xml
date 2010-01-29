@@ -7,7 +7,7 @@
     <string name="phoneNumberHint">Enter phone number</string>
     <string name="sampleNumberHint">Enter sample number</string>
     <string name="titleHint">Or enter title</string>
-    <string name="useMyNumber">Use this phone's number</string>
+    <string name="useMyNumber">Use this phone\'s number</string>
     <string name="browse">Browse</string>
     <string name="stringency">Stringency:</string>
     <string name="level">Level:</string>

@@ -143,7 +143,7 @@ public class ResultView extends BetterDefaultActivity{
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
 						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
 						task.execute();
-					}
+					}/*
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_2)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
 	            		sampleTitle = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE);
@@ -151,7 +151,7 @@ public class ResultView extends BetterDefaultActivity{
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
 						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
 						task.execute();
-					}
+					}*/
 					else{
 						//TODO: error: invalid mode
 					}
@@ -448,7 +448,7 @@ public class ResultView extends BetterDefaultActivity{
 		} 
 
 	}
-	
+	/*
 	private class LoadJsonMode2AsyncTask extends BetterAsyncTask<String, Integer, Integer> {
 		public LoadJsonMode2AsyncTask(Context context) {
 			super(context);
@@ -488,7 +488,7 @@ public class ResultView extends BetterDefaultActivity{
 	        setProgress(10000);
 		} 
 
-	}
+	}*/
 	
 	@Override
     protected void onNewIntent(Intent intent){
@@ -1024,7 +1024,7 @@ public class ResultView extends BetterDefaultActivity{
 		System.out.println("Upload finished. Response is: " + responseFromServer);
 		return responseFromServer;
 	}
-	
+	/*
 	private String doJsonQuery2(String phoneNumberForQuery2, String sampleTitle){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
@@ -1094,7 +1094,7 @@ public class ResultView extends BetterDefaultActivity{
 			Log.e("GetJSON2", "error: " + ioex.getMessage(), ioex);
 		}
 		return responseFromServer;
-	}
+	}*/
 	
 	private class SaveResults extends AsyncTask<String, Integer, Integer> {
 		@Override
@@ -1140,7 +1140,7 @@ public class ResultView extends BetterDefaultActivity{
 				// TODO: popup toast that says save failed.
 			}
 		}
-	}	
+	}
 
 	private class LoadResults extends AsyncTask<String, Integer, Integer> {
 		@Override

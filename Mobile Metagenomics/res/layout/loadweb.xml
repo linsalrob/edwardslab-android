@@ -23,14 +23,15 @@
 		android:hint="@string/sampleNumberHint"
 		android:inputType="number">
 	</EditText>
+	<!-- 
 	<EditText android:id="@+id/Title" 
 		android:layout_below="@+id/SampleNumber" 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
 		android:hint="@string/titleHint">
-	</EditText>
+	</EditText> -->
 	<Button android:id="@+id/LoadWeb" 
-		android:layout_below="@+id/Title" 
+		android:layout_below="@+id/SampleNumber" 
 		android:layout_width="fill_parent" 
 		android:text="@string/load_web" 
 		android:layout_height="wrap_content">

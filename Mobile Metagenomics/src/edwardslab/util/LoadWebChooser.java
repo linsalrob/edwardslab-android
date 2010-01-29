@@ -13,39 +13,22 @@ import android.widget.EditText;
 public class LoadWebChooser extends Activity{
 	String numberEntered;
 	Integer sampleEntered;
-	String titleEntered;
+	//String titleEntered;
 	EditText phoneNumber;
 	EditText sampleNumber;
-	EditText title;
+	//EditText title;
 	
 	public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loadweb);
         phoneNumber = (EditText) findViewById(R.id.PhoneNumber);
         sampleNumber = (EditText) findViewById(R.id.SampleNumber);
-        title = (EditText) findViewById(R.id.Title);
+       // title = (EditText) findViewById(R.id.Title);
         final Button myNumberButton = (Button) findViewById(R.id.UseMyNumber);
         final Button confirmButton = (Button) findViewById(R.id.LoadWeb);
         numberEntered = "";
         sampleEntered = -1;
-        titleEntered = "";
-        
-        /*
-        phoneNumber.setOnKeyListener(new OnKeyListener() {
-    	    public boolean onKey(View v, int keyCode, KeyEvent event) {
-    	        if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-    	          // Perform action on key press
-    	        	Bundle bundle = new Bundle();            
-    				bundle.putInt(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, Integer.parseInt(phoneNumber.getText().toString()));
-    	            Intent mIntent = new Intent();
-    	            mIntent.putExtras(bundle);
-    	            setResult(RESULT_OK, mIntent);
-    	            finish();
-    	          return true;
-    	        }
-    	        return false;
-    	    }
-    	});*/
+      //  titleEntered = "";
         
         
         confirmButton.setOnClickListener(new OnClickListener() {
@@ -61,16 +44,17 @@ public class LoadWebChooser extends Activity{
 				if(tmpSampleNumber != 0){
 					sampleEntered = tmpSampleNumber;
 				}
-				if(!title.getText().toString().equals("")){
+				
+				/*if(!title.getText().toString().equals("")){
 					titleEntered = title.getText().toString();
-				}
+				}*/
 				
 				Bundle bundle = new Bundle();            
 				bundle.putString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
 				bundle.putInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleEntered);
-				if(!titleEntered.equals("no title")){
+				/*if(!titleEntered.equals("no title")){
 					bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE, titleEntered);
-				}
+				}*/
 	            Intent mIntent = new Intent();
 	            mIntent.putExtras(bundle);
 	            setResult(RESULT_OK, mIntent);
