@@ -33,6 +33,9 @@ import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -67,6 +70,8 @@ public class ResultView extends BetterDefaultActivity{
 	private static final int SAVE_ID = Menu.FIRST + 1;
 	private static final int LOAD_ID = Menu.FIRST + 2;
 	private static boolean statusOk = true;
+	private static final int APP_ID = 0; 
+	private NotificationManager mManager;
 	static final int  ID_DIALOG_ANNOTATE = 0;
 	static final int  ID_DIALOG_LOAD=1;
 	static final int  ID_DIALOG_SAVE=2;
@@ -104,6 +109,7 @@ public class ResultView extends BetterDefaultActivity{
 		setProgressBarVisibility(false);
 		mBar = (ProgressBar) findViewById(R.id.placeholder);
 		mBar.setVisibility(ProgressBar.GONE);
+		mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	@Override  
@@ -380,6 +386,15 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
+			Intent intent = new Intent(ResultView.this, ResultView.class);
+			Notification notification = new Notification(R.drawable.icon,
+                	"Notify", System.currentTimeMillis());
+        	notification.setLatestEventInfo(ResultView.this,
+                	"Mobile Metagenomics","Annotation Complete!",
+	                PendingIntent.getActivity(this.getCallingContext(), 0, intent,
+        	                PendingIntent.FLAG_CANCEL_CURRENT));
+	        notification.flags = Notification.FLAG_AUTO_CANCEL;
+	        mManager.notify(APP_ID, notification);
 			setProgress(10000);
 		}
 
@@ -416,11 +431,10 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
-			Integer status;
-			status = 0;
+			Integer status = 0;
 			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
 			loadInitialResults(JSONToHash(doJsonQuery1(phoneNumberForQuery, sampleNumber)));
-			status++;
+			status = 1;
 			publishProgress(status);
 			return 1;
 		}
