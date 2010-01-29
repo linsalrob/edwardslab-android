@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class LoadWebChooser extends Activity{
-	Double numberEntered;
+	String numberEntered;
 	Integer sampleEntered;
 	String titleEntered;
 	EditText phoneNumber;
@@ -26,9 +26,9 @@ public class LoadWebChooser extends Activity{
         title = (EditText) findViewById(R.id.Title);
         final Button myNumberButton = (Button) findViewById(R.id.UseMyNumber);
         final Button confirmButton = (Button) findViewById(R.id.LoadWeb);
-        numberEntered = new Double(5555555);
+        numberEntered = "";
         sampleEntered = -1;
-        titleEntered = "no title";
+        titleEntered = "";
         
         /*
         phoneNumber.setOnKeyListener(new OnKeyListener() {
@@ -51,10 +51,11 @@ public class LoadWebChooser extends Activity{
         confirmButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Double tmpPhoneNumber = Double.parseDouble((String)phoneNumber.getText().toString());
+				String tmpPhoneNumber = phoneNumber.getText().toString();
 				Integer tmpSampleNumber = Integer.parseInt((String)sampleNumber.getText().toString());
+				System.out.println("tmp Phone Number is: " + tmpPhoneNumber.toString());
 				System.out.println("sample number is: " + tmpSampleNumber.toString());
-				if(tmpPhoneNumber != 0){
+				if(!tmpPhoneNumber.equals("")){
 					numberEntered = tmpPhoneNumber;
 				}
 				if(tmpSampleNumber != 0){
@@ -65,7 +66,7 @@ public class LoadWebChooser extends Activity{
 				}
 				
 				Bundle bundle = new Bundle();            
-				bundle.putDouble(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
+				bundle.putString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
 				bundle.putInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleEntered);
 				if(!titleEntered.equals("no title")){
 					bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE, titleEntered);

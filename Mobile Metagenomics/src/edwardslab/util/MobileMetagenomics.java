@@ -176,19 +176,19 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 				break;
 	        case ACTIVITY_LOAD_WEB:
 	        	if(extras != null){
-	        		double phoneNumber = extras.getDouble(LOAD_FILE_PHONE_NUMBER);
+	        		String phoneNumber = extras.getString(LOAD_FILE_PHONE_NUMBER);
 	        		System.out.println("Mobile Metagenomics receiving: " + extras.getInt(LOAD_FILE_SAMPLE_NUMBER));
 	        		Integer sampleNumber = extras.getInt(LOAD_FILE_SAMPLE_NUMBER);
 	        		String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
 	        		
-	        		if(phoneNumber != 0 && sampleNumber != 0){
+	        		if(!phoneNumber.equals("") && sampleNumber != 0){
 	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
 	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_1);
 	            		i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
 	            		i.putExtra(LOAD_FILE_SAMPLE_NUMBER, sampleNumber);
 	            		startActivity(i);
 	        		}
-	        		else if(phoneNumber != 0 && (sampleTitle != null)){
+	        		else if(!phoneNumber.equals("") && (sampleTitle != null)){
 	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
 	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_2);
 	        			i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);

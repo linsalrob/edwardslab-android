@@ -79,7 +79,7 @@ public class ResultView extends BetterDefaultActivity{
 	int level = -1;
 	int kmer = -1;
 	int maxGap = 1;
-	double phoneNumberForQuery = -1;
+	String phoneNumberForQuery = "";
 	Integer sampleNumber = 1;
 	String sampleTitle = "";
 	Object[] resultsArr;
@@ -137,7 +137,7 @@ public class ResultView extends BetterDefaultActivity{
 							new LoadResults().execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
-						phoneNumberForQuery = extras.getDouble(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
 	            		sampleNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
 	            		LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
@@ -145,7 +145,7 @@ public class ResultView extends BetterDefaultActivity{
 						task.execute();
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_2)){
-						phoneNumberForQuery = extras.getDouble(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
 	            		sampleTitle = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE);
 	            		LoadJsonMode2AsyncTask task = new LoadJsonMode2AsyncTask(this);
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
@@ -418,7 +418,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status;
 			status = 0;
-			Log.e("ResultView","Performing load json mode 1");
+			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
 			loadInitialResults(JSONToHash(doJsonQuery1(phoneNumberForQuery, sampleNumber)));
 			status++;
 			publishProgress(status);
@@ -952,7 +952,7 @@ public class ResultView extends BetterDefaultActivity{
 		return responseFromServer;
 	}
 
-	private String doJsonQuery1(double phoneNumberForQuery2, int sampleNumber){
+	private String doJsonQuery1(String phoneNumberForQuery1, int sampleNumber){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
 		final String boundary =  "---------------------------2916890032591";
@@ -963,7 +963,7 @@ public class ResultView extends BetterDefaultActivity{
 		try
 		{
 			//------------------ CLIENT REQUEST
-			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes_josh.cgi");
+			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
 			// Open a HTTP connection to the URL
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoInput(true);
@@ -976,7 +976,7 @@ public class ResultView extends BetterDefaultActivity{
 			dos = new DataOutputStream( conn.getOutputStream() );
 			dos.writeBytes(twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
-					phoneNumberForQuery2 + lineEnd +
+					phoneNumberForQuery1 + lineEnd +
 					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
 					sampleNumber + lineEnd +
@@ -988,7 +988,7 @@ public class ResultView extends BetterDefaultActivity{
 					lineEnd +
 					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
-					"Give me this JSON Object" + lineEnd +
+					"jsonObject" + lineEnd +
 					twoHyphens + boundary + twoHyphens + lineEnd);
 			Log.e("GetJSON","JSON reqest sent");
 			dos.flush();
@@ -1012,18 +1012,20 @@ public class ResultView extends BetterDefaultActivity{
 			{
 				//TODO: We can verify success/failure here, just need to know what to expect from server!
 				responseFromServer += str;
-				Log.e("UploadFile","Server Response"+str);
+				Log.e("GetJSON1","Server Response"+str);
 			}
 			inStream.close();
 		}
 		catch (IOException ioex){
 			statusOk = false;
+			System.out.println("Upload failed.");
 			Log.e("GetJSON1", "error: " + ioex.getMessage(), ioex);
 		}
+		System.out.println("Upload finished. Response is: " + responseFromServer);
 		return responseFromServer;
 	}
 	
-	private String doJsonQuery2(double phoneNumberForQuery2, String sampleTitle){
+	private String doJsonQuery2(String phoneNumberForQuery2, String sampleTitle){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
 		final String boundary =  "---------------------------2916890032591";
@@ -1034,7 +1036,7 @@ public class ResultView extends BetterDefaultActivity{
 		try
 		{
 			//------------------ CLIENT REQUEST
-			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes_josh.cgi");
+			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
 			// Open a HTTP connection to the URL
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoInput(true);
@@ -1059,7 +1061,7 @@ public class ResultView extends BetterDefaultActivity{
 					lineEnd +
 					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
-					"Give me this JSON Object" + lineEnd +
+					"jsonObject" + lineEnd +
 					twoHyphens + boundary + twoHyphens + lineEnd);
 			Log.e("GetJSON","JSON reqest sent");
 			dos.flush();
