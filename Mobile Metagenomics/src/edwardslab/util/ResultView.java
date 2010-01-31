@@ -44,7 +44,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -59,6 +58,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.github.droidfu.activities.BetterDefaultActivity;
@@ -116,6 +116,7 @@ public class ResultView extends BetterDefaultActivity{
 		mBar = (ProgressBar) findViewById(R.id.placeholder);
 		mBar.setVisibility(ProgressBar.GONE);
 		mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		isInFocus = true;
 	}
 
 	@Override  
@@ -323,21 +324,22 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override  
 		public void onProgressUpdate(Integer...values){
-			switch (level){
-	        //Handle the "Function" operation mode
-	        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
-	        case 1: displaySubsystemsGraph(); break;
-	        case 2: displaySubsystemsGraph(); break;
-	        case 3: displaySubsystemsGraph(); break;
-	        case 4: displaySubsystemsGraph(); break;
-	        //TODO: replace this with some proper means of handling this error.
-	        default: System.out.println("Invalid mode - terminating."); break;
-	        }
-			mBar.setProgress(mBar.getProgress() + 1);
-			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
-			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
-		} 
-
+			if(resultsArr != null){
+				switch (level){
+		        //Handle the "Function" operation mode
+		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+		        case 1: displaySubsystemsGraph(); break;
+		        case 2: displaySubsystemsGraph(); break;
+		        case 3: displaySubsystemsGraph(); break;
+		        case 4: displaySubsystemsGraph(); break;
+		        //TODO: replace this with some proper means of handling this error.
+		        default: System.out.println("Invalid mode - terminating."); break;
+		        }
+				mBar.setProgress(mBar.getProgress() + 1);
+				setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+				setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+			}
+		}
 	}
 
 	private class AnnotationAsyncTask2 extends BetterAsyncTask<String, Integer, Integer> {
@@ -356,7 +358,7 @@ public class ResultView extends BetterDefaultActivity{
 				addToResults(JSONToHash((makeWebRequest((String) url + i))));    
 				Log.e("ResultView","Supposedly finished addToResults");
 				publishProgress(status);
-				//resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));
+				//if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));}
 				Log.e("ResultView","Supposedly posted second task results");
 			}
 			return 1;
@@ -377,19 +379,21 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override  
 		public void onProgressUpdate(Integer...values){
-			switch (level){
-	        //Handle the "Function" operation mode
-	        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
-	        case 1: displaySubsystemsGraph(); break;
-	        case 2: displaySubsystemsGraph(); break;
-	        case 3: displaySubsystemsGraph(); break;
-	        case 4: displaySubsystemsGraph(); break;
-	        //TODO: replace this with some proper means of handling this error.
-	        default: System.out.println("Invalid mode - terminating."); break;
-	        }
-			mBar.setProgress(mBar.getProgress() + 1);
-			setProgress(PROGRESS_MODIFIER * mBar.getProgress());
-			setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+			if(resultsArr != null){
+				switch (level){
+		        //Handle the "Function" operation mode
+		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+		        case 1: displaySubsystemsGraph(); break;
+		        case 2: displaySubsystemsGraph(); break;
+		        case 3: displaySubsystemsGraph(); break;
+		        case 4: displaySubsystemsGraph(); break;
+		        //TODO: replace this with some proper means of handling this error.
+		        default: System.out.println("Invalid mode - terminating."); break;
+		        }
+				mBar.setProgress(mBar.getProgress() + 1);
+				setProgress(PROGRESS_MODIFIER * mBar.getProgress());
+				setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
+			}
 		} 
 
 	}
@@ -428,7 +432,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override  
 		public void onProgressUpdate(Integer...values){
 	        //Handle the "Function" operation mode
-	        resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
+			if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
 	        setProgress(10000);
 		} 
 
@@ -537,7 +541,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void after(Context context, Integer value) {
 			if(value == 1){
-				resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
+				if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
 				dismissDialog(ID_DIALOG_LOAD);
 			}
 			if(value == -1){
@@ -632,7 +636,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected void after(Context context, Integer value) {
 			// TODO: Conclude progress dialogues etc...
 			if(value == 1){
-				showNotification(APP_NAME, SHARING);
+				//showNotification(APP_NAME, SHARING);
 				dismissDialog(ID_DIALOG_SHARE);
 			}
 		}
@@ -678,11 +682,17 @@ public class ResultView extends BetterDefaultActivity{
 		@Override  
 		public void onProgressUpdate(Integer...values){
 	        //Handle the "Function" operation mode
-	        resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));
+	        if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
 	        setProgress(10000);
 		} 
 
 	}*/
+	
+	public void showToast(String msg){
+		 Toast t = new Toast(ResultView.this);
+         Toast.makeText(ResultView.this, msg, Toast.LENGTH_LONG);
+         t.show(); 
+	}
 	
 	public void showNotification(String name, String msg){
 		if(!isInFocus){
@@ -699,7 +709,6 @@ public class ResultView extends BetterDefaultActivity{
 	}
 	
 	public void displaySubsystemsGraph(){
-		System.out.println("displaySubsystemsGraph was called. resultArr length is: " + resultsArr.length);
 		WindowManager wm =
 			(WindowManager) getSystemService(Context.WINDOW_SERVICE);
 		Display disp = wm.getDefaultDisplay();
@@ -769,7 +778,6 @@ public class ResultView extends BetterDefaultActivity{
 
 	public String makeWebRequest(String s){
 		Log.e("makeWebRequest","Performing " + s);
-		if(statusOk){
 			/* Will be filled and displayed later. */
 			String webResultString = null;
 			try {
@@ -793,18 +801,12 @@ public class ResultView extends BetterDefaultActivity{
 			} catch (Exception e) {
 				/* On any Error we want to display it. */
 				statusOk = false;
-				webResultString = e.getMessage();
+				//webResultString = e.getMessage();
 			}
 			return webResultString;
-		}
-		else{
-			//pop up a toast or something
-			return null;
-		}
 	}
 
 	public Hashtable<String,String> JSONToHash(String jsonString){
-		if(statusOk){
 			System.out.println("JSONToHash reached, input is: " + jsonString);
 			//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
 			Hashtable<String,String> resultHash = new Hashtable<String,String>();
@@ -828,11 +830,6 @@ public class ResultView extends BetterDefaultActivity{
 				statusOk = false;
 			}
 			return resultHash;
-		}
-		else{
-			// Pop up a toast or something.
-			return null;
-		}
 	}
 
 	private Hashtable doInitialAsynchWork(String resString){
@@ -850,7 +847,6 @@ public class ResultView extends BetterDefaultActivity{
 	}
 
 	public void loadInitialResults(Hashtable<String,String> newData){
-		if(statusOk){
 			Object thisElem;
 			ArrayList<String> helperList = new ArrayList<String>();
 			for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
@@ -859,11 +855,9 @@ public class ResultView extends BetterDefaultActivity{
 			}
 			resultsArr = helperList.toArray();
 			Arrays.sort(resultsArr);
-		}
 	}
 
 	public void addToResults(Hashtable<String,String> newData){
-		if(statusOk){
 			Object thisElem;
 			int i=resultsArr.length;
 			//Massaging data so that duplicate entries end up with the same values.
@@ -888,11 +882,9 @@ public class ResultView extends BetterDefaultActivity{
 			}
 			resultsArr = tmp;
 			Arrays.sort(resultsArr);
-		}
 	}
 
 	private String doFileUpload(String ourFile, int level, int stringency, int kmer, int maxGap){
-		if(statusOk){
 			final String existingFileName = ourFile;   	  
 			final String lineEnd = "\r\n";
 			final String twoHyphens = "--";
@@ -990,11 +982,6 @@ public class ResultView extends BetterDefaultActivity{
 				Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
 			}
 			return responseFromServer;
-		}
-		else{
-			//pop up a toast or something
-			return null;
-		}
 	}
 
 	private String doJsonUpload(String phoneNumber, String fileName, String jsonObject){

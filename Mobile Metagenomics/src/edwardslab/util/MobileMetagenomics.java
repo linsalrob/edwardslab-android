@@ -115,13 +115,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     }
     
     @Override
-    protected void onNewIntent(Intent intent){
-    	 Log.e("MobileMetagenomics","onNewIntent'd");
-    	Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
-    	startActivity(i);
-    }
-    
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         menu.add(0, LOAD_LOCAL_ID, 0, R.string.load_local).setIcon(android.R.drawable.ic_menu_set_as);
