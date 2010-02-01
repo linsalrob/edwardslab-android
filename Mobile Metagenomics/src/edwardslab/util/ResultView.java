@@ -2,33 +2,22 @@ package edwardslab.util;
 
 /*References: http://www.glenmccl.com/tip_030.htm for serializable code.
 	http://brainflush.wordpress.com/2009/04/08/android-in-sync-handling-concurrent-tasks-in-google-android/
-	for Task/Task Interface code
+	for BetterAsyncTask Code
 	http://www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
 	Used for the web access portion of code.
  */
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 
-import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
@@ -69,7 +58,6 @@ public class ResultView extends BetterDefaultActivity{
 	private static final int SHARE_ID = Menu.FIRST;
 	private static final int SAVE_ID = Menu.FIRST + 1;
 	private static final int LOAD_ID = Menu.FIRST + 2;
-	private static boolean statusOk = true;
 	private static final int APP_ID = 0; 
 	private NotificationManager mManager;
 	static final int  ID_DIALOG_ANNOTATE = 0;
@@ -104,7 +92,7 @@ public class ResultView extends BetterDefaultActivity{
 	ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
 	boolean isInFocus;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_PROGRESS);
@@ -148,12 +136,12 @@ public class ResultView extends BetterDefaultActivity{
 						task.execute();
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){;
-							new LoadResults(this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+					new LoadResults(this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
-	            		sampleNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
-	            		LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
+						sampleNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
+						LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
 						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
 						task.execute();
@@ -196,7 +184,7 @@ public class ResultView extends BetterDefaultActivity{
 		editor.putInt(MAX, max);
 		editor.commit();
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
@@ -299,7 +287,7 @@ public class ResultView extends BetterDefaultActivity{
 			Integer status;
 			status = 0;
 			Log.e("ResultView","Performing file upload with level " + level + " and stringency " + stringency);
-			doInitialAsynchWork(doFileUpload(fileName.toString(),
+			doInitialAsynchWork(MgUtilFunc.doFileUpload(fileName.toString(),
 					level,
 					stringency, kmer, maxGap));
 			status++;
@@ -326,15 +314,15 @@ public class ResultView extends BetterDefaultActivity{
 		public void onProgressUpdate(Integer...values){
 			if(resultsArr != null){
 				switch (level){
-		        //Handle the "Function" operation mode
-		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
-		        case 1: displaySubsystemsGraph(); break;
-		        case 2: displaySubsystemsGraph(); break;
-		        case 3: displaySubsystemsGraph(); break;
-		        case 4: displaySubsystemsGraph(); break;
-		        //TODO: replace this with some proper means of handling this error.
-		        default: System.out.println("Invalid mode - terminating."); break;
-		        }
+				//Handle the "Function" operation mode
+				case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+				case 1: displaySubsystemsGraph(); break;
+				case 2: displaySubsystemsGraph(); break;
+				case 3: displaySubsystemsGraph(); break;
+				case 4: displaySubsystemsGraph(); break;
+				//TODO: replace this with some proper means of handling this error.
+				default: System.out.println("Invalid mode - terminating."); break;
+				}
 				mBar.setProgress(mBar.getProgress() + 1);
 				setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 				setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
@@ -355,7 +343,7 @@ public class ResultView extends BetterDefaultActivity{
 			//Do remaining blocks.
 			for(int i=2; i<=max; i++){
 				status++;
-				addToResults(JSONToHash((makeWebRequest((String) url + i))));    
+				addToResults(MgUtilFunc.JSONToHash((MgUtilFunc.makeWebRequest((String) url + i))));    
 				Log.e("ResultView","Supposedly finished addToResults");
 				publishProgress(status);
 				//if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(fuTest.this, android.R.layout.simple_list_item_1, resultsArr));}
@@ -367,7 +355,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
-	        showNotification(APP_NAME, ANNOTATION);
+			showNotification(APP_NAME, ANNOTATION);
 			setProgress(10000);
 		}
 
@@ -381,15 +369,15 @@ public class ResultView extends BetterDefaultActivity{
 		public void onProgressUpdate(Integer...values){
 			if(resultsArr != null){
 				switch (level){
-		        //Handle the "Function" operation mode
-		        case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
-		        case 1: displaySubsystemsGraph(); break;
-		        case 2: displaySubsystemsGraph(); break;
-		        case 3: displaySubsystemsGraph(); break;
-		        case 4: displaySubsystemsGraph(); break;
-		        //TODO: replace this with some proper means of handling this error.
-		        default: System.out.println("Invalid mode - terminating."); break;
-		        }
+				//Handle the "Function" operation mode
+				case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+				case 1: displaySubsystemsGraph(); break;
+				case 2: displaySubsystemsGraph(); break;
+				case 3: displaySubsystemsGraph(); break;
+				case 4: displaySubsystemsGraph(); break;
+				//TODO: replace this with some proper means of handling this error.
+				default: System.out.println("Invalid mode - terminating."); break;
+				}
 				mBar.setProgress(mBar.getProgress() + 1);
 				setProgress(PROGRESS_MODIFIER * mBar.getProgress());
 				setTitle("Downloading segments: " + mBar.getProgress() + "/" + max);
@@ -397,7 +385,7 @@ public class ResultView extends BetterDefaultActivity{
 		} 
 
 	}
-	
+
 	private class LoadJsonMode1AsyncTask extends BetterAsyncTask<String, Integer, Integer> {
 		public LoadJsonMode1AsyncTask(Context context) {
 			super(context);
@@ -408,7 +396,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 0;
 			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
-			loadInitialResults(JSONToHash(doJsonQuery1(phoneNumberForQuery, sampleNumber)));
+			loadInitialResults(MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber)));
 			status = 1;
 			publishProgress(status);
 			return 1;
@@ -431,13 +419,13 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override  
 		public void onProgressUpdate(Integer...values){
-	        //Handle the "Function" operation mode
+			//Handle the "Function" operation mode
 			if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
-	        setProgress(10000);
+			setProgress(10000);
 		} 
 
 	}
-	
+
 	private class SaveResults extends BetterAsyncTask<String, Integer, Integer> {
 		public SaveResults(Context context) {
 			super(context);
@@ -462,7 +450,6 @@ public class ResultView extends BetterDefaultActivity{
 			catch (Throwable e) {
 				Log.e("SaveRes","exception thrown: " + e.toString());
 				System.err.println("exception thrown: " + e.toString());
-				statusOk = false;
 				return -1;
 			}
 		}   	
@@ -490,7 +477,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void handleError(Context arg0, Exception arg1) {
 			// TODO Auto-generated method stub
-			
+
 		}
 	}
 
@@ -522,7 +509,6 @@ public class ResultView extends BetterDefaultActivity{
 			}
 			catch (Throwable e) {
 				System.err.println("exception thrown from LoadResults doInBackground");
-				statusOk = false;
 				return -1;
 				// TODO: Pop up a toast or something
 			}
@@ -552,7 +538,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void handleError(Context arg0, Exception arg1) {
 			// TODO Auto-generated method stub
-			
+
 		}
 	}
 
@@ -583,7 +569,6 @@ public class ResultView extends BetterDefaultActivity{
 				}
 				catch (Throwable e) {
 					System.err.println("exception thrown");
-					statusOk = false;
 					return -1;
 				}
 			}
@@ -603,13 +588,12 @@ public class ResultView extends BetterDefaultActivity{
 					String tmpLineNumber = mTelephonyMgr.getLine1Number();
 					String tmpFileName = fileName;					
 					// TODO: can check success/failure here, just need to examine what the server does on failure!
-					doJsonUpload(tmpLineNumber, tmpFileName, tmpString);
+					MgUtilFunc.doJsonUpload(tmpLineNumber, tmpFileName, tmpString);
 					return 1;
 				}
 				catch (Throwable e) {
 					Log.e("shareResults","exception thrown: " + e.toString());
 					System.err.println("exception thrown: " + e.toString());
-					statusOk = false;
 					return -1;
 				}
 			}
@@ -643,7 +627,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected void handleError(Context arg0, Exception arg1) {
 			// TODO Auto-generated method stub
-			
+
 		}
 	}	
 	/*
@@ -687,27 +671,27 @@ public class ResultView extends BetterDefaultActivity{
 		} 
 
 	}*/
-	
+
 	public void showToast(String msg){
-		 Toast t = new Toast(ResultView.this);
-         Toast.makeText(ResultView.this, msg, Toast.LENGTH_LONG);
-         t.show(); 
+		Toast t = new Toast(ResultView.this);
+		Toast.makeText(ResultView.this, msg, Toast.LENGTH_LONG);
+		t.show(); 
 	}
-	
+
 	public void showNotification(String name, String msg){
 		if(!isInFocus){
 			Intent intent = new Intent(ResultView.this, ResultView.class);
 			Notification notification = new Notification(R.drawable.icon,
-	            	name, System.currentTimeMillis());
-	    	notification.setLatestEventInfo(ResultView.this,
-	            	name,msg,
-	                PendingIntent.getActivity(this.getBaseContext(), 0, intent,
-	    	                PendingIntent.FLAG_CANCEL_CURRENT));
-	        notification.flags = Notification.FLAG_AUTO_CANCEL;
-	        mManager.notify(APP_ID, notification);
+					name, System.currentTimeMillis());
+			notification.setLatestEventInfo(ResultView.this,
+					name,msg,
+					PendingIntent.getActivity(this.getBaseContext(), 0, intent,
+							PendingIntent.FLAG_CANCEL_CURRENT));
+			notification.flags = Notification.FLAG_AUTO_CANCEL;
+			mManager.notify(APP_ID, notification);
 		}
 	}
-	
+
 	public void displaySubsystemsGraph(){
 		WindowManager wm =
 			(WindowManager) getSystemService(Context.WINDOW_SERVICE);
@@ -776,429 +760,58 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
-	public String makeWebRequest(String s){
-		Log.e("makeWebRequest","Performing " + s);
-			/* Will be filled and displayed later. */
-			String webResultString = null;
-			try {
-				/* Define the URL we want to load data from. */
-				URL urlToOpen = new URL(s);
-				/* Open a connection to that URL. */
-				URLConnection ucon = urlToOpen.openConnection();
-				/* Define InputStreams to read
-				 * from the URLConnection. */
-				InputStream is = ucon.getInputStream();
-				BufferedInputStream bis = new BufferedInputStream(is);
-				/* Read bytes to the Buffer until
-				 * there is nothing more to read(-1). */
-				ByteArrayBuffer baf = new ByteArrayBuffer(50);
-				int current = 0;
-				while((current = bis.read()) != -1){
-					baf.append((byte)current);
-				}
-				/* Convert the Bytes read to a String. */
-				webResultString = new String(baf.toByteArray());
-			} catch (Exception e) {
-				/* On any Error we want to display it. */
-				statusOk = false;
-				//webResultString = e.getMessage();
-			}
-			return webResultString;
-	}
-
-	public Hashtable<String,String> JSONToHash(String jsonString){
-			System.out.println("JSONToHash reached, input is: " + jsonString);
-			//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
-			Hashtable<String,String> resultHash = new Hashtable<String,String>();
-			try{// Take the stringified JSON Hash of Hashes and put it into our Hash
-				JSONObject convObj = new JSONObject(jsonString);       	
-				//convObj is null when an unknown search item was entered in second text box
-				//If true, return empty hash table
-				if(convObj != null) {
-					Iterator<String> iter= convObj.keys();
-					String currKey;
-					String currVal;
-					while(iter.hasNext()){
-						//Parse jsonString and fill our hash from it, then connect it to our spinner
-						currKey = (String) iter.next();
-						currVal = convObj.get(currKey).toString();  
-						resultHash.put(currKey, currVal);
-					}
-				}
-			} catch (Exception E){
-				Log.e("MobileMetagenomics", "JSON to Hash failed: " + E);
-				statusOk = false;
-			}
-			return resultHash;
-	}
-
 	private Hashtable doInitialAsynchWork(String resString){
-		Hashtable tmpHash = JSONToHash(resString);
+		Hashtable tmpHash = MgUtilFunc.JSONToHash(resString);
 		if(tmpHash != null){
 			url = (String) tmpHash.get("url");
 			String tmpMax = (String) tmpHash.get("max");
 			if(url != null && tmpMax != null){
 				max = Integer.parseInt(tmpMax);
 				PROGRESS_MODIFIER = 10000 / max;
-				loadInitialResults(JSONToHash((makeWebRequest((String) url + 1))));
+				loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.makeWebRequest((String) url + 1))));
 			}
 		}
 		return tmpHash;
 	}
 
 	public void loadInitialResults(Hashtable<String,String> newData){
-			Object thisElem;
-			ArrayList<String> helperList = new ArrayList<String>();
-			for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
-				thisElem = e.nextElement();
-				helperList.add(((String) thisElem) + " value: " + ((String) newData.get(thisElem)));
-			}
-			resultsArr = helperList.toArray();
-			Arrays.sort(resultsArr);
+		Object thisElem;
+		ArrayList<String> helperList = new ArrayList<String>();
+		for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
+			thisElem = e.nextElement();
+			helperList.add(((String) thisElem) + " value: " + ((String) newData.get(thisElem)));
+		}
+		resultsArr = helperList.toArray();
+		Arrays.sort(resultsArr);
 	}
 
 	public void addToResults(Hashtable<String,String> newData){
-			Object thisElem;
-			int i=resultsArr.length;
-			//Massaging data so that duplicate entries end up with the same values.
-			for(int h=0; h<resultsArr.length; h++){
-				String[] arrParts = ((String) resultsArr[h]).split(" value: ");
-				if(newData.containsKey(arrParts[0])){
-					resultsArr[h] = (arrParts[0] 
-					                          + " value: " 
-					                          + (Integer.parseInt(arrParts[1]) + Integer.parseInt(newData.get(arrParts[0])))
-					);	
-					newData.remove(arrParts[0]);
-				}
+		Object thisElem;
+		int i=resultsArr.length;
+		//Massaging data so that duplicate entries end up with the same values.
+		for(int h=0; h<resultsArr.length; h++){
+			String[] arrParts = ((String) resultsArr[h]).split(" value: ");
+			if(newData.containsKey(arrParts[0])){
+				resultsArr[h] = (arrParts[0] 
+				                          + " value: " 
+				                          + (Integer.parseInt(arrParts[1]) + Integer.parseInt(newData.get(arrParts[0])))
+				);	
+				newData.remove(arrParts[0]);
 			}
+		}
 
-			Object[] tmp = new Object[resultsArr.length + newData.size()];
-			for(int j=0; j<resultsArr.length; j++){
-				tmp[j]=resultsArr[j];
-			}
-			for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
-				thisElem = e.nextElement();
-				tmp[i++] = ((String) thisElem) + " value: " + ((String) newData.get(thisElem));
-			}
-			resultsArr = tmp;
-			Arrays.sort(resultsArr);
+		Object[] tmp = new Object[resultsArr.length + newData.size()];
+		for(int j=0; j<resultsArr.length; j++){
+			tmp[j]=resultsArr[j];
+		}
+		for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
+			thisElem = e.nextElement();
+			tmp[i++] = ((String) thisElem) + " value: " + ((String) newData.get(thisElem));
+		}
+		resultsArr = tmp;
+		Arrays.sort(resultsArr);
 	}
 
-	private String doFileUpload(String ourFile, int level, int stringency, int kmer, int maxGap){
-			final String existingFileName = ourFile;   	  
-			final String lineEnd = "\r\n";
-			final String twoHyphens = "--";
-			final String boundary =  "*****";
-			final int maxBufferSize = 1*1024*1024;
-			final String urlString = "http://bioseed.mcs.anl.gov/~redwards/FIG/RTMg_cellphone.cgi";
-			HttpURLConnection conn = null;
-			DataOutputStream dos = null;
-			DataInputStream inStream = null;
-			int bytesRead, bytesAvailable, bufferSize;
-			byte[] buffer;
-			String responseFromServer = "";
-			try
-			{
-				//------------------ CLIENT REQUEST
-				FileInputStream fileInputStream = new FileInputStream(new File(existingFileName) );
-				URL url = new URL(urlString);
-				// Open a HTTP connection to the URL
-				conn = (HttpURLConnection) url.openConnection();
-				conn.setDoInput(true);
-				conn.setDoOutput(true);
-				conn.setUseCaches(false);
-				conn.setRequestMethod("POST");
-				conn.setRequestProperty("Connection", "Keep-Alive");  	 
-				conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
-				// Set up a data output stream to write to the web
-				dos = new DataOutputStream( conn.getOutputStream() );
-				dos.writeBytes(twoHyphens + boundary + lineEnd +
-						"Content-Disposition: form-data; name=\"uploadedfile\"; filename=\"" 
-						+ existingFileName +"\"" + lineEnd
-						+ "Content-Type: text/plain" + lineEnd + lineEnd);    	   
-				Log.e("UploadFile","Headers are written");
-				// create a buffer of maximum size
-				bytesAvailable = fileInputStream.available();
-				bufferSize = Math.min(bytesAvailable, maxBufferSize);
-				buffer = new byte[bufferSize];
-				// read file and write it into form...
-				bytesRead = fileInputStream.read(buffer, 0, bufferSize);  	   
-				while (bytesRead > 0)
-				{
-					dos.write(buffer, 0, bufferSize);
-					bytesAvailable = fileInputStream.available();
-					bufferSize = Math.min(bytesAvailable, maxBufferSize);
-					bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-				}
-				// send multipart form data necesssary after file data...
-				dos.writeBytes(lineEnd + lineEnd 
-						+ twoHyphens + boundary + lineEnd 
-						+ "Content-Disposition: form-data; name=\"stringency\"" + lineEnd + lineEnd
-						+ stringency + lineEnd
-						+ twoHyphens + boundary + lineEnd
-						+ "Content-Disposition: form-data; name=\"level\"" + lineEnd + lineEnd
-						+ level + lineEnd
-						+ twoHyphens + boundary + lineEnd
-						+ "Content-Disposition: form-data; name=\"kmer\"" + lineEnd + lineEnd
-						+ kmer + lineEnd
-						+ twoHyphens + boundary + lineEnd
-						+ "Content-Disposition: form-data; name=\"maxGap\"" + lineEnd + lineEnd
-						+ maxGap + lineEnd
-						+ twoHyphens + boundary + lineEnd
-						+ "Content-Disposition: form-data; name=\"submit\"" + lineEnd + lineEnd 
-						+ "Upload" + lineEnd
-						+ twoHyphens + boundary + twoHyphens + lineEnd
-				);
-				// close streams
-				Log.e("UploadFile","File is written");
-				fileInputStream.close();
-				dos.flush();
-				dos.close();
-			}
-			catch (MalformedURLException ex)
-			{
-				statusOk = false;
-				Log.e("UploadFile", "error: " + ex.getMessage(), ex);
-			}
-			catch (IOException ioe)
-			{
-				statusOk = false;
-				Log.e("UploadFile", "error: " + ioe.getMessage(), ioe);
-			}
-			//------------------ read the SERVER RESPONSE
-			try {
-				inStream = new DataInputStream ( conn.getInputStream() );
-				String str;   	       
-				while (( str = inStream.readLine()) != null)
-				{
-					//TODO: We can verify success/failure here, just need to know what to expect from server!
-					responseFromServer += str;
-					Log.e("UploadFile","Server Response"+str);
-				}
-				inStream.close();
-			}
-			catch (IOException ioex){
-				statusOk = false;
-				Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
-			}
-			return responseFromServer;
-	}
-
-	private String doJsonUpload(String phoneNumber, String fileName, String jsonObject){
-		final String lineEnd = "\r\n";
-		final String twoHyphens = "--";
-		final String boundary =  "---------------------------2916890032591";
-		HttpURLConnection conn = null;
-		DataOutputStream dos = null;
-		DataInputStream inStream = null;
-		String responseFromServer = "";
-		try
-		{
-			//------------------ CLIENT REQUEST
-			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes_josh.cgi");
-			// Open a HTTP connection to the URL
-			conn = (HttpURLConnection) url.openConnection();
-			conn.setDoInput(true);
-			conn.setDoOutput(true);
-			conn.setUseCaches(false);
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Connection", "Keep-Alive");  	 
-			conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
-			// Set up a data output stream to write to the web
-			dos = new DataOutputStream( conn.getOutputStream() );
-			dos.writeBytes(twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
-					phoneNumber + lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
-					lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
-					fileName + lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd			
-					+ jsonObject +	lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"put\"" + lineEnd + lineEnd +
-					"Save this JSON Object" + lineEnd +
-					twoHyphens + boundary + twoHyphens + lineEnd);
-			Log.e("UploadFile","JSON is written");
-			dos.flush();
-			dos.close();
-		}
-		catch (MalformedURLException ex)
-		{
-			statusOk = false;
-			Log.e("UploadFile", "error: " + ex.getMessage(), ex);
-		}
-		catch (IOException ioe)
-		{
-			statusOk = false;
-			Log.e("UploadFile", "error: " + ioe.getMessage(), ioe);
-		}
-		//------------------ read the SERVER RESPONSE
-		try {
-			inStream = new DataInputStream ( conn.getInputStream() );
-			String str;   	       
-			while (( str = inStream.readLine()) != null)
-			{
-				//TODO: We can verify success/failure here, just need to know what to expect from server!
-				responseFromServer += str;
-				Log.e("UploadFile","Server Response"+str);
-			}
-			inStream.close();
-		}
-		catch (IOException ioex){
-			statusOk = false;
-			Log.e("UploadFile", "error: " + ioex.getMessage(), ioex);
-		}
-		return responseFromServer;
-	}
-
-	private String doJsonQuery1(String phoneNumberForQuery1, int sampleNumber){
-		final String lineEnd = "\r\n";
-		final String twoHyphens = "--";
-		final String boundary =  "---------------------------2916890032591";
-		HttpURLConnection conn = null;
-		DataOutputStream dos = null;
-		DataInputStream inStream = null;
-		String responseFromServer = "";
-		try
-		{
-			//------------------ CLIENT REQUEST
-			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
-			// Open a HTTP connection to the URL
-			conn = (HttpURLConnection) url.openConnection();
-			conn.setDoInput(true);
-			conn.setDoOutput(true);
-			conn.setUseCaches(false);
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Connection", "Keep-Alive");  	 
-			conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
-			// Set up a data output stream to write to the web
-			dos = new DataOutputStream( conn.getOutputStream() );
-			dos.writeBytes(twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
-					phoneNumberForQuery1 + lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
-					sampleNumber + lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
-					lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
-					lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
-					"jsonObject" + lineEnd +
-					twoHyphens + boundary + twoHyphens + lineEnd);
-			Log.e("GetJSON","JSON reqest sent");
-			dos.flush();
-			dos.close();
-		}
-		catch (MalformedURLException ex)
-		{
-			statusOk = false;
-			Log.e("GetJSON1", "error: " + ex.getMessage(), ex);
-		}
-		catch (IOException ioe)
-		{
-			statusOk = false;
-			Log.e("GetJSON1", "error: " + ioe.getMessage(), ioe);
-		}
-		//------------------ read the SERVER RESPONSE
-		try {
-			inStream = new DataInputStream ( conn.getInputStream() );
-			String str;   	       
-			while (( str = inStream.readLine()) != null)
-			{
-				//TODO: We can verify success/failure here, just need to know what to expect from server!
-				responseFromServer += str;
-				Log.e("GetJSON1","Server Response"+str);
-			}
-			inStream.close();
-		}
-		catch (IOException ioex){
-			statusOk = false;
-			System.out.println("Upload failed.");
-			Log.e("GetJSON1", "error: " + ioex.getMessage(), ioex);
-		}
-		System.out.println("Upload finished. Response is: " + responseFromServer);
-		return responseFromServer;
-	}
-	/*
-	private String doJsonQuery2(String phoneNumberForQuery2, String sampleTitle){
-		final String lineEnd = "\r\n";
-		final String twoHyphens = "--";
-		final String boundary =  "---------------------------2916890032591";
-		HttpURLConnection conn = null;
-		DataOutputStream dos = null;
-		DataInputStream inStream = null;
-		String responseFromServer = "";
-		try
-		{
-			//------------------ CLIENT REQUEST
-			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
-			// Open a HTTP connection to the URL
-			conn = (HttpURLConnection) url.openConnection();
-			conn.setDoInput(true);
-			conn.setDoOutput(true);
-			conn.setUseCaches(false);
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Connection", "Keep-Alive");  	 
-			conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
-			// Set up a data output stream to write to the web
-			dos = new DataOutputStream( conn.getOutputStream() );
-			dos.writeBytes(twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
-					phoneNumberForQuery2 + lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
-					lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
-					sampleTitle + lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
-					lineEnd +
-					twoHyphens + boundary + lineEnd +
-					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
-					"jsonObject" + lineEnd +
-					twoHyphens + boundary + twoHyphens + lineEnd);
-			Log.e("GetJSON","JSON reqest sent");
-			dos.flush();
-			dos.close();
-		}
-		catch (MalformedURLException ex)
-		{
-			statusOk = false;
-			Log.e("GetJSON2", "error: " + ex.getMessage(), ex);
-		}
-		catch (IOException ioe)
-		{
-			statusOk = false;
-			Log.e("GetJSON2", "error: " + ioe.getMessage(), ioe);
-		}
-		//------------------ read the SERVER RESPONSE
-		try {
-			inStream = new DataInputStream ( conn.getInputStream() );
-			String str;   	       
-			while (( str = inStream.readLine()) != null)
-			{
-				//TODO: We can verify success/failure here, just need to know what to expect from server!
-				responseFromServer += str;
-				Log.e("UploadFile","Server Response"+str);
-			}
-			inStream.close();
-		}
-		catch (IOException ioex){
-			statusOk = false;
-			Log.e("GetJSON2", "error: " + ioex.getMessage(), ioex);
-		}
-		return responseFromServer;
-	}*/
-	
 	public void writeFileOut(){
 		try{
 			OutputStreamWriter osw = new OutputStreamWriter(	new FileOutputStream(
@@ -1211,7 +824,6 @@ public class ResultView extends BetterDefaultActivity{
 		}
 		catch (Throwable e) {
 			System.err.println("exception thrown");
-			statusOk = false;
 		}
 	}
 }
