@@ -136,7 +136,7 @@ public class ResultView extends BetterDefaultActivity{
 						task.execute();
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){;
-					new LoadResults(this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+					new LoadResultsAsyncTask(this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
@@ -204,20 +204,20 @@ public class ResultView extends BetterDefaultActivity{
 			.setPositiveButton("text", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "txt";
-					new shareResults(ResultView.this).execute("String");
+					new ShareResultsAsyncTask(ResultView.this).execute("String");
 				}
 			})
 			.setNegativeButton("json", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "json";
-					new shareResults(ResultView.this).execute("String");
+					new ShareResultsAsyncTask(ResultView.this).execute("String");
 				}
 			});
 			AlertDialog alert = builder.create();
 			alert.show();
 			return true;
 		case SAVE_ID:
-			new SaveResults(this).execute("String");
+			new SaveResultsAsyncTask(this).execute("String");
 			return true;
 		case LOAD_ID:
 			Intent i = new Intent(ResultView.this, LoadFileChooser.class);
@@ -234,7 +234,7 @@ public class ResultView extends BetterDefaultActivity{
 		Bundle extras = intent.getExtras();
 		switch(requestCode) {
 		case MobileMetagenomics.ACTIVITY_CHOOSE_FILE:
-			new LoadResults(ResultView.this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+			new LoadResultsAsyncTask(ResultView.this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 			break;
 		}
 	}
@@ -276,6 +276,11 @@ public class ResultView extends BetterDefaultActivity{
 		return super.onCreateDialog(id);
 	}
 
+	/**
+	 * 
+	 * @author jhoffman
+	 * Starts metagenome annotation by uploading data, downloading and processing initial results, and starting AnnotationAsyncTask2
+	 */
 	private class AnnotationAsyncTask1 extends BetterAsyncTask<String, Integer, Integer> {
 		public AnnotationAsyncTask1(Context context) {
 			super(context);
@@ -330,6 +335,11 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
+	/**
+	 * 
+	 * @author jhoffman
+	 * Picks up where AnnotationAsyncTask1 leaves off. Performs annotation results downloads from the second to the last.
+	 */
 	private class AnnotationAsyncTask2 extends BetterAsyncTask<String, Integer, Integer> {
 		public AnnotationAsyncTask2(Context context) {
 			super(context);
@@ -386,6 +396,11 @@ public class ResultView extends BetterDefaultActivity{
 
 	}
 
+	/**
+	 * 
+	 * @author jhoffman
+	 * Downloads a json formatted annotation result from the server.
+	 */
 	private class LoadJsonMode1AsyncTask extends BetterAsyncTask<String, Integer, Integer> {
 		public LoadJsonMode1AsyncTask(Context context) {
 			super(context);
@@ -426,8 +441,13 @@ public class ResultView extends BetterDefaultActivity{
 
 	}
 
-	private class SaveResults extends BetterAsyncTask<String, Integer, Integer> {
-		public SaveResults(Context context) {
+	/**
+	 * 
+	 * @author jhoffman
+	 * Saves annotation results locally to the phone's SDCard.
+	 */
+	private class SaveResultsAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public SaveResultsAsyncTask(Context context) {
 			super(context);
 			// TODO Auto-generated constructor stub
 		}
@@ -481,8 +501,13 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
-	private class LoadResults extends BetterAsyncTask<String, Integer, Integer> {
-		public LoadResults(Context context) {
+	/**
+	 * 
+	 * @author jhoffman
+	 * Loads locally saved annotation results.
+	 */
+	private class LoadResultsAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public LoadResultsAsyncTask(Context context) {
 			super(context);
 			// TODO Auto-generated constructor stub
 		}
@@ -542,8 +567,13 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
-	private class shareResults extends BetterAsyncTask<String, Integer, Integer> {
-		public shareResults(Context context) {
+	/**
+	 * 
+	 * @author jhoffman
+	 * Shares annotation results via email.
+	 */
+	private class ShareResultsAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public ShareResultsAsyncTask(Context context) {
 			super(context);
 			// TODO Auto-generated constructor stub
 		}
@@ -672,12 +702,25 @@ public class ResultView extends BetterDefaultActivity{
 
 	}*/
 
+	/**
+	 * @author jhoffman
+	 * @param msg	A message to display to the user
+	 * @return void
+	 * Displays a toast with a given message.
+	 */
 	public void showToast(String msg){
 		Toast t = new Toast(ResultView.this);
 		Toast.makeText(ResultView.this, msg, Toast.LENGTH_LONG);
 		t.show(); 
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param name
+	 * @param msg
+	 * @return void
+	 * Displays a notification with a given name and message in the notification bar.
+	 */
 	public void showNotification(String name, String msg){
 		if(!isInFocus){
 			Intent intent = new Intent(ResultView.this, ResultView.class);
@@ -692,6 +735,11 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
+	/**
+	 * @author jhoffman
+	 * @return void
+	 * Draws a graph based on annotation results saved to resultsArr.
+	 */
 	public void displaySubsystemsGraph(){
 		WindowManager wm =
 			(WindowManager) getSystemService(Context.WINDOW_SERVICE);
@@ -701,7 +749,7 @@ public class ResultView extends BetterDefaultActivity{
 		myLayout.removeAllViews();
 		LinearLayout.LayoutParams params2 = new
 		LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);   	
-		Hashtable helperHash = new Hashtable();
+		Hashtable<String, String> helperHash = new Hashtable<String, String>();
 		//TODO: this is an issue if the resultsArr isn't populated properly. Null ex
 		for(int i=0; i<resultsArr.length; i++){
 			System.out.println("dSG adding " + resultsArr[i] + " to graph");
@@ -715,10 +763,10 @@ public class ResultView extends BetterDefaultActivity{
 			}
 		}
 		String[] newArr = new String[helperHash.size()];
-		Enumeration col = helperHash.keys();
+		Enumeration<String> col = helperHash.keys();
 		int index = 0;
 		while(col.hasMoreElements()){
-			String tmp = (String) col.nextElement();
+			String tmp = col.nextElement();
 			newArr[index++] = tmp + " value: " + helperHash.get(tmp);
 		}
 		Arrays.sort(newArr);		
@@ -760,7 +808,13 @@ public class ResultView extends BetterDefaultActivity{
 		}
 	}
 
-	private Hashtable doInitialAsynchWork(String resString){
+	/**
+	 * @author jhoffman
+	 * @param resString	The result of a query to the server for results
+	 * @return void
+	 * 
+	 */
+	private void doInitialAsynchWork(String resString){
 		Hashtable tmpHash = MgUtilFunc.JSONToHash(resString);
 		if(tmpHash != null){
 			url = (String) tmpHash.get("url");
@@ -771,20 +825,31 @@ public class ResultView extends BetterDefaultActivity{
 				loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.makeWebRequest((String) url + 1))));
 			}
 		}
-		return tmpHash;
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param newData	A hash of results from the annotation server.
+	 * @return void
+	 * Loads the first set of results to the resultsArr and sorts them for display.
+	 */
 	public void loadInitialResults(Hashtable<String,String> newData){
 		Object thisElem;
 		ArrayList<String> helperList = new ArrayList<String>();
 		for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
 			thisElem = e.nextElement();
-			helperList.add(((String) thisElem) + " value: " + ((String) newData.get(thisElem)));
+			helperList.add(((String) thisElem) + " value: " + newData.get(thisElem));
 		}
 		resultsArr = helperList.toArray();
 		Arrays.sort(resultsArr);
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param newData	A hash of results from the annotation server.
+	 * @return void
+	 * Adds all subsequent sets of results to the resultsArr and sorts them for display.
+	 */
 	public void addToResults(Hashtable<String,String> newData){
 		Object thisElem;
 		int i=resultsArr.length;
@@ -806,12 +871,17 @@ public class ResultView extends BetterDefaultActivity{
 		}
 		for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
 			thisElem = e.nextElement();
-			tmp[i++] = ((String) thisElem) + " value: " + ((String) newData.get(thisElem));
+			tmp[i++] = ((String) thisElem) + " value: " + newData.get(thisElem);
 		}
 		resultsArr = tmp;
 		Arrays.sort(resultsArr);
 	}
 
+	/**
+	 * @author jhoffman
+	 * @return void
+	 * Writes a file containing the data from resultsArr.
+	 */
 	public void writeFileOut(){
 		try{
 			OutputStreamWriter osw = new OutputStreamWriter(	new FileOutputStream(

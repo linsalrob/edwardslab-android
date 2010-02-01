@@ -1,5 +1,9 @@
 package edwardslab.util;
 
+/*References: http://www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
+Used for the web access portion of code.
+*/
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -39,7 +43,12 @@ import android.widget.LinearLayout.LayoutParams;
 
 public class MgUtilFunc {
 
-
+	/**
+	 * @author jhoffman
+	 * @param s	A String containing the web address to connect to.
+	 * @return String	Results of the web request
+	 * Sends a query to the web.
+	 */
 	public static String makeWebRequest(String s){
 		Log.e("makeWebRequest","Performing " + s);
 			/* Will be filled and displayed later. */
@@ -69,6 +78,12 @@ public class MgUtilFunc {
 			return webResultString;
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param jsonString	A json formatted String to convert into a Hash.
+	 * @return Hashtable	The hash version of the json String.
+	 * Converts a json formatted hash into a java Hashtable.
+	 */
 	public static Hashtable<String,String> JSONToHash(String jsonString){
 			System.out.println("JSONToHash reached, input is: " + jsonString);
 			//This is a more general parse method (and perhaps I should reconsider the names), which we can hopefully re-use.
@@ -94,6 +109,16 @@ public class MgUtilFunc {
 			return resultHash;
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param ourFile		The file to annotate
+	 * @param level			The level, or mode, to annotate
+	 * @param stringency	How strict the annotation should be
+	 * @param kmer			Length of the 'words' in the annotation
+	 * @param maxGap		Maximum distance between matches
+	 * @return String		The server output - a json object with a website url and # of results portions contained there
+	 * Uploads a file with all annotation parameters, returning a json String with information on getting results from the server.
+	 */
 	public static String doFileUpload(String ourFile, int level, int stringency, int kmer, int maxGap){
 			final String existingFileName = ourFile;   	  
 			final String lineEnd = "\r\n";
@@ -191,6 +216,14 @@ public class MgUtilFunc {
 			return responseFromServer;
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param phoneNumber	The phone number to tag results with
+	 * @param fileName		The filename to tag results with
+	 * @param jsonObject	The json Object to upload to the server
+	 * @return	String		A String containing the results of the web upload
+	 * Uploads a json result to the results storage server.
+	 */
 	public static String doJsonUpload(String phoneNumber, String fileName, String jsonObject){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
@@ -259,7 +292,14 @@ public class MgUtilFunc {
 		return responseFromServer;
 	}
 
-	public static String doJsonQuery1(String phoneNumberForQuery1, int sampleNumber){
+	/**
+	 * @author jhoffman
+	 * @param phoneNumberForQuery	Phone number which desired results are tagged with.
+	 * @param sampleNumber			Sample number which desired results are tagged with.
+	 * @return	String				A String from the server containing a json hash of results.
+	 * Downloads saved annotation results from the results storage server.
+	 */
+	public static String doJsonQuery1(String phoneNumberForQuery, int sampleNumber){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
 		final String boundary =  "---------------------------2916890032591";
@@ -283,7 +323,7 @@ public class MgUtilFunc {
 			dos = new DataOutputStream( conn.getOutputStream() );
 			dos.writeBytes(twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
-					phoneNumberForQuery1 + lineEnd +
+					phoneNumberForQuery + lineEnd +
 					twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
 					sampleNumber + lineEnd +
