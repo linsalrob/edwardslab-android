@@ -26,6 +26,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	public static final String PREFS_NAME = "MmPrefs";
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	static final int ACTIVITY_CHOOSE_FILE = 0;
+	static final int ACTIVITY_CHOOSE_FILENAME = 3;
 	static final int ACTIVITY_LOAD_WEB = 2;
 	private static final int LOAD_LOCAL_ID = Menu.FIRST;
 	private static final int LOAD_WEB_ID = Menu.FIRST + 1;
@@ -33,6 +34,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String LOAD_FILE_SAMPLE_NUMBER = "load file sample number";
 	static final String LOAD_FILE_SAMPLE_TITLE = "load file title";
 	static final String LOAD_FILE_NAME = "load file name";
+	static final String CHOOSE_FILE_NAME = "choose file name";
 	static final String RESULTVIEW_MODE = "resultView mode";
 	static final String NORMAL_MODE = "normal mode";
 	static final String LOAD_LOCAL_FILE = "load local mode";

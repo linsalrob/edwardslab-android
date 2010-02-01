@@ -210,7 +210,8 @@ public class ResultView extends BetterDefaultActivity{
 			.setNegativeButton("json", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "json";
-					new ShareResultsAsyncTask(ResultView.this).execute("String");
+					Intent i = new Intent(ResultView.this, FileNameChooser.class);
+		        	startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
 				}
 			});
 			AlertDialog alert = builder.create();
@@ -236,6 +237,8 @@ public class ResultView extends BetterDefaultActivity{
 		case MobileMetagenomics.ACTIVITY_CHOOSE_FILE:
 			new LoadResultsAsyncTask(ResultView.this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 			break;
+		case MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME:			
+			new ShareResultsAsyncTask(ResultView.this).execute(extras.getString(MobileMetagenomics.CHOOSE_FILE_NAME));
 		}
 	}
 
@@ -616,7 +619,8 @@ public class ResultView extends BetterDefaultActivity{
 					}
 					String tmpString = tmpJo.toString();
 					String tmpLineNumber = mTelephonyMgr.getLine1Number();
-					String tmpFileName = fileName;					
+					System.out.println("Setting filename to " + params[0]);
+					String tmpFileName = params[0];					
 					// TODO: can check success/failure here, just need to examine what the server does on failure!
 					MgUtilFunc.doJsonUpload(tmpLineNumber, tmpFileName, tmpString);
 					return 1;
