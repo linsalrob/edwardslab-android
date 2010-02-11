@@ -7,10 +7,12 @@ package edwardslab.util;
 	Used for the web access portion of code.
  */
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -135,8 +138,9 @@ public class ResultView extends BetterDefaultActivity{
 						// task.disableDialog();
 						task.execute();
 					}
-					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){;
-					new LoadResultsAsyncTask(this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
+					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){
+						fileName = extras.getString(MobileMetagenomics.LOAD_FILE_NAME);
+					new LoadResultsAsyncTask(this).execute(fileName);
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
@@ -461,7 +465,8 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) {
 			try {
-				FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + fileName + ".json"));
+				System.out.println("saveResults should be making a file here.");
+				FileOutputStream fos = new FileOutputStream(new File(fileName + ".json"));
 				JSONObject tmpJo = new JSONObject();
 				for(int i=0; i<resultsArr.length; i++){
 					tmpJo.put("" + i, resultsArr[i]);
@@ -523,19 +528,27 @@ public class ResultView extends BetterDefaultActivity{
 			String[] tmpStringArr = params[0].split("/sdcard/");
 			//TODO: this may be unneeded, look at what happens when a normal (non-loaded) result is done.
 			if(tmpStringArr.length > 1)
-				tmpStringArr = tmpStringArr[1].split(".mmr");
+				tmpStringArr = tmpStringArr[1].split(".json");
 			else
-				tmpStringArr = tmpStringArr[0].split(".mmr");
+				tmpStringArr = tmpStringArr[0].split(".json");
 			fileName = tmpStringArr[0];
+			String concatJson = "";
 			try {
 				FileInputStream fis = new FileInputStream(new File(params[0]));
-				ObjectInputStream ois =
-					new ObjectInputStream(fis);
-				resultsArr = (Object[])ois.readObject();
-				fis.close();
-				return 1;
+				 DataInputStream dis = new DataInputStream(fis);
+			        BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+			    String strLine;
+			    //Read File Line By Line
+			    while ((strLine = br.readLine()) != null)   {
+			      // Print the content on the console
+			      concatJson.concat(strLine);
+			    }
+			    loadInitialResults(MgUtilFunc.JSONToHash(concatJson));
+			    //Close the input stream
+			    dis.close();
+			    return 1;
 			}
-			catch (Throwable e) {
+			catch (Exception e) {
 				System.err.println("exception thrown from LoadResults doInBackground");
 				return -1;
 				// TODO: Pop up a toast or something
