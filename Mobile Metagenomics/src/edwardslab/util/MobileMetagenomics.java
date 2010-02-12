@@ -153,6 +153,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        Bundle extras = intent.getExtras();
 	        switch(requestCode) {
 	        case ACTIVITY_CHOOSE_FILE:
+				System.out.println("filename: "+extras.getString(LOAD_FILE_NAME));
 	    		loadResults(extras.getString(LOAD_FILE_NAME));
 	        	break;
 	        case REQUEST_CODE_PICK_FILE_OR_DIRECTORY:

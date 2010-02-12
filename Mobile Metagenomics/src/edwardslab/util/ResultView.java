@@ -472,7 +472,15 @@ public class ResultView extends BetterDefaultActivity{
 					tmpJo.put("" + i, resultsArr[i]);
 				}
 				OutputStreamWriter osw = new OutputStreamWriter(fos);
-				osw.write(tmpJo.toString());
+				//osw.write(tmpJo.toString());
+				String dumbString = tmpJo.toString();
+				char[] dumbArr = dumbString.toCharArray();
+				for(int j=0; j<dumbArr.length; j++){
+					osw.write(dumbArr[j]);
+				}
+				osw.close();
+				fos.close();
+				System.out.println("Writing the following to file: " + tmpJo.toString());
 				return 1;
 			}
 			catch (Throwable e) {
@@ -525,25 +533,28 @@ public class ResultView extends BetterDefaultActivity{
 		}	
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) {
-			String[] tmpStringArr = params[0].split("/sdcard/");
+			//String[] tmpStringArr = params[0].split("/sdcard/");
 			//TODO: this may be unneeded, look at what happens when a normal (non-loaded) result is done.
-			if(tmpStringArr.length > 1)
+			/*if(tmpStringArr.length > 1)
 				tmpStringArr = tmpStringArr[1].split(".json");
 			else
-				tmpStringArr = tmpStringArr[0].split(".json");
-			fileName = tmpStringArr[0];
+				tmpStringArr = tmpStringArr[0].split(".json");*/
+			//fileName = tmpStringArr[0];
+			fileName = params[0];
 			String concatJson = "";
 			try {
 				FileInputStream fis = new FileInputStream(new File(params[0]));
 				 DataInputStream dis = new DataInputStream(fis);
 			        BufferedReader br = new BufferedReader(new InputStreamReader(dis));
 			    String strLine;
+			    strLine = br.readLine();
 			    //Read File Line By Line
-			    while ((strLine = br.readLine()) != null)   {
+			    if(strLine != null)   {
 			      // Print the content on the console
-			      concatJson.concat(strLine);
+			      concatJson = strLine;
 			    }
-			    loadInitialResults(MgUtilFunc.JSONToHash(concatJson));
+			    System.out.println("concat json = " + concatJson);
+			    loadSavedResults(MgUtilFunc.JSONToHash(concatJson));
 			    //Close the input stream
 			    dis.close();
 			    return 1;
@@ -861,6 +872,23 @@ public class ResultView extends BetterDefaultActivity{
 		Arrays.sort(resultsArr);
 	}
 
+	/**
+	 * @author jhoffman
+	 * @param newData	A hash of results from the annotation server.
+	 * @return void
+	 * Loads results from a one-line file containing a json string to the resultsArr and sorts them for display.
+	 */
+	public void loadSavedResults(Hashtable<String,String> newData){
+		Object thisElem;
+		ArrayList<String> helperList = new ArrayList<String>();
+		for (Enumeration<String> e = newData.keys(); e.hasMoreElements();) {
+			thisElem = e.nextElement();
+			helperList.add(newData.get(thisElem));
+		}
+		resultsArr = helperList.toArray();
+		Arrays.sort(resultsArr);
+	}
+	
 	/**
 	 * @author jhoffman
 	 * @param newData	A hash of results from the annotation server.
