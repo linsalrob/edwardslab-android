@@ -215,6 +215,7 @@ public class ResultView extends BetterDefaultActivity{
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "json";
 					Intent i = new Intent(ResultView.this, FileNameChooser.class);
+					i.putExtra(MobileMetagenomics.CHOOSE_FILE_NAME_MODE, MobileMetagenomics.SHARE_MODE);
 		        	startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
 				}
 			});
@@ -222,11 +223,14 @@ public class ResultView extends BetterDefaultActivity{
 			alert.show();
 			return true;
 		case SAVE_ID:
-			new SaveResultsAsyncTask(this).execute("String");
+			Intent i = new Intent(ResultView.this, FileNameChooser.class);
+			i.putExtra(MobileMetagenomics.CHOOSE_FILE_NAME_MODE, MobileMetagenomics.SAVE_MODE);
+        	startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
+			//new SaveResultsAsyncTask(this).execute("String");
 			return true;
 		case LOAD_ID:
-			Intent i = new Intent(ResultView.this, LoadFileChooser.class);
-			startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILE);
+			Intent j = new Intent(ResultView.this, LoadFileChooser.class);
+			startActivityForResult(j, MobileMetagenomics.ACTIVITY_CHOOSE_FILE);
 			return true;
 		}
 		return super.onMenuItemSelected(featureId, item);
@@ -241,8 +245,14 @@ public class ResultView extends BetterDefaultActivity{
 		case MobileMetagenomics.ACTIVITY_CHOOSE_FILE:
 			new LoadResultsAsyncTask(ResultView.this).execute(extras.getString(MobileMetagenomics.LOAD_FILE_NAME));
 			break;
-		case MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME:			
-			new ShareResultsAsyncTask(ResultView.this).execute(extras.getString(MobileMetagenomics.CHOOSE_FILE_NAME));
+		case MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME:
+			String mode = (String) extras.get(MobileMetagenomics.CHOOSE_FILE_NAME_MODE);
+			if(mode.equals(MobileMetagenomics.SHARE_MODE)){
+				new ShareResultsAsyncTask(ResultView.this).execute(extras.getString(MobileMetagenomics.CHOOSE_FILE_NAME));
+			}
+			else if(mode.equals(MobileMetagenomics.SAVE_MODE)){
+				new SaveResultsAsyncTask(this).execute(extras.getString(MobileMetagenomics.CHOOSE_FILE_NAME));
+			}
 		}
 	}
 
@@ -466,7 +476,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected Integer doCheckedInBackground(Context context, String... params) {
 			try {
 				System.out.println("saveResults should be making a file here.");
-				FileOutputStream fos = new FileOutputStream(new File(fileName + ".json"));
+				FileOutputStream fos = new FileOutputStream(new File("/sdcard/" + params[0] + ".json"));
 				JSONObject tmpJo = new JSONObject();
 				for(int i=0; i<resultsArr.length; i++){
 					tmpJo.put("" + i, resultsArr[i]);

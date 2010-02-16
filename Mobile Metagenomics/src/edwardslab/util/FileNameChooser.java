@@ -13,18 +13,24 @@ import android.widget.EditText;
 public class FileNameChooser extends Activity{
 	String fileName;
 	EditText chooseFileName;
+	String mode;
+	
 	public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.filename);
         chooseFileName = (EditText) findViewById(R.id.ChooseFilename);
         final Button confirmButton = (Button) findViewById(R.id.Confirm);
         fileName = "";
+        Bundle extras = getIntent().getExtras();
+        mode = extras.getString(MobileMetagenomics.CHOOSE_FILE_NAME_MODE);
+        
         chooseFileName.setOnKeyListener(new OnKeyListener() {
     	    public boolean onKey(View v, int keyCode, KeyEvent event) {
     	        if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
     	          // Perform action on key press
     	        	Bundle bundle = new Bundle();            
     				bundle.putString(MobileMetagenomics.CHOOSE_FILE_NAME, chooseFileName.getText().toString());
+    				bundle.putString(MobileMetagenomics.CHOOSE_FILE_NAME_MODE, mode);
     	            Intent mIntent = new Intent();
     	            mIntent.putExtras(bundle);
     	            setResult(RESULT_OK, mIntent);
@@ -40,6 +46,7 @@ public class FileNameChooser extends Activity{
 			public void onClick(View v) {
 				Bundle bundle = new Bundle();            
 				bundle.putString(MobileMetagenomics.CHOOSE_FILE_NAME, chooseFileName.getText().toString());
+				bundle.putString(MobileMetagenomics.CHOOSE_FILE_NAME_MODE, mode);
 	            Intent mIntent = new Intent();
 	            mIntent.putExtras(bundle);
 	            setResult(RESULT_OK, mIntent);

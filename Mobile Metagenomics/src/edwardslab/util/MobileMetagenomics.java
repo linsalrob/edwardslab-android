@@ -35,8 +35,11 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String LOAD_FILE_SAMPLE_TITLE = "load file title";
 	static final String LOAD_FILE_NAME = "load file name";
 	static final String CHOOSE_FILE_NAME = "choose file name";
+	static final String CHOOSE_FILE_NAME_MODE = "choose file name mode";
 	static final String RESULTVIEW_MODE = "resultView mode";
 	static final String NORMAL_MODE = "normal mode";
+	static final String SHARE_MODE = "share mode";
+	static final String SAVE_MODE = "save mode";
 	static final String LOAD_LOCAL_FILE = "load local mode";
 	static final String LOAD_WEB_JSON_1 = "load web json mode 1";
 	static final String LOAD_WEB_JSON_2 = "load web json mode 2";
