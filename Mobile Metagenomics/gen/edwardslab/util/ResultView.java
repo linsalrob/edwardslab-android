@@ -203,15 +203,15 @@ public class ResultView extends BetterDefaultActivity{
 		switch(item.getItemId()) {
 		case SHARE_ID:
 			AlertDialog.Builder builder = new AlertDialog.Builder(ResultView.this);
-			builder.setMessage("Share as plain text or Android-viewable format?")
+			builder.setMessage(R.string.share_query)
 			.setCancelable(true)
-			.setPositiveButton("text", new DialogInterface.OnClickListener() {
+			.setPositiveButton(R.string.email, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "txt";
 					new ShareResultsAsyncTask(ResultView.this).execute("String");
 				}
 			})
-			.setNegativeButton("json", new DialogInterface.OnClickListener() {
+			.setNegativeButton(R.string.web, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					shareMode = "json";
 					Intent i = new Intent(ResultView.this, FileNameChooser.class);

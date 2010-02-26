@@ -21,4 +21,7 @@
 	<string name="kmer">Word Size</string>
 	<string name="maxGap">Max Gap</string>
 	<string name="confirm">Confirm</string>
+	<string name="email">Email</string>
+	<string name="web">Web Storage</string>
+	<string name="share_query">Share via email or the results storage web server?</string>
 </resources>
