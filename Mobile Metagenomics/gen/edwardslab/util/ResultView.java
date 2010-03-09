@@ -72,8 +72,8 @@ public class ResultView extends BetterDefaultActivity{
 	static final String LOADING = "Loading Complete!";
 	static final String SAVING = "Saving Complete!";
 	static final String SHARING = "Sharing Complete!";
-	String LEVEL = "level";
-	String MAX = "max";
+	static final String LEVEL = "level";
+	static final String MAX = "max";
 	String fileName;
 	String shareMode;
 	int stringency = -1;
