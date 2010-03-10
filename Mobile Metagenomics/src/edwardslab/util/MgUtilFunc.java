@@ -235,7 +235,7 @@ public class MgUtilFunc {
 		try
 		{
 			//------------------ CLIENT REQUEST
-			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes_josh.cgi");
+			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
 			// Open a HTTP connection to the URL
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setDoInput(true);

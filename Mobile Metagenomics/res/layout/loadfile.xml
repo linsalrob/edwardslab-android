@@ -11,13 +11,13 @@
 	</EditText>
 	<Button android:id="@+id/Browse" 
 		android:layout_toRightOf="@+id/LoadFilename" 
-		android:layout_width="wrap_content" 
+		android:layout_width="fill_parent" 
 		android:text="@string/browse" 
 		android:layout_height="wrap_content">
 	</Button>
 	<Button android:id="@+id/Load" 
 		android:layout_below="@+id/LoadFilename" 
-		android:layout_width="wrap_content" 
+		android:layout_width="fill_parent" 
 		android:text="@string/load_local" 
 		android:layout_height="wrap_content">
 	</Button>
