@@ -6,14 +6,9 @@
   <LinearLayout android:id="@+id/PhoneNumberDiv"
 	android:layout_width="fill_parent"
   	android:layout_height="wrap_content">
-  	<EditText android:id="@+id/PhoneNumber" 
-		android:layout_width="fill_parent" 
-		android:layout_height="fill_parent" 
-		android:hint="@string/phoneNumberHint"
-		android:inputType="phone"
-		android:layout_weight="1">
-	</EditText>
-	<Button android:id="@+id/UseMyNumber" 
+  	
+	<EditText android:id="@+id/PhoneNumber" android:layout_width="fill_parent" android:layout_height="fill_parent" android:hint="@string/phoneNumberHint" android:inputType="phone" android:layout_weight="1">
+	</EditText><Button android:id="@+id/UseMyNumber" 
 		android:layout_below="@+id/PhoneNumber" 
 		android:layout_width="fill_parent" 
 		android:text="@string/useMyNumber" 
@@ -22,9 +17,10 @@
 	</Button>
 	</LinearLayout>
 	<LinearLayout
+	android:id="@+id/ButtonDiv"
 	android:layout_width="fill_parent"
   	android:layout_height="wrap_content"
-  	android:layout_below="@+id/PhoneNumberDiv" >
+  	android:layout_below="@+id/PhoneNumberDiv">
 	<Button android:id="@+id/GetAllTitles" 
 		android:layout_weight="1"
 		android:layout_width="fill_parent" 
@@ -38,5 +34,25 @@
 		android:layout_height="fill_parent">
 	</Button>
 	</LinearLayout>
-  
+	<Spinner android:id="@+id/StringencySpinner" 
+		android:layout_below="@+id/ButtonDiv" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:prompt="@string/stringency"
+		android:entries="@array/stringency">
+	</Spinner>
+	<Spinner android:id="@+id/KmerSpinner" 
+		android:layout_below="@+id/StringencySpinner" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:entries="@array/kmer"
+		android:prompt="@string/kmer">	
+	</Spinner>
+	<Spinner android:id="@+id/MaxGapSpinner" 
+		android:layout_below="@+id/KmerSpinner" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:entries="@array/maxGap"
+		android:prompt="@string/maxGap">	
+	</Spinner>
 </RelativeLayout>

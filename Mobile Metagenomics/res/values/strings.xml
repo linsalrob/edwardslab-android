@@ -23,8 +23,8 @@
     <string name="show_advanced">Show Advanced Options</string>
     <string name="hide_advanced">Hide Advanced Options</string>
     <string name="no_filemanager_installed">No File Manager installed; install one, or type in file name to annotate.</string>
-	<string name="kmer">Word Size</string>
-	<string name="maxGap">Max Gap</string>
+	<string name="kmer">Word Size:</string>
+	<string name="maxGap">Max Gap:</string>
 	<string name="confirm">Confirm</string>
 	<string name="email">Email</string>
 	<string name="web">Web Storage</string>
