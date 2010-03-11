@@ -3,5 +3,40 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content">
+  <LinearLayout android:id="@+id/PhoneNumberDiv"
+	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content">
+  	<EditText android:id="@+id/PhoneNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="fill_parent" 
+		android:hint="@string/phoneNumberHint"
+		android:inputType="phone"
+		android:layout_weight="1">
+	</EditText>
+	<Button android:id="@+id/UseMyNumber" 
+		android:layout_below="@+id/PhoneNumber" 
+		android:layout_width="fill_parent" 
+		android:text="@string/useMyNumber" 
+		android:layout_height="fill_parent"
+		android:layout_weight="2">
+	</Button>
+	</LinearLayout>
+	<LinearLayout
+	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_below="@+id/PhoneNumberDiv" >
+	<Button android:id="@+id/GetAllTitles" 
+		android:layout_weight="1"
+		android:layout_width="fill_parent" 
+		android:text="@string/get_all_titles" 
+		android:layout_height="fill_parent">
+	</Button>
+	<Button android:id="@+id/ShowAdvanced" 
+		android:layout_weight="1"
+		android:layout_width="fill_parent" 
+		android:text="@string/show_advanced" 
+		android:layout_height="fill_parent">
+	</Button>
+	</LinearLayout>
   
 </RelativeLayout>

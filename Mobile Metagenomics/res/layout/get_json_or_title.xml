@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  
+  	<EditText android:id="@+id/PhoneNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/phoneNumberHint"
+		android:inputType="phone">
+	</EditText>
+	<Button android:id="@+id/UseMyNumber" 
+		android:layout_below="@+id/PhoneNumber" 
+		android:layout_width="fill_parent" 
+		android:text="@string/useMyNumber" 
+		android:layout_height="wrap_content">
+	</Button>
+	<EditText android:id="@+id/SampleNumber" 
+		android:layout_below="@+id/UseMyNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/sampleNumberHint"
+		android:inputType="number">
+	</EditText>
+	<!-- 
+	<EditText android:id="@+id/Title" 
+		android:layout_below="@+id/SampleNumber" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:hint="@string/titleHint">
+	</EditText> -->
+	<LinearLayout
+	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_below="@+id/SampleNumber" >
+	<Button android:id="@+id/GetTitle" 
+		android:layout_weight="1"
+		android:layout_width="fill_parent" 
+		android:text="@string/get_title" 
+		android:layout_height="wrap_content">
+	</Button>
+	<Button android:id="@+id/LoadWeb" 
+		android:layout_weight="1"
+		android:layout_width="fill_parent" 
+		android:text="@string/load_web" 
+		android:layout_height="wrap_content">
+	</Button>
+	</LinearLayout>
+  
+</RelativeLayout>
