@@ -24,7 +24,7 @@ public class GetAllTitles extends Activity{
 	
 	public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.filename);
+        setContentView(R.layout.get_all_titles);
         final Button getAllTitles = (Button) findViewById(R.id.GetAllTitles);
         final Button toggleAdvanced = (Button) findViewById(R.id.ShowAdvanced);
         phoneNumber = (EditText) findViewById(R.id.PhoneNumber);

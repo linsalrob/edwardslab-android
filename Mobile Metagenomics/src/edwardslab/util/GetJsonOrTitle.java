@@ -17,7 +17,7 @@ public class GetJsonOrTitle extends Activity{
 	
 	public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.filename);
+        setContentView(R.layout.get_json_or_title);
         chooseFileName = (EditText) findViewById(R.id.ChooseFilename);
         final Button confirmButton = (Button) findViewById(R.id.Confirm);
         fileName = "";
