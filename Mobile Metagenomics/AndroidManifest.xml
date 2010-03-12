@@ -36,6 +36,12 @@
 			android:theme="@android:style/Theme.Dialog"
 			android:label="@string/fileHint">
 	</activity>
+	<activity android:name=".GetAllTitles" 
+			android:label="@string/get_all_titles">
+	</activity>
+	<activity android:name=".GetJsonOrTitle" 
+			android:label="@string/get_json_or_title">
+	</activity>
 </application>
     <uses-sdk android:minSdkVersion="3" />
 	<uses-permission android:name="android.permission.INTERNET"></uses-permission>

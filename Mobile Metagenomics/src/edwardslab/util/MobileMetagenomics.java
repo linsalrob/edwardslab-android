@@ -2,13 +2,14 @@ package edwardslab.util;
 
 import org.openintents.intents.FileManagerIntents;
 
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,8 +27,10 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	public static final String PREFS_NAME = "MmPrefs";
 	protected static final int REQUEST_CODE_PICK_FILE_OR_DIRECTORY = 1;
 	static final int ACTIVITY_CHOOSE_FILE = 0;
-	static final int ACTIVITY_CHOOSE_FILENAME = 3;
 	static final int ACTIVITY_LOAD_WEB = 2;
+	static final int ACTIVITY_CHOOSE_FILENAME = 3;
+	static final int ACTIVITY_GET_JSON_OR_TITLE = 4;
+	static final int ACTIVITY_GET_ALL_TITLES = 4;
 	private static final int LOAD_LOCAL_ID = Menu.FIRST;
 	private static final int LOAD_WEB_ID = Menu.FIRST + 1;
 	static final String LOAD_FILE_PHONE_NUMBER = "load file phone number";
@@ -143,8 +146,23 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         	startActivityForResult(i, ACTIVITY_CHOOSE_FILE);
         	return true;
         case LOAD_WEB_ID:
-        	Intent j = new Intent(MobileMetagenomics.this, LoadWebChooser.class);
-        	startActivityForResult(j, ACTIVITY_LOAD_WEB);
+        	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage(R.string.server_get_query)
+			.setCancelable(true)
+			.setPositiveButton(R.string.get_all_titles, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+		        	Intent j = new Intent(MobileMetagenomics.this, GetAllTitles.class);
+		        	startActivityForResult(j, ACTIVITY_GET_ALL_TITLES);
+				}
+			})
+			.setNegativeButton(R.string.get_json_or_title, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+		        	Intent j = new Intent(MobileMetagenomics.this, GetJsonOrTitle.class);
+		        	startActivityForResult(j, ACTIVITY_GET_JSON_OR_TITLE);
+				}
+			});
+			AlertDialog alert = builder.create();
+			alert.show();
         }
         return super.onMenuItemSelected(featureId, item);
 	}
