@@ -30,4 +30,37 @@
         <item>900</item>
     </string-array>
     
+    <string-array name="stringency2">
+    	<item>Stringency</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+
+    <string-array name="levels2">
+    	<item>Level</item>
+        <item>Function</item>
+        <item>One level Subsystems</item>
+        <item>Two level Subsystems</item>
+        <item>Three level Subsystems</item>
+        <item>OTUs</item>
+    </string-array>
+    
+    <string-array name="kmer2">
+    	<item>Word Size</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+    </string-array>
+    
+    <string-array name="maxGap2">
+    	<item>Max Gap</item>
+        <item>300</item>
+        <item>600</item>
+        <item>900</item>
+    </string-array>
 </resources>

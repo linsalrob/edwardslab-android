@@ -34,25 +34,33 @@
 		android:layout_height="fill_parent">
 	</Button>
 	</LinearLayout>
-	<Spinner android:id="@+id/StringencySpinner" 
-		android:layout_below="@+id/ButtonDiv" 
+	<LinearLayout android:id="@+id/ShowAdvancedDiv"
+	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_below="@+id/ButtonDiv"
+  	android:orientation="vertical">
+	<Spinner android:id="@+id/StringencySpinner2" 
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:prompt="@string/stringency"
-		android:entries="@array/stringency">
+		android:entries="@array/stringency2"
+		android:layout_weight="1">
 	</Spinner>
-	<Spinner android:id="@+id/KmerSpinner" 
+	<Spinner android:id="@+id/KmerSpinner2" 
 		android:layout_below="@+id/StringencySpinner" 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
-		android:entries="@array/kmer"
-		android:prompt="@string/kmer">	
+		android:entries="@array/kmer2"
+		android:prompt="@string/kmer"
+		android:layout_weight="1">	
 	</Spinner>
-	<Spinner android:id="@+id/MaxGapSpinner" 
+	<Spinner android:id="@+id/MaxGapSpinner2" 
 		android:layout_below="@+id/KmerSpinner" 
 		android:layout_width="fill_parent" 
 		android:layout_height="wrap_content" 
-		android:entries="@array/maxGap"
-		android:prompt="@string/maxGap">	
+		android:entries="@array/maxGap2"
+		android:prompt="@string/maxGap"
+		android:layout_weight="1">	
 	</Spinner>
+	</LinearLayout>
 </RelativeLayout>
