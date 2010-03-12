@@ -1,8 +1,10 @@
 package edwardslab.util;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -27,12 +29,14 @@ public class GetAllTitles extends Activity{
         setContentView(R.layout.get_all_titles);
         final Button getAllTitles = (Button) findViewById(R.id.GetAllTitles);
         final Button toggleAdvanced = (Button) findViewById(R.id.ShowAdvanced);
+        final Button useMyNumber = (Button) findViewById(R.id.UseMyNumber);
         phoneNumber = (EditText) findViewById(R.id.PhoneNumber);
         advancedOptions = (LinearLayout) findViewById(R.id.ShowAdvancedDiv);
         stringencySpinner = (Spinner) findViewById(R.id.StringencySpinner2);
     	kmerSpinner = (Spinner) findViewById(R.id.KmerSpinner2);
     	maxGapSpinner = (Spinner) findViewById(R.id.MaxGapSpinner2);
-        
+    	advancedOptions.setVisibility(View.GONE);
+    	
         getAllTitles.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -68,6 +72,17 @@ public class GetAllTitles extends Activity{
 					advancedOptions.setVisibility(View.VISIBLE);
 					toggleAdvanced.setText(R.string.hide_advanced);
 				}
+			}
+    	});
+        
+        useMyNumber.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				TelephonyManager mTelephonyMgr;  
+				mTelephonyMgr = (TelephonyManager)  
+				getSystemService(Context.TELEPHONY_SERVICE);
+				String tmpLineNumber = mTelephonyMgr.getLine1Number();
+				phoneNumber.setText(tmpLineNumber);
 			}
     	});
 	}
