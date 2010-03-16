@@ -10,13 +10,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.github.droidfu.concurrent.BetterAsyncTask;
+
 public class GetJsonOrTitle extends Activity{
-	String numberEntered;
-	Integer sampleEntered;
-	//String titleEntered;
 	EditText phoneNumber;
 	EditText sampleNumber;
-	//EditText title;
+	String title;
 	
 	
 	public void onCreate(Bundle savedInstanceState){
@@ -24,47 +23,39 @@ public class GetJsonOrTitle extends Activity{
         setContentView(R.layout.get_json_or_title);
         phoneNumber = (EditText) findViewById(R.id.PhoneNumber);
         sampleNumber = (EditText) findViewById(R.id.SampleNumber);
-       // title = (EditText) findViewById(R.id.Title);
         final Button myNumberButton = (Button) findViewById(R.id.UseMyNumber);
-        final Button confirmButton = (Button) findViewById(R.id.LoadWeb);
+        final Button loadWeb = (Button) findViewById(R.id.LoadJson);
         final Button getTitle = (Button) findViewById(R.id.GetTitle);
-        numberEntered = "";
-        sampleEntered = -1;
-      //  titleEntered = "";
         
         
-        confirmButton.setOnClickListener(new OnClickListener() {
+        loadWeb.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				try{
-					String tmpPhoneNumber = phoneNumber.getText().toString();
-					Integer tmpSampleNumber = Integer.parseInt((String)sampleNumber.getText().toString());
-					System.out.println("tmp Phone Number is: " + tmpPhoneNumber.toString());
-					System.out.println("sample number is: " + tmpSampleNumber.toString());
-					if(!tmpPhoneNumber.equals("")){
-						numberEntered = tmpPhoneNumber;
+					String phoneNumberEntered = phoneNumber.getText().toString();
+					String sampleNumberEntered = sampleNumber.getText().toString();
+					boolean dataVerified = true;
+					if(phoneNumberEntered.equals("")){
+						dataVerified = false;
+						MgUtilFunc.showToast(GetJsonOrTitle.this, MobileMetagenomics.VALID_PHONE_STRING);
 					}
-					if(tmpSampleNumber != 0){
-						sampleEntered = tmpSampleNumber;
+					if(sampleNumberEntered.equals("")){
+						dataVerified = false;
+						MgUtilFunc.showToast(GetJsonOrTitle.this, MobileMetagenomics.VALID_SAMPLE_STRING);
+					}
+					if(dataVerified){
+						Bundle bundle = new Bundle();            
+						bundle.putString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, phoneNumberEntered);
+						bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleNumberEntered);
+			            Intent mIntent = new Intent();
+			            mIntent.putExtras(bundle);
+			            setResult(RESULT_OK, mIntent);
+			            finish();
 					}
 					
-					/*if(!title.getText().toString().equals("")){
-						titleEntered = title.getText().toString();
-					}*/
-					
-					Bundle bundle = new Bundle();            
-					bundle.putString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, numberEntered);
-					bundle.putInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleEntered);
-					/*if(!titleEntered.equals("no title")){
-						bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE, titleEntered);
-					}*/
-		            Intent mIntent = new Intent();
-		            mIntent.putExtras(bundle);
-		            setResult(RESULT_OK, mIntent);
-		            finish();
 				}
 				catch(Exception E){
-					
+					MgUtilFunc.showToast(GetJsonOrTitle.this, "hit the exception block! exception is: " + E.toString());
 				}
 			}
     	});
@@ -83,8 +74,67 @@ public class GetJsonOrTitle extends Activity{
         getTitle.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				
+				try{
+					String phoneNumberEntered = phoneNumber.getText().toString();
+					String sampleNumberEntered = sampleNumber.getText().toString();
+					boolean dataVerified = true;
+					if(phoneNumberEntered.equals("")){
+						dataVerified = false;
+						MgUtilFunc.showToast(GetJsonOrTitle.this, MobileMetagenomics.VALID_PHONE_STRING);
+					}
+					if(sampleNumberEntered.equals("")){
+						dataVerified = false;
+						MgUtilFunc.showToast(GetJsonOrTitle.this, MobileMetagenomics.VALID_SAMPLE_STRING);
+					}
+					if(dataVerified){
+						LoadTitleAsyncTask task = new LoadTitleAsyncTask(GetJsonOrTitle.this);
+						task.execute();
+					}
+					
+				}
+				catch(Exception E){
+					MgUtilFunc.showToast(GetJsonOrTitle.this, "hit the exception block! exception is: " + E.toString());
+
+				}
 			}
     	});
+	}
+	
+	/**
+	 * 
+	 * @author jhoffman
+	 * Downloads a json formatted annotation result from the server.
+	 */
+	private class LoadTitleAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public LoadTitleAsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status = 0;
+			title = MgUtilFunc.JSONToHash(MgUtilFunc.doJsonTitleQuery(phoneNumber.getText().toString(), sampleNumber.getText().toString())).get("title");
+			status = 1;
+			publishProgress(status);
+			return 1;
+		}
+
+		@Override
+		protected void after(Context context, Integer result) {
+		}
+
+		@Override
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+			//Handle the "Function" operation mode
+			MgUtilFunc.showToast(GetJsonOrTitle.this, "Sample #" + sampleNumber.getText().toString() + "'s title is: " + title);
+		} 
+
 	}
 }

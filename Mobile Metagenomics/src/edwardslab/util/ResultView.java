@@ -742,18 +742,6 @@ public class ResultView extends BetterDefaultActivity{
 
 	/**
 	 * @author jhoffman
-	 * @param msg	A message to display to the user
-	 * @return void
-	 * Displays a toast with a given message.
-	 */
-	public void showToast(String msg){
-		Toast t = new Toast(ResultView.this);
-		Toast.makeText(ResultView.this, msg, Toast.LENGTH_LONG);
-		t.show(); 
-	}
-
-	/**
-	 * @author jhoffman
 	 * @param name
 	 * @param msg
 	 * @return void

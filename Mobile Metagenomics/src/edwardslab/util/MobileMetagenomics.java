@@ -30,7 +30,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final int ACTIVITY_LOAD_WEB = 2;
 	static final int ACTIVITY_CHOOSE_FILENAME = 3;
 	static final int ACTIVITY_GET_JSON_OR_TITLE = 4;
-	static final int ACTIVITY_GET_ALL_TITLES = 4;
+	static final int ACTIVITY_GET_ALL_TITLES = 5;
 	private static final int LOAD_LOCAL_ID = Menu.FIRST;
 	private static final int LOAD_WEB_ID = Menu.FIRST + 1;
 	static final String LOAD_FILE_PHONE_NUMBER = "load file phone number";
@@ -51,6 +51,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String STRINGENCY = "stringency";
 	static final String KMER = "kmer";
 	static final String MAX_GAP = "maxGap";
+	static final String VALID_PHONE_STRING = "Please enter a valid phone number";
+	static final String VALID_SAMPLE_STRING = "Please enter a valid sample number";
 	EditText fileName;
 	Spinner stringencySpinner;
 	Spinner levelSpinner;
@@ -58,8 +60,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	Spinner maxGapSpinner;
 	Object[] keyArr;
 	Object[] valArr;
-	ListView resultListView;
-    //private ProgressDialog pd;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -214,6 +214,14 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        		}*/
 	        	}
 				break;
+	        case ACTIVITY_GET_ALL_TITLES:
+	        	//TODO: get information out, display titles
+	        	MgUtilFunc.showToast(MobileMetagenomics.this, "Returned from get all titles");
+	        	break;
+	        case ACTIVITY_GET_JSON_OR_TITLE:
+	        	//TODO: send to resultview to display JSON. If user used title option, the title was displayed in that activity.
+	        	MgUtilFunc.showToast(MobileMetagenomics.this, "Returned from get json");
+	        	break;
 	        }
         }
     }

@@ -40,7 +40,7 @@
 		android:text="@string/get_title" 
 		android:layout_height="wrap_content">
 	</Button>
-	<Button android:id="@+id/LoadWeb" 
+	<Button android:id="@+id/LoadJson" 
 		android:layout_weight="1"
 		android:layout_width="fill_parent" 
 		android:text="@string/load_web" 

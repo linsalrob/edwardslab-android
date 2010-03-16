@@ -9,37 +9,22 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONObject;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ShapeDrawable;
 import android.util.Log;
-import android.view.Display;
-import android.view.Gravity;
-import android.view.WindowManager;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.view.View;
 import android.widget.Toast;
-import android.widget.LinearLayout.LayoutParams;
 
 public class MgUtilFunc {
 
@@ -368,6 +353,94 @@ public class MgUtilFunc {
 		System.out.println("Upload finished. Response is: " + responseFromServer);
 		return responseFromServer;
 	}
+	
+	/**
+	 * @author jhoffman
+	 * @param phoneNumberForQuery	Phone number which desired results are tagged with.
+	 * @param sampleNumber			Sample number which desired results are tagged with.
+	 * @return	String				A String from the server containing a json hash of results.
+	 * Downloads the title of a given sample from the results storage server.
+	 */
+	public static String doJsonTitleQuery(String phoneNumberForQuery, String sampleNumber){
+		final String lineEnd = "\r\n";
+		final String twoHyphens = "--";
+		final String boundary =  "---------------------------2916890032591";
+		HttpURLConnection conn = null;
+		DataOutputStream dos = null;
+		DataInputStream inStream = null;
+		String responseFromServer = "";
+		try
+		{
+			//------------------ CLIENT REQUEST
+			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
+			// Open a HTTP connection to the URL
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoInput(true);
+			conn.setDoOutput(true);
+			conn.setUseCaches(false);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Connection", "Keep-Alive");  	 
+			conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+			// Set up a data output stream to write to the web
+			dos = new DataOutputStream( conn.getOutputStream() );
+			dos.writeBytes(twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
+					phoneNumberForQuery + lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
+					sampleNumber + lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
+					"title" + lineEnd +
+					twoHyphens + boundary + twoHyphens + lineEnd);
+			Log.e("GetTitle","Title reqest sent");
+			dos.flush();
+			dos.close();
+		}
+		catch (MalformedURLException ex)
+		{
+			Log.e("GetTitle", "error: " + ex.getMessage(), ex);
+		}
+		catch (IOException ioe)
+		{
+			Log.e("GetTitle", "error: " + ioe.getMessage(), ioe);
+		}
+		//------------------ read the SERVER RESPONSE
+		try {
+			inStream = new DataInputStream ( conn.getInputStream() );
+			String str;   	       
+			while (( str = inStream.readLine()) != null)
+			{
+				//TODO: We can verify success/failure here, just need to know what to expect from server!
+				responseFromServer += str;
+				Log.e("GetTitle","Server Response"+str);
+			}
+			inStream.close();
+		}
+		catch (IOException ioex){
+			System.out.println("Upload failed.");
+			Log.e("GetTitle", "error: " + ioex.getMessage(), ioex);
+		}
+		System.out.println("Upload finished. Response is: " + responseFromServer);
+		return responseFromServer;
+	}
+	
+	/**
+	 * @author jhoffman
+	 * @param msg	A message to display to the user
+	 * @return void
+	 * Displays a toast with a given message.
+	 */
+	public static void showToast(Context context, String msg){
+		Toast.makeText(context, msg, Toast.LENGTH_LONG).show(); 
+	}
+	
 	/*
 	public static String doJsonQuery2(String phoneNumberForQuery2, String sampleTitle){
 		final String lineEnd = "\r\n";

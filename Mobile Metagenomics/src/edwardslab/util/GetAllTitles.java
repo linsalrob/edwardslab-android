@@ -41,21 +41,28 @@ public class GetAllTitles extends Activity{
 			@Override
 			public void onClick(View v) {
 				Bundle bundle = new Bundle();
-				bundle.putString(PHONE_NUMBER_FILTER_VAL, phoneNumber.getText().toString());
-				if(showAdvanced){
-					bundle.putInt(STRINGENCY_FILTER_VAL, (stringencySpinner.getSelectedItemPosition() + 1));
-					bundle.putInt(MAX_GAP_FILTER_VAL, ((maxGapSpinner.getSelectedItemPosition() + 1)*300));
-					bundle.putInt(KMER_FILTER_VAL, (kmerSpinner.getSelectedItemPosition() + 7));
+				String tmpPhoneNumber = phoneNumber.getText().toString();
+				if(!tmpPhoneNumber.equals("")){
+					bundle.putString(PHONE_NUMBER_FILTER_VAL, tmpPhoneNumber);
+					if(showAdvanced){
+						bundle.putInt(STRINGENCY_FILTER_VAL, (stringencySpinner.getSelectedItemPosition() + 1));
+						bundle.putInt(MAX_GAP_FILTER_VAL, ((maxGapSpinner.getSelectedItemPosition() + 1)*300));
+						bundle.putInt(KMER_FILTER_VAL, (kmerSpinner.getSelectedItemPosition() + 7));
+					}
+					else{
+						bundle.putInt(STRINGENCY_FILTER_VAL, -1);
+						bundle.putInt(MAX_GAP_FILTER_VAL, -1);
+						bundle.putInt(KMER_FILTER_VAL, -1);
+					}
+		            Intent mIntent = new Intent();
+		            mIntent.putExtras(bundle);
+		            setResult(RESULT_OK, mIntent);
+		            finish();
 				}
 				else{
-					bundle.putInt(STRINGENCY_FILTER_VAL, -1);
-					bundle.putInt(MAX_GAP_FILTER_VAL, -1);
-					bundle.putInt(KMER_FILTER_VAL, -1);
+					MgUtilFunc.showToast(GetAllTitles.this, MobileMetagenomics.VALID_PHONE_STRING);
 				}
-	            Intent mIntent = new Intent();
-	            mIntent.putExtras(bundle);
-	            setResult(RESULT_OK, mIntent);
-	            finish();
+				
 			}
     	});
         
