@@ -284,7 +284,7 @@ public class MgUtilFunc {
 	 * @return	String				A String from the server containing a json hash of results.
 	 * Downloads saved annotation results from the results storage server.
 	 */
-	public static String doJsonQuery1(String phoneNumberForQuery, int sampleNumber){
+	public static String doJsonQuery1(String phoneNumberForQuery, String sampleNumber){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
 		final String boundary =  "---------------------------2916890032591";

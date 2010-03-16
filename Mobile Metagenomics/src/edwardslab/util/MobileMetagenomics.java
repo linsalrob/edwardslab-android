@@ -220,7 +220,20 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        	break;
 	        case ACTIVITY_GET_JSON_OR_TITLE:
 	        	//TODO: send to resultview to display JSON. If user used title option, the title was displayed in that activity.
-	        	MgUtilFunc.showToast(MobileMetagenomics.this, "Returned from get json");
+	        	if(extras != null){
+	        		String phoneNumber = extras.getString(LOAD_FILE_PHONE_NUMBER);
+	        		System.out.println("Mobile Metagenomics receiving: " + extras.getInt(LOAD_FILE_SAMPLE_NUMBER));
+	        		String sampleNumber = extras.getString(LOAD_FILE_SAMPLE_NUMBER);
+	        		//String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
+	        		
+	        		if(!phoneNumber.equals("") && !sampleNumber.equals("0")){
+	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
+	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_1);
+	            		i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	            		i.putExtra(LOAD_FILE_SAMPLE_NUMBER, sampleNumber);
+	            		startActivity(i);
+	        		}
+	        	}
 	        	break;
 	        }
         }

@@ -81,7 +81,7 @@ public class ResultView extends BetterDefaultActivity{
 	int kmer = -1;
 	int maxGap = 1;
 	String phoneNumberForQuery = "";
-	Integer sampleNumber = 1;
+	String sampleNumber = "-1";
 	String sampleTitle = "";
 	Object[] resultsArr;
 	ListView resultListView;
@@ -144,7 +144,7 @@ public class ResultView extends BetterDefaultActivity{
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
-						sampleNumber = extras.getInt(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
+						sampleNumber = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
 						LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
 						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
@@ -428,7 +428,9 @@ public class ResultView extends BetterDefaultActivity{
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 0;
 			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
-			loadInitialResults(MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber)));
+			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
+			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
+			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber))).get("data")));
 			status = 1;
 			publishProgress(status);
 			return 1;
