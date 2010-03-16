@@ -433,6 +433,83 @@ public class MgUtilFunc {
 	
 	/**
 	 * @author jhoffman
+	 * @param phoneNumberForQuery	Phone number which desired results are tagged with.
+	 * @param sampleNumber			Sample number which desired results are tagged with.
+	 * @return	String				A String from the server containing a json hash of results.
+	 * Downloads the title of a given sample from the results storage server.
+	 */
+	public static String doJsonAllTitlesQuery(String phoneNumberForQuery){
+		final String lineEnd = "\r\n";
+		final String twoHyphens = "--";
+		final String boundary =  "---------------------------2916890032591";
+		HttpURLConnection conn = null;
+		DataOutputStream dos = null;
+		DataInputStream inStream = null;
+		String responseFromServer = "";
+		try
+		{
+			//------------------ CLIENT REQUEST
+			URL url = new URL("http://edwards.sdsu.edu/cgi-bin/cell_phone_metagenomes.cgi");
+			// Open a HTTP connection to the URL
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setDoInput(true);
+			conn.setDoOutput(true);
+			conn.setUseCaches(false);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Connection", "Keep-Alive");  	 
+			conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+			// Set up a data output stream to write to the web
+			dos = new DataOutputStream( conn.getOutputStream() );
+			dos.writeBytes(twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
+					phoneNumberForQuery + lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"count\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"jsonObject\"" + lineEnd + lineEnd +
+					lineEnd +
+					twoHyphens + boundary + lineEnd +
+					"Content-Disposition: form-data; name=\"get\"" + lineEnd + lineEnd +
+					"allTitles" + lineEnd +
+					twoHyphens + boundary + twoHyphens + lineEnd);
+			Log.e("GetTitle","Title reqest sent");
+			dos.flush();
+			dos.close();
+		}
+		catch (MalformedURLException ex)
+		{
+			Log.e("GetTitle", "error: " + ex.getMessage(), ex);
+		}
+		catch (IOException ioe)
+		{
+			Log.e("GetTitle", "error: " + ioe.getMessage(), ioe);
+		}
+		//------------------ read the SERVER RESPONSE
+		try {
+			inStream = new DataInputStream ( conn.getInputStream() );
+			String str;   	       
+			while (( str = inStream.readLine()) != null)
+			{
+				//TODO: We can verify success/failure here, just need to know what to expect from server!
+				responseFromServer += str;
+				Log.e("GetTitle","Server Response"+str);
+			}
+			inStream.close();
+		}
+		catch (IOException ioex){
+			System.out.println("Upload failed.");
+			Log.e("GetTitle", "error: " + ioex.getMessage(), ioex);
+		}
+		System.out.println("Upload finished. Response is: " + responseFromServer);
+		return responseFromServer;
+	}
+	
+	/**
+	 * @author jhoffman
 	 * @param msg	A message to display to the user
 	 * @return void
 	 * Displays a toast with a given message.

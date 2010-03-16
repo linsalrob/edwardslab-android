@@ -1,5 +1,7 @@
 package edwardslab.util;
 
+import com.github.droidfu.concurrent.BetterAsyncTask;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -92,5 +94,42 @@ public class GetAllTitles extends Activity{
 				phoneNumber.setText(tmpLineNumber);
 			}
     	});
+	}
+	
+	/**
+	 * 
+	 * @author jhoffman
+	 * Downloads a sample title from the results server.
+	 */
+	private class LoadAllTitlesAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public LoadAllTitlesAsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status = 0;
+			HashTable MgUtilFunc.JSONToHash(MgUtilFunc.doJsonAllTitlesQuery(phoneNumber.getText().toString())).get("allTitles");
+			status = 1;
+			publishProgress(status);
+			return 1;
+		}
+
+		@Override
+		protected void after(Context context, Integer result) {
+		}
+
+		@Override
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+			//Handle the "Function" operation mode
+		} 
+
 	}
 }

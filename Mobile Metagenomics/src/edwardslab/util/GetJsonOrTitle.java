@@ -103,7 +103,7 @@ public class GetJsonOrTitle extends Activity{
 	/**
 	 * 
 	 * @author jhoffman
-	 * Downloads a json formatted annotation result from the server.
+	 * Downloads a sample title from the results server.
 	 */
 	private class LoadTitleAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
 		public LoadTitleAsyncTask(Context context) {
