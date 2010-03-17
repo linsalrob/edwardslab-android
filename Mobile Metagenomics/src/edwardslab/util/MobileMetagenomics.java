@@ -41,6 +41,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String CHOOSE_FILE_NAME_MODE = "choose file name mode";
 	static final String RESULTVIEW_MODE = "resultView mode";
 	static final String NORMAL_MODE = "normal mode";
+	static final String ALL_TITLES_MODE = "all titles mode";
 	static final String SHARE_MODE = "share mode";
 	static final String SAVE_MODE = "save mode";
 	static final String LOAD_LOCAL_FILE = "load local mode";
@@ -51,6 +52,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final String STRINGENCY = "stringency";
 	static final String KMER = "kmer";
 	static final String MAX_GAP = "maxGap";
+	static final String PHONE_NUMBER = "phone number";
 	static final String VALID_PHONE_STRING = "Please enter a valid phone number";
 	static final String VALID_SAMPLE_STRING = "Please enter a valid sample number";
 	EditText fileName;
@@ -215,8 +217,15 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        	}
 				break;
 	        case ACTIVITY_GET_ALL_TITLES:
-	        	//TODO: get information out, display titles
-	        	MgUtilFunc.showToast(MobileMetagenomics.this, "Returned from get all titles");
+	        	if(extras != null){
+		        	//TODO: get information out, display titles
+		        	Intent j = new Intent(MobileMetagenomics.this, ResultView.class);
+	        		j.putExtra(RESULTVIEW_MODE, ALL_TITLES_MODE);
+	        		j.putExtra(STRINGENCY, (extras.getInt(STRINGENCY)));
+	        		j.putExtra(KMER, (extras.getInt(KMER)));
+	        		j.putExtra(MAX_GAP, (extras.getInt(MAX_GAP)));
+	        		startActivityForResult(j, 0);
+	        	}
 	        	break;
 	        case ACTIVITY_GET_JSON_OR_TITLE:
 	        	//TODO: send to resultview to display JSON. If user used title option, the title was displayed in that activity.
