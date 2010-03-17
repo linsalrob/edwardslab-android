@@ -67,6 +67,7 @@ public class ResultView extends BetterDefaultActivity{
 	static final int  ID_DIALOG_LOAD=1;
 	static final int  ID_DIALOG_SAVE=2;
 	static final int  ID_DIALOG_SHARE=3;
+	static final int  ID_DIALOG_TITLES=4;
 	static final String APP_NAME = "Mobile Metagenomics";
 	static final String ANNOTATION = "Annotation Complete!";
 	static final String LOADING = "Loading Complete!";
@@ -149,12 +150,20 @@ public class ResultView extends BetterDefaultActivity{
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
 						sampleNumber = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
 						LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
-						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
-						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
+						setProgressDialogTitleId(ID_DIALOG_LOAD);
+						setProgressDialogMsgId(ID_DIALOG_LOAD);
 						task.execute();
 					}
 					else if(mode.equals(MobileMetagenomics.ALL_TITLES_MODE)){
-						
+						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						level = (extras.getInt(MobileMetagenomics.LEVEL));
+						stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
+						kmer = (extras.getInt(MobileMetagenomics.KMER));
+						maxGap = (extras.getInt(MobileMetagenomics.MAX_GAP));
+						GetAllTitlesAsyncTask task = new GetAllTitlesAsyncTask(this);
+						setProgressDialogTitleId(ID_DIALOG_TITLES);
+						setProgressDialogMsgId(ID_DIALOG_TITLES);
+						task.execute();
 					}
 						/*
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_2)){
@@ -292,6 +301,14 @@ public class ResultView extends BetterDefaultActivity{
 		else if(id == ID_DIALOG_SHARE){
 			ProgressDialog loadingDialog = new ProgressDialog(this);
 			loadingDialog.setTitle("Saving Results...");
+			loadingDialog.setMessage("Please wait, your file will be sent shortly");
+			loadingDialog.setIndeterminate(true);
+			loadingDialog.setCancelable(true);
+			return loadingDialog;
+		}
+		else if(id == ID_DIALOG_TITLES){
+			ProgressDialog loadingDialog = new ProgressDialog(this);
+			loadingDialog.setTitle("Loading Titles...");
 			loadingDialog.setMessage("Please wait, your file will be sent shortly");
 			loadingDialog.setIndeterminate(true);
 			loadingDialog.setCancelable(true);
@@ -467,6 +484,53 @@ public class ResultView extends BetterDefaultActivity{
 
 	}
 
+	/**
+	 * 
+	 * @author jhoffman
+	 * Downloads a json formatted list of results files (organized by title) stored on the server.
+	 */
+	private class GetAllTitlesAsyncTask extends BetterAsyncTask<String, Integer, Integer> {
+		public GetAllTitlesAsyncTask(Context context) {
+			super(context);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
+			Integer status = 0;
+			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
+			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
+			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
+			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer))));
+			status = 1;
+			publishProgress(status);
+			return 1;
+		}
+
+		@Override
+		protected void after(Context context, Integer result) {
+			// TODO Auto-generated method stub
+			//Log.e("ResultView","After, reporting in...");
+			AnnotationAsyncTask2 task2 = new  AnnotationAsyncTask2(ResultView.this);
+			task2.disableDialog();
+			task2.execute();
+		}
+
+		@Override
+		protected void handleError(Context context, Exception error) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override  
+		public void onProgressUpdate(Integer...values){
+			//Handle the "Function" operation mode
+			if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
+			setProgress(10000);
+		} 
+
+	}
+	
 	/**
 	 * 
 	 * @author jhoffman

@@ -438,7 +438,7 @@ public class MgUtilFunc {
 	 * @return	String				A String from the server containing a json hash of results.
 	 * Downloads the title of a given sample from the results storage server.
 	 */
-	public static String doJsonAllTitlesQuery(String phoneNumberForQuery){
+	public static String doJsonAllTitlesQuery(String phoneNumberForQuery, int stringency, int level, int maxGap, int kmer){
 		final String lineEnd = "\r\n";
 		final String twoHyphens = "--";
 		final String boundary =  "---------------------------2916890032591";
@@ -460,6 +460,19 @@ public class MgUtilFunc {
 			conn.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
 			// Set up a data output stream to write to the web
 			dos = new DataOutputStream( conn.getOutputStream() );
+			
+			/*We will want to include the values for the filters based on these if checks (I THINK!)
+			 * but I am holding off on coding them until the cgi is fixed so I can actually peek at the form.
+			if(stringency > 0){
+			}
+			if(level > -1){
+			}
+			if(maxGap > 0){
+			}
+			if(kmer > 0){
+			}
+			*/
+			
 			dos.writeBytes(twoHyphens + boundary + lineEnd +
 					"Content-Disposition: form-data; name=\"phoneNumber\"" + lineEnd + lineEnd +
 					phoneNumberForQuery + lineEnd +

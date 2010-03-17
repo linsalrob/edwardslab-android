@@ -221,6 +221,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 		        	//TODO: get information out, display titles
 		        	Intent j = new Intent(MobileMetagenomics.this, ResultView.class);
 	        		j.putExtra(RESULTVIEW_MODE, ALL_TITLES_MODE);
+	        		j.putExtra(PHONE_NUMBER, (extras.getString(PHONE_NUMBER)));
 	        		j.putExtra(STRINGENCY, (extras.getInt(STRINGENCY)));
 	        		j.putExtra(LEVEL, (extras.getInt(LEVEL)));
 	        		j.putExtra(KMER, (extras.getInt(KMER)));
