@@ -96,6 +96,9 @@ public class ResultView extends BetterDefaultActivity{
 	int PROGRESS_MODIFIER;
 	boolean isInFocus;
 
+	/*			HashTable MgUtilFunc.JSONToHash(MgUtilFunc.doJsonAllTitlesQuery(phoneNumber.getText().toString())).get("allTitles");
+*/
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_PROGRESS);
@@ -149,7 +152,11 @@ public class ResultView extends BetterDefaultActivity{
 						setProgressDialogTitleId(ID_DIALOG_ANNOTATE);
 						setProgressDialogMsgId(ID_DIALOG_ANNOTATE);
 						task.execute();
-					}/*
+					}
+					else if(mode.equals(MobileMetagenomics.ALL_TITLES_MODE)){
+						
+					}
+						/*
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_2)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
 	            		sampleTitle = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE);

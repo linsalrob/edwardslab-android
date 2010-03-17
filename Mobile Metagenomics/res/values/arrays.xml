@@ -44,7 +44,6 @@
         <item>One level Subsystems</item>
         <item>Two level Subsystems</item>
         <item>Three level Subsystems</item>
-        <item>OTUs</item>
     </string-array>
     
     <string-array name="kmer2">

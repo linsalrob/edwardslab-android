@@ -16,6 +16,7 @@ public class GetAllTitles extends Activity{
 	Spinner stringencySpinner;
 	Spinner kmerSpinner;
 	Spinner maxGapSpinner;
+	Spinner levelSpinner;
 	EditText phoneNumber;
 	Boolean showAdvanced = false;
 	LinearLayout advancedOptions;
@@ -29,6 +30,7 @@ public class GetAllTitles extends Activity{
         phoneNumber = (EditText) findViewById(R.id.PhoneNumber);
         advancedOptions = (LinearLayout) findViewById(R.id.ShowAdvancedDiv);
         stringencySpinner = (Spinner) findViewById(R.id.StringencySpinner2);
+        levelSpinner = (Spinner) findViewById(R.id.LevelSpinner2);
     	kmerSpinner = (Spinner) findViewById(R.id.KmerSpinner2);
     	maxGapSpinner = (Spinner) findViewById(R.id.MaxGapSpinner2);
     	advancedOptions.setVisibility(View.GONE);
@@ -42,11 +44,13 @@ public class GetAllTitles extends Activity{
 					bundle.putString(MobileMetagenomics.PHONE_NUMBER, tmpPhoneNumber);
 					if(showAdvanced){
 						bundle.putInt(MobileMetagenomics.STRINGENCY, (stringencySpinner.getSelectedItemPosition()));
+						bundle.putInt(MobileMetagenomics.LEVEL, (levelSpinner.getSelectedItemPosition()) - 1);
 						bundle.putInt(MobileMetagenomics.MAX_GAP, ((maxGapSpinner.getSelectedItemPosition())*300));
 						bundle.putInt(MobileMetagenomics.KMER, (kmerSpinner.getSelectedItemPosition() + 6));
 					}
 					else{
 						bundle.putInt(MobileMetagenomics.STRINGENCY, -1);
+						bundle.putInt(MobileMetagenomics.LEVEL, -1);
 						bundle.putInt(MobileMetagenomics.MAX_GAP, -1);
 						bundle.putInt(MobileMetagenomics.KMER, -1);
 					}

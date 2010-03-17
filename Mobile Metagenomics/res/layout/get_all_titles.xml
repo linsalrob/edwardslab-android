@@ -46,6 +46,14 @@
 		android:entries="@array/stringency2"
 		android:layout_weight="1">
 	</Spinner>
+	<Spinner android:id="@+id/LevelSpinner2" 
+		android:layout_below="@+id/StringencySpinner2" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		android:entries="@array/levels2"
+		android:prompt="@string/level"
+		android:layout_weight="1">	
+	</Spinner>
 	<Spinner android:id="@+id/KmerSpinner2" 
 		android:layout_below="@+id/StringencySpinner" 
 		android:layout_width="fill_parent" 
