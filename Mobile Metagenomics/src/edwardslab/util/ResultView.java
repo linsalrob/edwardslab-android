@@ -96,7 +96,7 @@ public class ResultView extends BetterDefaultActivity{
 	ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
 	boolean isInFocus;
-
+//making a change to test commit for daniel
 	/*			HashTable MgUtilFunc.JSONToHash(MgUtilFunc.doJsonAllTitlesQuery(phoneNumber.getText().toString())).get("allTitles");
 */
 	
