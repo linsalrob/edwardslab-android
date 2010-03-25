@@ -31,4 +31,12 @@
 	<string name="web">Web Storage</string>
 	<string name="share_query">Share via email or the results storage web server?</string>
 	<string name="server_get_query">Choose a method to get results from the server</string>
+	<string name="help_text">This application takes as input a metagenome sequence in the form of a fasta format text file.\n
+	\nIt will annotate the metagenome data according to the settings choices you make.\n
+	\nStringency determines how many results you will get back.\n
+	\nFunction determines what type of annotation you want.\n
+	\nWord size (k-mers) determines how long the strings are during the matching.\n
+	\nMax gap determines how much distance there can be between matches.\n
+	\nFor more information about this project, visit http://edwards.sdsu.edu/rtmg/
+	</string>
 </resources>
