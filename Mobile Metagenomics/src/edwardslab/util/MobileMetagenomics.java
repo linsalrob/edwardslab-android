@@ -252,7 +252,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
     /**
      * @author jhoffman
      * @param resFile	The results file to load.
-     * @return void
      * Loads a results file and passes it to ResultView for display.
      */
 	public void loadResults(String resFile){
@@ -264,7 +263,6 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 
 	/**
 	 * @author jhoffman
-	 * @return void
 	 * Opens a file on the phone's file system.
 	 */
     public void openFile() {

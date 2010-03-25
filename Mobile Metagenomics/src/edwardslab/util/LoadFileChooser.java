@@ -90,7 +90,6 @@ public class LoadFileChooser extends Activity {
 	
 	/**
 	 * @author jhoffman
-	 * @return void
 	 * Opens a file from the phone's file system.
 	 */
 	public void openFile() {

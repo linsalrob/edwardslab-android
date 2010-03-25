@@ -524,7 +524,6 @@ public class MgUtilFunc {
 	/**
 	 * @author jhoffman
 	 * @param msg	A message to display to the user
-	 * @return void
 	 * Displays a toast with a given message.
 	 */
 	public static void showToast(Context context, String msg){

@@ -817,7 +817,6 @@ public class ResultView extends BetterDefaultActivity{
 	 * @author jhoffman
 	 * @param name
 	 * @param msg
-	 * @return void
 	 * Displays a notification with a given name and message in the notification bar.
 	 */
 	public void showNotification(String name, String msg){
@@ -836,7 +835,6 @@ public class ResultView extends BetterDefaultActivity{
 
 	/**
 	 * @author jhoffman
-	 * @return void
 	 * Draws a graph based on annotation results saved to resultsArr.
 	 */
 	public void displaySubsystemsGraph(){
@@ -910,7 +908,6 @@ public class ResultView extends BetterDefaultActivity{
 	/**
 	 * @author jhoffman
 	 * @param resString	The result of a query to the server for results
-	 * @return void
 	 * 
 	 */
 	private void doInitialAsynchWork(String resString){
@@ -929,7 +926,6 @@ public class ResultView extends BetterDefaultActivity{
 	/**
 	 * @author jhoffman
 	 * @param newData	A hash of results from the annotation server.
-	 * @return void
 	 * Loads the first set of results to the resultsArr and sorts them for display.
 	 */
 	public void loadInitialResults(Hashtable<String,String> newData){
@@ -946,7 +942,6 @@ public class ResultView extends BetterDefaultActivity{
 	/**
 	 * @author jhoffman
 	 * @param newData	A hash of results from the annotation server.
-	 * @return void
 	 * Loads results from a one-line file containing a json string to the resultsArr and sorts them for display.
 	 */
 	public void loadSavedResults(Hashtable<String,String> newData){
@@ -963,7 +958,6 @@ public class ResultView extends BetterDefaultActivity{
 	/**
 	 * @author jhoffman
 	 * @param newData	A hash of results from the annotation server.
-	 * @return void
 	 * Adds all subsequent sets of results to the resultsArr and sorts them for display.
 	 */
 	public void addToResults(Hashtable<String,String> newData){
@@ -995,7 +989,6 @@ public class ResultView extends BetterDefaultActivity{
 
 	/**
 	 * @author jhoffman
-	 * @return void
 	 * Writes a file containing the data from resultsArr.
 	 */
 	public void writeFileOut(){
