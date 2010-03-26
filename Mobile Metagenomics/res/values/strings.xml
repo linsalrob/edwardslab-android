@@ -21,6 +21,7 @@
     <string name="get_title">Get Sample Title</string>
     <string name="get_json_or_title">Get Results or Sample Title</string>
     <string name="get_all_titles">Get All Titles</string>
+    <string name="help">Help</string>
     <string name="show_advanced">Show Advanced Options</string>
     <string name="hide_advanced">Hide Advanced Options</string>
     <string name="no_filemanager_installed">No File Manager installed; install one, or type in file name to annotate.</string>

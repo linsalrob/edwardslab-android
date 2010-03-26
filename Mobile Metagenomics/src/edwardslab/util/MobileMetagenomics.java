@@ -33,6 +33,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	static final int ACTIVITY_GET_ALL_TITLES = 5;
 	private static final int LOAD_LOCAL_ID = Menu.FIRST;
 	private static final int LOAD_WEB_ID = Menu.FIRST + 1;
+	private static final int MORE_INFO_ID = Menu.FIRST + 2;
 	static final String LOAD_FILE_PHONE_NUMBER = "load file phone number";
 	static final String LOAD_FILE_SAMPLE_NUMBER = "load file sample number";
 	static final String LOAD_FILE_SAMPLE_TITLE = "load file title";
@@ -129,6 +130,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
         super.onCreateOptionsMenu(menu);
         menu.add(0, LOAD_LOCAL_ID, 0, R.string.load_local).setIcon(android.R.drawable.ic_menu_set_as);
         menu.add(0, LOAD_WEB_ID, 0, R.string.load_web).setIcon(android.R.drawable.ic_menu_set_as);
+        menu.add(0, MORE_INFO_ID, 0, R.string.help).setIcon(android.R.drawable.ic_menu_info_details);
         return true;
     }
     
@@ -165,6 +167,9 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 			});
 			AlertDialog alert = builder.create();
 			alert.show();
+        case MORE_INFO_ID:
+        	Intent k = new Intent(MobileMetagenomics.this, MoreInfo.class);
+        	startActivity(k);
         }
         return super.onMenuItemSelected(featureId, item);
 	}
