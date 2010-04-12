@@ -498,7 +498,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 0;
-			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
+			Log.e("ResultView","Performing getAllTitles with phone# " + phoneNumberForQuery);
 			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
 			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
 			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer))));

@@ -167,9 +167,11 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 			});
 			AlertDialog alert = builder.create();
 			alert.show();
+			return true;
         case MORE_INFO_ID:
         	Intent k = new Intent(MobileMetagenomics.this, MoreInfo.class);
         	startActivity(k);
+        	return true;
         }
         return super.onMenuItemSelected(featureId, item);
 	}
