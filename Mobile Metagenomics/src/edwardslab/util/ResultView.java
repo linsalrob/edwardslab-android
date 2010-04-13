@@ -100,10 +100,10 @@ public class ResultView extends BetterDefaultActivity{
 	ProgressBar mBar = null;
 	int PROGRESS_MODIFIER;
 	boolean isInFocus;
-//making a change to test commit for daniel
+	//making a change to test commit for daniel
 	/*			HashTable MgUtilFunc.JSONToHash(MgUtilFunc.doJsonAllTitlesQuery(phoneNumber.getText().toString())).get("allTitles");
-*/
-	
+	 */
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_PROGRESS);
@@ -148,7 +148,7 @@ public class ResultView extends BetterDefaultActivity{
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_LOCAL_FILE)){
 						fileName = extras.getString(MobileMetagenomics.LOAD_FILE_NAME);
-					new LoadResultsAsyncTask(this).execute(fileName);
+						new LoadResultsAsyncTask(this).execute(fileName);
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
 						//phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
@@ -171,7 +171,7 @@ public class ResultView extends BetterDefaultActivity{
 						setProgressDialogMsgId(ID_DIALOG_TITLES);
 						task.execute();
 					}
-						/*
+					/*
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_2)){
 						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
 	            		sampleTitle = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_TITLE);
@@ -238,7 +238,7 @@ public class ResultView extends BetterDefaultActivity{
 					shareMode = "json";
 					Intent i = new Intent(ResultView.this, FileNameChooser.class);
 					i.putExtra(MobileMetagenomics.CHOOSE_FILE_NAME_MODE, MobileMetagenomics.SHARE_MODE);
-		        	startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
+					startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
 				}
 			});
 			AlertDialog alert = builder.create();
@@ -247,7 +247,7 @@ public class ResultView extends BetterDefaultActivity{
 		case SAVE_ID:
 			Intent i = new Intent(ResultView.this, FileNameChooser.class);
 			i.putExtra(MobileMetagenomics.CHOOSE_FILE_NAME_MODE, MobileMetagenomics.SAVE_MODE);
-        	startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
+			startActivityForResult(i, MobileMetagenomics.ACTIVITY_CHOOSE_FILENAME);
 			//new SaveResultsAsyncTask(this).execute("String");
 			return true;
 		case LOAD_ID:
@@ -534,20 +534,25 @@ public class ResultView extends BetterDefaultActivity{
 			if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
 			setProgress(10000);
 			resultListView.setOnItemClickListener(new OnItemClickListener() {
-				 @Override
-				 public void onItemClick(AdapterView<?> a, View v, int position, long id) {
-				 Builder adb=new AlertDialog.Builder(ResultView.this);
+				@Override
+				public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+					/*Builder adb=new AlertDialog.Builder(ResultView.this);
 				 adb.setTitle("LVSelectedItemExample");
 				 adb.setMessage("Selected Item is = "+resultListView.getItemAtPosition(position));
 				 adb.setPositiveButton("Ok", null);
-				 adb.show();
-				 }
-				 });
+				 adb.show();*/
+					sampleNumber = ((String)resultListView.getItemAtPosition(position)).split(" value: ")[0];
+					LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(ResultView.this);
+					setProgressDialogTitleId(ID_DIALOG_LOAD);
+					setProgressDialogMsgId(ID_DIALOG_LOAD);
+					task.execute();
+				}
+			});
 
 		} 
 
 	}
-	
+
 	/**
 	 * 
 	 * @author jhoffman
@@ -644,20 +649,20 @@ public class ResultView extends BetterDefaultActivity{
 			String concatJson = "";
 			try {
 				FileInputStream fis = new FileInputStream(new File(params[0]));
-				 DataInputStream dis = new DataInputStream(fis);
-			        BufferedReader br = new BufferedReader(new InputStreamReader(dis));
-			    String strLine;
-			    strLine = br.readLine();
-			    //Read File Line By Line
-			    if(strLine != null)   {
-			      // Print the content on the console
-			      concatJson = strLine;
-			    }
-			    System.out.println("concat json = " + concatJson);
-			    loadSavedResults(MgUtilFunc.JSONToHash(concatJson));
-			    //Close the input stream
-			    dis.close();
-			    return 1;
+				DataInputStream dis = new DataInputStream(fis);
+				BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+				String strLine;
+				strLine = br.readLine();
+				//Read File Line By Line
+				if(strLine != null)   {
+					// Print the content on the console
+					concatJson = strLine;
+				}
+				System.out.println("concat json = " + concatJson);
+				loadSavedResults(MgUtilFunc.JSONToHash(concatJson));
+				//Close the input stream
+				dis.close();
+				return 1;
 			}
 			catch (Exception e) {
 				System.err.println("exception thrown from LoadResults doInBackground");
@@ -971,7 +976,7 @@ public class ResultView extends BetterDefaultActivity{
 		resultsArr = helperList.toArray();
 		Arrays.sort(resultsArr);
 	}
-	
+
 	/**
 	 * @author jhoffman
 	 * @param newData	A hash of results from the annotation server.
