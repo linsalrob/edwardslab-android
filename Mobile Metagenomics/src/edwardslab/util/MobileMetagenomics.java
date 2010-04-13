@@ -34,7 +34,7 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	private static final int LOAD_LOCAL_ID = Menu.FIRST;
 	private static final int LOAD_WEB_ID = Menu.FIRST + 1;
 	private static final int MORE_INFO_ID = Menu.FIRST + 2;
-	static final String LOAD_FILE_PHONE_NUMBER = "load file phone number";
+	//static final String LOAD_FILE_PHONE_NUMBER = "load file phone number";
 	static final String LOAD_FILE_SAMPLE_NUMBER = "load file sample number";
 	static final String LOAD_FILE_SAMPLE_TITLE = "load file title";
 	static final String LOAD_FILE_NAME = "load file name";
@@ -202,7 +202,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 				break;
 	        case ACTIVITY_LOAD_WEB:
 	        	if(extras != null){
-	        		String phoneNumber = extras.getString(LOAD_FILE_PHONE_NUMBER);
+	        	//	String phoneNumber = extras.getString(LOAD_FILE_PHONE_NUMBER);
+	        		String phoneNumber = extras.getString(PHONE_NUMBER);
 	        		System.out.println("Mobile Metagenomics receiving: " + extras.getInt(LOAD_FILE_SAMPLE_NUMBER));
 	        		Integer sampleNumber = extras.getInt(LOAD_FILE_SAMPLE_NUMBER);
 	        		//String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
@@ -210,7 +211,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        		if(!phoneNumber.equals("") && sampleNumber != 0){
 	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
 	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_1);
-	            		i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	            		//i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	            		i.putExtra(PHONE_NUMBER, phoneNumber);
 	            		i.putExtra(LOAD_FILE_SAMPLE_NUMBER, sampleNumber);
 	            		startActivity(i);
 	        		}/*
@@ -238,7 +240,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        	break;
 	        case ACTIVITY_GET_JSON_OR_TITLE:
 	        	if(extras != null){
-	        		String phoneNumber = extras.getString(LOAD_FILE_PHONE_NUMBER);
+	        		//String phoneNumber = extras.getString(LOAD_FILE_PHONE_NUMBER);
+	        		String phoneNumber = extras.getString(PHONE_NUMBER);
 	        		System.out.println("Mobile Metagenomics receiving: " + extras.getInt(LOAD_FILE_SAMPLE_NUMBER));
 	        		String sampleNumber = extras.getString(LOAD_FILE_SAMPLE_NUMBER);
 	        		//String sampleTitle = extras.getString(LOAD_FILE_SAMPLE_TITLE);
@@ -246,7 +249,8 @@ public class MobileMetagenomics extends BetterDefaultActivity{
 	        		if(!phoneNumber.equals("") && !sampleNumber.equals("0")){
 	        			Intent i = new Intent(MobileMetagenomics.this, ResultView.class);
 	        			i.putExtra(RESULTVIEW_MODE, LOAD_WEB_JSON_1);
-	            		i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	            		//i.putExtra(LOAD_FILE_PHONE_NUMBER, phoneNumber);
+	            		i.putExtra(PHONE_NUMBER, phoneNumber);
 	            		i.putExtra(LOAD_FILE_SAMPLE_NUMBER, sampleNumber);
 	            		startActivity(i);
 	        		}

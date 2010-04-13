@@ -5,6 +5,8 @@ package edwardslab.util;
 	for BetterAsyncTask Code
 	http://www.anddev.org/getting_data_from_the_web_urlconnection_via_http-t351.html
 	Used for the web access portion of code.
+	http://www.androidpeople.com/android-listview-onclick/
+	Used for onClick portion of the resultListView in GetAllTitles.
  */
 
 import java.io.BufferedReader;
@@ -21,7 +23,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -29,6 +30,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -43,14 +45,16 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.github.droidfu.activities.BetterDefaultActivity;
@@ -147,7 +151,8 @@ public class ResultView extends BetterDefaultActivity{
 					new LoadResultsAsyncTask(this).execute(fileName);
 					}
 					else if(mode.equals(MobileMetagenomics.LOAD_WEB_JSON_1)){
-						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						//phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						phoneNumberForQuery = extras.getString(MobileMetagenomics.PHONE_NUMBER);
 						sampleNumber = extras.getString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER);
 						LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(this);
 						setProgressDialogTitleId(ID_DIALOG_LOAD);
@@ -155,7 +160,8 @@ public class ResultView extends BetterDefaultActivity{
 						task.execute();
 					}
 					else if(mode.equals(MobileMetagenomics.ALL_TITLES_MODE)){
-						phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						//phoneNumberForQuery = extras.getString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER);
+						phoneNumberForQuery = extras.getString(MobileMetagenomics.PHONE_NUMBER);
 						level = (extras.getInt(MobileMetagenomics.LEVEL));
 						stringency = (extras.getInt(MobileMetagenomics.STRINGENCY));
 						kmer = (extras.getInt(MobileMetagenomics.KMER));
@@ -451,7 +457,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 0;
-			Log.e("ResultView","Performing load json mode 1 with phone# " + phoneNumberForQuery + " and sample number " + sampleNumber);
+			Log.e("ResultView","Performing load json mode 1 with phone # " + phoneNumberForQuery + " and sample number " + sampleNumber);
 			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
 			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
 			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber))).get("data")));
@@ -498,7 +504,7 @@ public class ResultView extends BetterDefaultActivity{
 		@Override
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 0;
-			Log.e("ResultView","Performing getAllTitles with phone# " + phoneNumberForQuery);
+			Log.e("ResultView","Performing getAllTitles with phone # " + phoneNumberForQuery);
 			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
 			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
 			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer))));
@@ -527,6 +533,17 @@ public class ResultView extends BetterDefaultActivity{
 			//Handle the "Function" operation mode
 			if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
 			setProgress(10000);
+			resultListView.setOnItemClickListener(new OnItemClickListener() {
+				 @Override
+				 public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				 Builder adb=new AlertDialog.Builder(ResultView.this);
+				 adb.setTitle("LVSelectedItemExample");
+				 adb.setMessage("Selected Item is = "+resultListView.getItemAtPosition(position));
+				 adb.setPositiveButton("Ok", null);
+				 adb.show();
+				 }
+				 });
+
 		} 
 
 	}

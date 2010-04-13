@@ -45,7 +45,8 @@ public class GetJsonOrTitle extends Activity{
 					}
 					if(dataVerified){
 						Bundle bundle = new Bundle();            
-						bundle.putString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, phoneNumberEntered);
+						//bundle.putString(MobileMetagenomics.LOAD_FILE_PHONE_NUMBER, phoneNumberEntered);
+						bundle.putString(MobileMetagenomics.PHONE_NUMBER, phoneNumberEntered);
 						bundle.putString(MobileMetagenomics.LOAD_FILE_SAMPLE_NUMBER, sampleNumberEntered);
 			            Intent mIntent = new Intent();
 			            mIntent.putExtras(bundle);

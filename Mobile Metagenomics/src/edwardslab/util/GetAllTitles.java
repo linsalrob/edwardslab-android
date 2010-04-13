@@ -40,6 +40,7 @@ public class GetAllTitles extends Activity{
 			public void onClick(View v) {
 				Bundle bundle = new Bundle();
 				String tmpPhoneNumber = phoneNumber.getText().toString();
+				System.out.println("GetAllTitles.java returning phone number: " + tmpPhoneNumber);
 				if(!tmpPhoneNumber.equals("")){
 					bundle.putString(MobileMetagenomics.PHONE_NUMBER, tmpPhoneNumber);
 					if(showAdvanced){
