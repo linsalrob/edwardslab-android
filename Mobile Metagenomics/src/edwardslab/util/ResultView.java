@@ -546,9 +546,9 @@ public class ResultView extends BetterDefaultActivity{
 					setProgressDialogTitleId(ID_DIALOG_LOAD);
 					setProgressDialogMsgId(ID_DIALOG_LOAD);
 					task.execute();
+					resultListView.setOnItemClickListener(null);
 				}
 			});
-
 		} 
 
 	}
