@@ -55,6 +55,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.github.droidfu.activities.BetterDefaultActivity;
@@ -460,7 +461,13 @@ public class ResultView extends BetterDefaultActivity{
 			Log.e("ResultView","Performing load json mode 1 with phone # " + phoneNumberForQuery + " and sample number " + sampleNumber);
 			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
 			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
-			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber))).get("data")));
+			
+			Hashtable tmpHash = (MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber)));
+			loadInitialResults(MgUtilFunc.JSONToHash((String)tmpHash.get("data")));
+			System.out.println("Testing unchaining stuff, wordSize is: " + tmpHash.get("wordSize"));
+			kmer = Integer.parseInt((String)tmpHash.get("wordSize"));
+			
+			//loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber))).get("data")));
 			status = 1;
 			publishProgress(status);
 			return 1;
@@ -507,7 +514,9 @@ public class ResultView extends BetterDefaultActivity{
 			Log.e("ResultView","Performing getAllTitles with phone # " + phoneNumberForQuery);
 			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
 			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
-			loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer))));
+			Hashtable<String, String> tmpHash = MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer)));
+			System.out.println("testing tmpHash.get on count, result is: " + tmpHash.get("count"));
+			loadInitialResults(tmpHash);
 			status = 1;
 			publishProgress(status);
 			return 1;
@@ -536,6 +545,18 @@ public class ResultView extends BetterDefaultActivity{
 			resultListView.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				 Builder adb=new AlertDialog.Builder(ResultView.this);
+				 adb.setTitle("Item Metadata");
+				 adb.setMessage("Load result set "+((String)resultListView.getItemAtPosition(position)).split(" value: ")[1]+"?\nStringency: "+stringency+"\nLevel: "+level+"\nWord Size: "+kmer+"\nMax Gap: "+maxGap);
+				 adb.setPositiveButton("Yes", null);
+				 adb.setNegativeButton("No", null);
+				 adb.show();
+				}
+			});
+			
+			resultListView.setOnItemLongClickListener(new OnItemLongClickListener() {
+				@Override
+				public boolean onItemLongClick(AdapterView<?> a, View v, int position, long id) {
 					/*Builder adb=new AlertDialog.Builder(ResultView.this);
 				 adb.setTitle("LVSelectedItemExample");
 				 adb.setMessage("Selected Item is = "+resultListView.getItemAtPosition(position));
@@ -546,7 +567,8 @@ public class ResultView extends BetterDefaultActivity{
 					setProgressDialogTitleId(ID_DIALOG_LOAD);
 					setProgressDialogMsgId(ID_DIALOG_LOAD);
 					task.execute();
-					resultListView.setOnItemClickListener(null);
+					resultListView.setOnItemLongClickListener(null);
+					return true;
 				}
 			});
 		} 
