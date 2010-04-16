@@ -459,14 +459,15 @@ public class ResultView extends BetterDefaultActivity{
 		protected Integer doCheckedInBackground(Context context, String... params) throws Exception{
 			Integer status = 0;
 			Log.e("ResultView","Performing load json mode 1 with phone # " + phoneNumberForQuery + " and sample number " + sampleNumber);
-			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
-			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
 			
 			Hashtable tmpHash = (MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber)));
 			loadInitialResults(MgUtilFunc.JSONToHash((String)tmpHash.get("data")));
-			System.out.println("Testing unchaining stuff, wordSize is: " + tmpHash.get("wordSize"));
-			kmer = Integer.parseInt((String)tmpHash.get("wordSize"));
 			
+			stringency = Integer.parseInt((String)tmpHash.get("stringency"));
+			//TODO: Uncomment level when rob fixes it!
+			//level = Integer.parseInt((String)tmpHash.get("level"));
+			kmer = Integer.parseInt((String)tmpHash.get("wordSize"));
+			maxGap = Integer.parseInt((String)tmpHash.get("maxGap"));
 			//loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber))).get("data")));
 			status = 1;
 			publishProgress(status);
@@ -514,6 +515,17 @@ public class ResultView extends BetterDefaultActivity{
 			Log.e("ResultView","Performing getAllTitles with phone # " + phoneNumberForQuery);
 			//TODO: Here is where we would need to save metadata like stringency, maxGap, etc. Do this by unchaining the last 
 			//MgUtilFunc.JSONToHash call and saving the hash returned from the inner JSONToHash call.
+			
+			/*Hashtable tmpHash = (MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber)));
+			loadInitialResults(MgUtilFunc.JSONToHash((String)tmpHash.get("data")));
+			
+			stringency = Integer.parseInt((String)tmpHash.get("stringency"));
+			//TODO: Uncomment level when rob fixes it!
+			//level = Integer.parseInt((String)tmpHash.get("level"));
+			kmer = Integer.parseInt((String)tmpHash.get("wordSize"));
+			maxGap = Integer.parseInt((String)tmpHash.get("maxGap"));
+			*/
+			
 			Hashtable<String, String> tmpHash = MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer)));
 			System.out.println("testing tmpHash.get on count, result is: " + tmpHash.get("count"));
 			loadInitialResults(tmpHash);
