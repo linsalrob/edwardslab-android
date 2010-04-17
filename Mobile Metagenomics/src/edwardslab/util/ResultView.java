@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.DialogInterface.OnClickListener;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
@@ -527,7 +528,6 @@ public class ResultView extends BetterDefaultActivity{
 			*/
 			
 			Hashtable<String, String> tmpHash = MgUtilFunc.JSONToHash((MgUtilFunc.doJsonAllTitlesQuery(phoneNumberForQuery, stringency, level, maxGap, kmer)));
-			System.out.println("testing tmpHash.get on count, result is: " + tmpHash.get("count"));
 			loadInitialResults(tmpHash);
 			status = 1;
 			publishProgress(status);
@@ -557,10 +557,22 @@ public class ResultView extends BetterDefaultActivity{
 			resultListView.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				final int finalPosition = position;
 				 Builder adb=new AlertDialog.Builder(ResultView.this);
 				 adb.setTitle("Item Metadata");
 				 adb.setMessage("Load result set "+((String)resultListView.getItemAtPosition(position)).split(" value: ")[1]+"?\nStringency: "+stringency+"\nLevel: "+level+"\nWord Size: "+kmer+"\nMax Gap: "+maxGap);
-				 adb.setPositiveButton("Yes", null);
+				 adb.setPositiveButton("Yes", new OnClickListener(){
+
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+						sampleNumber = ((String)resultListView.getItemAtPosition(finalPosition)).split(" value: ")[0];
+						LoadJsonMode1AsyncTask task = new LoadJsonMode1AsyncTask(ResultView.this);
+						setProgressDialogTitleId(ID_DIALOG_LOAD);
+						setProgressDialogMsgId(ID_DIALOG_LOAD);
+						task.execute();
+						resultListView.setOnItemLongClickListener(null);
+						
+					}});
 				 adb.setNegativeButton("No", null);
 				 adb.show();
 				}
