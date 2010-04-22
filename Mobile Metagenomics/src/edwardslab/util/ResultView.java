@@ -466,7 +466,12 @@ public class ResultView extends BetterDefaultActivity{
 			
 			stringency = Integer.parseInt((String)tmpHash.get("stringency"));
 			//TODO: Uncomment level when rob fixes it!
-			//level = Integer.parseInt((String)tmpHash.get("level"));
+			/*level = Integer.parseInt((String)tmpHash.get("level"));
+			 *
+			 * if(level==0){
+			 * 	
+			 * 
+			 */
 			kmer = Integer.parseInt((String)tmpHash.get("wordSize"));
 			maxGap = Integer.parseInt((String)tmpHash.get("maxGap"));
 			//loadInitialResults(MgUtilFunc.JSONToHash((MgUtilFunc.JSONToHash(MgUtilFunc.doJsonQuery1(phoneNumberForQuery, sampleNumber))).get("data")));
@@ -479,6 +484,7 @@ public class ResultView extends BetterDefaultActivity{
 		protected void after(Context context, Integer result) {
 			// TODO Auto-generated method stub
 			//Log.e("ResultView","After, reporting in...");
+			// TODO: this looks like some bad copy/paste. I don't think this should be here. Try deleting it and see if anything breaks.
 			AnnotationAsyncTask2 task2 = new  AnnotationAsyncTask2(ResultView.this);
 			task2.disableDialog();
 			task2.execute();
@@ -492,6 +498,23 @@ public class ResultView extends BetterDefaultActivity{
 
 		@Override  
 		public void onProgressUpdate(Integer...values){
+			/* What we really want here is probably this, maybe with some progress bar stuff as well:
+			 * @Override  
+			if(resultsArr != null){
+				switch (level){
+				//Handle the "Function" operation mode
+				case 0: resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr)); break;
+				case 1: displaySubsystemsGraph(); break;
+				case 2: displaySubsystemsGraph(); break;
+				case 3: displaySubsystemsGraph(); break;
+				case 4: displaySubsystemsGraph(); break;
+				//TODO: replace this with some proper means of handling this error.
+				default: System.out.println("Invalid mode - terminating."); break;
+				}
+			}
+			 * 
+			 */
+			
 			//Handle the "Function" operation mode
 			if(resultsArr != null){resultListView.setAdapter(new ArrayAdapter(ResultView.this, android.R.layout.simple_list_item_1, resultsArr));}
 			setProgress(10000);
